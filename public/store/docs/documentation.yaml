@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+  title: YohPal API
+  description: |
+    The YohPal API provides a comprehensive suite of endpoints for managing YohPal services and the application ecosystem. 
+    It enables seamless integration with the platform's core functionalities including user management, service scheduling, 
+    transactions, notifications, and more. Designed for developers and partners, the API supports secure, scalable, and 
+    efficient interactions with YohPal's backend systems.
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: https://yohpal.com/support
+    email: yohpal@info.com
+
+paths:
+  /api/settings/get:
+    get:
+      tags:
+        - Settings
+      summary: Get all user settings
+      description: Retrieve all frontend settings associated with a user using the user ID.
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Unique user ID to fetch settings for
+      responses:
+        '200':
+          description: User settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User settings retrieved successfully.
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: object
+                    example:
+                      profile:
+                        name: Bernard
+                        email: bernard@example.com
+                      appearance:
+                        theme: dark
+                        language: en
+                      font:
+                        size: medium
+        '400':
+          description: Missing or invalid user ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Settings not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/settings/update:
+    post:
+      tags:
+        - Settings
+      summary: Update user settings
+      description: Update specific sections of user settings (profile, appearance, security, font size).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Unique user ID to update settings
+                profile:
+                  type: object
+                  properties:
+                    firstname:
+                      type: string
+                      description: User's first name
+                    lastname:
+                      type: string
+                      description: User's last name
+                    phone:
+                      type: string
+                      description: User's phone number
+                    email:
+                      type: string
+                      description: User's email address
+                    location:
+                      type: string
+                      description: User's location
+                    bio:
+                      type: string
+                      description: User's bio
+                appearance:
+                  type: object
+                  properties:
+                    theme:
+                      type: string
+                      enum:
+                        - dark
+                        - light
+                        - custom
+                      description: The theme selected by the user
+                    language:
+                      type: string
+                      description: Preferred language for the user interface
+                security:
+                  type: object
+                  properties:
+                    currentpassword:
+                      type: string
+                      description: Current password of the user
+                    newpassword:
+                      type: string
+                      description: New password
+                    confirmnewpassword:
+                      type: string
+                      description: Confirm new password
+                font:
+                  type: object
+                  properties:
+                    size:
+                      type: string
+                      enum:
+                        - small
+                        - medium
+                        - large
+                      description: Font size preference for the user interface
+      responses:
+        '200':
+          description: User settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User settings updated successfully.
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Settings not found or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: Something went wrong. Please try again later.
+        code:
+          type: string
+          example: INTERNAL_SERVER_ERROR
+        reason:
+          type: string
+          example: Unexpected Error

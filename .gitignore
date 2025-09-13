@@ -1,0 +1,6 @@
+.env
+.DS_Store
+node_modules
+public/store/services/accounts/serviceAccountKey.json
+public/bootstrap
+public/assets
