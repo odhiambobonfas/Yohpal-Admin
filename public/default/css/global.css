@@ -8,11 +8,12 @@ body {
     text-align: center;
 }
 .btn-custom {
-    background: #007bff;
+    background: var(--bs-danger);
     color: #fff;
 }
 .btn-custom:hover {
-    background: #0056b3;
+    background: var(--bs-light);
+    color: var(--text-dark);
 }
 
 /* global overlay  */
@@ -52,3 +53,8 @@ body>.global-overlay {
 }
 
 /* /global overlay */
+
+.brand-logo-img {
+    width: 80px;
+    height: 80px; 
+}

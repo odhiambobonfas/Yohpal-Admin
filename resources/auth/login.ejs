@@ -1,9 +1,12 @@
 <%- include('partials/header') %>
 
 <div class="login-container">
-    <div class="brand-logo">MyExpress</div>
-    <h4 class="text-center mt-3">Welcome Back</h4>
-    <p class="text-center text-muted">Login to your account</p>
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <div class="col-3">
+            <img class="brand-logo-img" src="https://hustle.yohpal.com/assets/store/logos/logo_circular.png" alt="Yohpal Logo">
+        </div>
+    </div> 
+    <p class="text-center text-muted">Login in to your account</p>
 
     <% if (message.length > 0) { %>
         <div class="form-group">
@@ -13,25 +16,25 @@
         </div>
     <% } %>
     
-    <form class="login-user-form" action="/login" method="POST">
+    <form class="login-user-form" action="/login" method="POST" enctype="multipart/form-data">
         <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
+            <label for="email" class="form-label fw-bold">Email: </label>
             <input type="email" value="gicehajunior76@gmail.com" name="email" id="email" class="form-control" placeholder="Enter email" required>
         </div>
 
         <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label fw-bold">Password: </label>
             <input type="password" value="giceha@2025" name="password" id="password" class="form-control" placeholder="Enter password" required>
         </div>
 
-        <div class="d-grid">
-            <button type="button" class="btn btn-custom login-btn" id="login-btn">Login</button>
+        <div class="text-end mb-3">
+            <a href="/forgot-password" class="text-decoration-none text-danger">Forgot Password?</a>
         </div>
-    </form>
 
-    <p class="text-center mt-3">
-        Don't have an account? <a href="/register">Sign Up</a>
-    </p>
+        <div class="d-grid">
+            <button type="button" class="btn btn-custom btn-danger login-btn" id="login-btn">Login</button>
+        </div>
+    </form> 
 </div>
 
 <!-- scripts -->

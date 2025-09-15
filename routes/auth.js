@@ -6,7 +6,7 @@ const auth = (router) => {
     // login routes
     router.get('/', AuthController.login);
     router.get('/login', AuthController.login);
-    router.post('/login', upload.none(), AuthController.authlogin); 
+    router.post('/login', AuthController.authlogin); 
 
     // register routes
     router.get('/register', AuthController.login);

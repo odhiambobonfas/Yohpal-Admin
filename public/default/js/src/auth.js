@@ -54,49 +54,47 @@ class Auth {
     }
 
     login() {
-        let loginBtn = document.querySelector(".login-btn");
-        let loginForm = document.querySelector(".login-user-form");
-        if (documentContains(loginBtn)) {
-            loginBtn = cloneNodeElement(loginBtn);
-            loginBtn.addEventListener('click', event => {
-                event.preventDefault();
-                loginBtn.disabled = true;
-                __append_html('Please Wait...', loginBtn);
+        let btn = document.querySelector(".login-btn"); 
+        if (!btn) return;
 
-                if (!documentContains(loginForm)) {
-                    toast('error', 5000, 'Oops, an error occurred!');
-                    return;
-                }
-                
-                const data = new FormData(loginForm);
+        btn.addEventListener('click', event => {
+            event.preventDefault();
+            toggleButtonContent(btn);
 
-                console.log(data);
+            let form = btn.closest('form');
 
-                $.ajax({
-                    type: loginForm.getAttribute('method'),
-                    url: loginForm.getAttribute('action'),
-                    data: data,
-                    dataType: 'json', 
-                    contentType: false,
-                    processData: false,
-                    success: function (res) { 
-                        loginBtn.disabled = false;
-                        __append_html('Login', loginBtn);
+            if (!documentContains(form)) {
+                toast('error', 5000, 'Oops, an error occurred!');
+                return;
+            }
 
-                        if (res && res.redirectUrl) {  
-                            route(res.redirectUrl);
-                        }
-                    },
-                    error: error => {
-                        loginBtn.disabled = false;
-                        __append_html('Login', loginBtn);
-                        error = JSON.parse(error.responseText) || error;
-                        console.log(`Ajax Error: ${error.message || JSON.parse(error.responseText) || JSON.stringify(error)}`);
-                        toast('error', 8000, error.message || 'An error occurred. Please try again!');
+            const data = new FormData(form);
+
+            console.log(data);
+
+            $.ajax({
+                type: form.getAttribute('method'),
+                url: form.getAttribute('action'),
+                data: data,
+                dataType: 'json', 
+                contentType: false,
+                processData: false,
+                success: function (res) { 
+                    btn.disabled = false;
+                    toggleButtonContent(btn, null, true);
+
+                    if (res && res.redirectUrl) {  
+                        route(res.redirectUrl);
                     }
-                });
+                },
+                error: error => {
+                    toggleButtonContent(btn, null, true);
+                    error = JSON.parse(error.responseText) || error;
+                    console.log(`Ajax Error: ${error.message || JSON.parse(error.responseText) || JSON.stringify(error)}`);
+                    toast('error', 8000, error.message || 'An error occurred. Please try again!');
+                }
             });
-        }
+        }); 
     }
 }
 
