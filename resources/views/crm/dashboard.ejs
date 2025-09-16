@@ -1,31 +1,51 @@
 <%- include('partials/header') %>
 
-<div class="dashboard-container">
+<%- include('partials/navbar') %>
+
+<div class="container-fluid ps-0 pe-0 dashboard-container">
     <%- include('partials/sidebar') %>
 
-    <div class="main-content">
+    <div class="main-content p-0 mt-2">
         <%- include('partials/topbar') %>
 
         <% if (message) { %>
-            <div class="form-group">
-                <div class="alert alert-<%= status && status == 'success' ? 'primary' : 'danger' %>" role="alert">
-                    <strong>Alert:</strong> <%= message %>
-                </div>
+        <div class="form-group">
+            <div class="alert alert-<%= status && status == 'success' ? 'primary' : 'danger' %>" role="alert">
+                <strong>Alert:</strong> <%= message %>
             </div>
+        </div>
         <% } %>
 
-        <div class="stats">
-            <div class="stat-box">
-                <h3>Users</h3>
-                <p>120</p>
-            </div>
-            <div class="stat-box">
-                <h3>Posts</h3>
-                <p>350</p>
-            </div>
-            <div class="stat-box">
-                <h3>Messages</h3>
-                <p>45</p>
+        <div class="container-fluid m-0">
+            <div class="row">
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>1250000</h4>
+                    <p>Total Yohpal Users</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>512</h4>
+                    <p>Total Promoted Accounts</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>45</h4>
+                    <p>Total Applications</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>45</h4>
+                    <p>Total Deposited Amount</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>45</h4>
+                    <p>Total Yohpal Reviews</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>45</h4>
+                    <p>Total Uploaded Videos</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h4>45</h4>
+                    <p>Total Yohpal Transactions</p>
+                </div>
             </div>
         </div>
     </div>
