@@ -1,21 +1,352 @@
+<div class="sidebar shadow-lg">
+    <!-- User Avatar & Name -->
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <div class="col-3">
+            <img width="50" height="50" class="navbar-brand-logo rounded-circle"
+                src="store/images/avatars/default-avatar.jpg" alt="Yohpal Logo">
+        </div>
+        <h6><%= user.username || 'Account User' %></h6>
+    </div>
 
-<div class="sidebar">
-    <h2>MyExpress</h2> 
+    <!-- Yohpal Modules -->
+    <div class="text-light bg-danger p-1">
+        <i class="fa fa-cubes me-2"></i> Yohpal Modules
+    </div>
     <ul class="nav flex-column">
+        <!-- Home (Management) Dropdown -->
         <li class="nav-item">
-            <a class="nav-link" href="/dashboard">Dashboard</a>
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#homeSubMenu" role="button" aria-expanded="false" aria-controls="homeSubMenu">
+                <span>
+                    <i class="fa fa-home me-2"></i> Home
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="homeSubMenu">
+                <ul class="nav flex-column">
+
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fa fa-tachometer me-2"></i> Dashboard
+                        </a>
+                    </li>
+
+                    <!-- Users Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                            href="#usersSubMenu" role="button" aria-expanded="false" aria-controls="usersSubMenu">
+                            <span>
+                                <i class="fa fa-user-friends me-2"></i> Users
+                            </span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <div class="collapse ps-4" id="usersSubMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#roles">
+                                        <i class="fa fa-id-badge me-2"></i> Roles
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#usersList">
+                                        <i class="fa fa-users me-2"></i> Users List
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Contacts Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                            href="#contactsSubMenu" role="button" aria-expanded="false" aria-controls="contactsSubMenu">
+                            <span>
+                                <i class="fa fa-address-book me-2"></i> Contacts
+                            </span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <div class="collapse ps-4" id="contactsSubMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#allContacts">
+                                        <i class="fa fa-users me-2"></i> All Contacts
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#groups">
+                                        <i class="fa fa-layer-group me-2"></i> Groups
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Payment Accounts Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                            href="#paymentAccountsSubMenu" role="button" aria-expanded="false"
+                            aria-controls="paymentAccountsSubMenu">
+                            <span>
+                                <i class="fa fa-credit-card me-2"></i> Payment Accounts
+                            </span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <div class="collapse ps-4" id="paymentAccountsSubMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#accountsList">
+                                        <i class="fa fa-wallet me-2"></i> List Accounts
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#bankAccounts">
+                                        <i class="fa fa-university me-2"></i> Bank Accounts
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- Accounting Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                            href="#accountingSubMenu" role="button" aria-expanded="false"
+                            aria-controls="accountingSubMenu">
+                            <span>
+                                <i class="fa fa-balance-scale me-2"></i> Accounting
+                            </span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <div class="collapse ps-4" id="accountingSubMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#invoices">
+                                        <i class="fa fa-file-invoice me-2"></i> Invoices
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#expenses">
+                                        <i class="fa fa-money-bill-wave me-2"></i> Expenses
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#transactions">
+                                        <i class="fa fa-exchange-alt me-2"></i> Transactions
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- HRM Dropdown -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                            href="#hrmSubMenu" role="button" aria-expanded="false" aria-controls="hrmSubMenu">
+                            <span>
+                                <i class="fa fa-briefcase me-2"></i> HRM
+                            </span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <div class="collapse ps-4" id="hrmSubMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#employees">
+                                        <i class="fa fa-user-tie me-2"></i> Employees
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#payroll">
+                                        <i class="fa fa-money-check-alt me-2"></i> Payroll
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#attendance">
+                                        <i class="fa fa-calendar-check me-2"></i> Attendance
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </li>
+
         <li class="nav-item">
-            <a class="nav-link" href="#docs">Documentation</a>
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#walletSubMenu" role="button" aria-expanded="false" aria-controls="walletSubMenu">
+                <span>
+                    <i class="fa fa-credit-card me-2"></i> Yohpal Wallet
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="walletSubMenu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#deposit">
+                            <i class="fa fa-arrow-down me-2"></i> Deposit
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#withdraw">
+                            <i class="fa fa-arrow-up me-2"></i> Withdraw
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#transactions">
+                            <i class="fa fa-list me-2"></i> Transactions
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
+
+        <!-- Yohpal Market Dropdown -->
         <li class="nav-item">
-            <a class="nav-link" href="#profile">Profile</a>
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#marketSubMenu" role="button" aria-expanded="false" aria-controls="marketSubMenu">
+                <span>
+                    <i class="fas fa-cart-plus me-2"></i> Yohpal Market
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="marketSubMenu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#products">
+                            <i class="fa fa-box me-2"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#orders">
+                            <i class="fa fa-shopping-bag me-2"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#vendors">
+                            <i class="fa fa-store me-2"></i> Vendors
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
+
+        <!-- Yohpal Chat Dropdown -->
         <li class="nav-item">
-            <a class="nav-link" href="#settings">Settings</a>
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#chatSubMenu" role="button" aria-expanded="false" aria-controls="chatSubMenu">
+                <span>
+                    <i class="fa fa-comments me-2"></i> Yohpal Chat
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="chatSubMenu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#messages">
+                            <i class="fa fa-envelope me-2"></i> Messages
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#groups">
+                            <i class="fa fa-users me-2"></i> Groups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contacts">
+                            <i class="fa fa-address-book me-2"></i> Contacts
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
+
+        <!-- Yohpal Hustle Dropdown -->
         <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#hustleSubMenu" role="button" aria-expanded="false" aria-controls="hustleSubMenu">
+                <span>
+                    <i class="fa fa-briefcase me-2"></i> Yohpal Hustle
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="hustleSubMenu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#jobs">
+                            <i class="fa fa-tasks me-2"></i> Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#projects">
+                            <i class="fa fa-lightbulb me-2"></i> Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#freelancers">
+                            <i class="fa fa-user-tie me-2"></i> Freelancers
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
     </ul>
+
+    <!-- System & Reports -->
+    <div class="text-light bg-danger p-1">
+        <i class="fa fa-cogs me-2"></i> System & Reports
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="#myprofile">
+                <i class="fa fa-user-circle me-2"></i> My Profile
+            </a>
+        </li>
+
+        <!-- Reports Dropdown -->
+        <li class="nav-item">
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#reportsSubMenu" role="button" aria-expanded="false" aria-controls="reportsSubMenu">
+                <span>
+                    <i class="fa fa-file-text me-2"></i> Reports
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="reportsSubMenu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#userReports">
+                            <i class="fa fa-users me-2"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#financialReports">
+                            <i class="fa fa-chart-line me-2"></i> Financial
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#activityLog">
+                            <i class="fa fa-history me-2"></i> Activity Log
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+    </ul>
+
+    <div class="action-btns d-flex justify-content-around align-items-center text-dark bg-secondary mb-3 py-3">
+        <a href="javascript:void(0)" class="btn btn-link text-dark">
+            <i class="fa fa-gear fa-1x" title="settings"></i>
+        </a>
+        <a href="javascript:void(0)" class="btn btn-link text-dark">
+            <i class="fa fa-user fa-1x" aria-hidden="true" title="User"></i>
+        </a>
+        <a href="javascript:void(0)" class="btn btn-link text-dark">
+            <i class="fa fa-question-circle fa-1x" title="Help"></i>
+        </a>
+        <a href="/logout" class="btn btn-link text-dark">
+            <i class="fa fa-power-off fa-1x"></i>
+        </a>
+    </div>
 </div>
