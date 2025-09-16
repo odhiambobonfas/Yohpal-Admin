@@ -503,6 +503,15 @@ function serializeFormToArray(form) {
     return result;
 }
 
+/**
+ * Jsonify Form data and parse to backend as Json formatted.
+ * 
+ * @param {FormData} data 
+ * @returns json
+ */
+function jsonifyFormData(data) {
+    return JSON.stringify(Object.fromEntries(data));
+}
 
 /**
  * Hide bootstrap offcanvas gracefully.

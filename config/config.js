@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
     APP: {
-        APP_NAME: process.env.APP_NAME || 'My Express',
+        APP_NAME: process.env.APP_NAME || 'Yohpal Admin',
         APP_ENV: process.env.APP_ENV || 'development',
         APP_PORT: process.env.APP_PORT || 5000,
         APP_URL: process.env.APP_URL || 'http://127.0.0.1:5000',
