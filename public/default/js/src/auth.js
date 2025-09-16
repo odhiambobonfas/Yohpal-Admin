@@ -79,10 +79,7 @@ class Auth {
                 dataType: 'json', 
                 contentType: 'application/json',
                 processData: false,
-                success: function (res) { 
-                    btn.disabled = false;
-                    toggleButtonContent(btn, null, true);
-
+                success: function (res) {  
                     if (res && res.redirectUrl) {  
                         route(res.redirectUrl);
                     }
