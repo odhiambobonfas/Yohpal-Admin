@@ -70,7 +70,7 @@ class Auth {
 
             const data = new FormData(form);
 
-            console.log(data);
+            console.log(jsonifyFormData(data));
 
             $.ajax({
                 type: form.getAttribute('method'),

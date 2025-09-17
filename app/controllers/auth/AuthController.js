@@ -129,6 +129,8 @@ class AuthController {
             }
 
             const data = await response.json();  
+
+            console.log(data);
             
             const firebase = new FirebaseUtil();
 
