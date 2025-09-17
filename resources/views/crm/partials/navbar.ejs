@@ -10,16 +10,27 @@
             </div>
         </a>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex justify-content-center align-items-center gap-3">
+            <li class="nav-item d-flex justify-content-center align-items-center gap-3 calendar-nav">
+                <a class="nav-link dropdown" aria-current="page" href="#">
+                    <a class="btn btn-link text-decoration-line-none dropdown-toggle text-dark" type="button" id="triggerId"
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-calendar fa-2x" aria-hidden="true"></i>
+                    </a>
+                    <div class="dropdown-menu w-50 dropdown-menu-end" aria-labelledby="triggerId">
+                        <div class="calendar-section p-3">This is the calendar</div>
+                    </div>
+                </a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" aria-current="page" href="#">
-                    <i class="fas fa-bell fa-2x"></i>
+                    <i class="fas fa-bell fa-2x" aria-hidden="true"></i>
                     <sup class="text-danger">10</sup>
                 </a>
             </li>
             <li class="nav-item d-flex justify-content-center align-items-center gap-3">
                 <a class="nav-link" aria-current="page" href="#">
-                    <img width="50" height="50" class="navbar-brand-logo"
-                        src="/store/images/avatars/default-avatar.jpg" alt="Yohpal Logo">
+                    <img width="50" height="50" class="navbar-brand-logo" src="/store/images/avatars/default-avatar.jpg"
+                        alt="Yohpal Logo">
                 </a>
             </li>
         </ul>

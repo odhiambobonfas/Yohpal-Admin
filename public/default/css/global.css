@@ -73,3 +73,11 @@ body>.global-overlay {
 .bg-light-gray {
     background-color: var(--bs-light-gray);
 }
+
+.text-decoration-line-none {
+    text-decoration-line: none;
+}
+
+.calendar-nav .dropdown-toggle::after {
+    display: none;
+}
