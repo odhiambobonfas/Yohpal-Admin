@@ -66,7 +66,7 @@ body>.global-overlay {
     cursor: pointer;
 }
 
-.fixed-bottom {
+.crm-footer {
     z-index: -9999;
 }
 
@@ -78,6 +78,11 @@ body>.global-overlay {
     text-decoration-line: none;
 }
 
+.filter-dropdown .dropdown-toggle::after,
 .calendar-nav .dropdown-toggle::after {
     display: none;
+}
+
+.btn-xs {
+    font-size: xx-small !important;
 }
