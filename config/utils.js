@@ -17,6 +17,13 @@ const utility = {
     },
     nl2br: (text) => {
         return text.replace(/\n/g, '<br>');
+    },
+    is_ajax(req) {
+        if (req.get('X-Requested-With') === 'XMLHttpRequest') {
+            return true;
+        }
+
+        return false
     }
 }
 
