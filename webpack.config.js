@@ -31,7 +31,7 @@ module.exports = (env, argv) => {
                     { from: './node_modules/bootstrap/dist/css/*.css', to: 'bootstrap/css/[name][ext]' },
                     { from: './node_modules/bootstrap/dist/js/*.js', to: 'bootstrap/js/[name][ext]' },
                     { from: './node_modules/bootstrap-datepicker/dist/css/*.css', to: 'bootstrap/css/[name][ext]' },
-                    { from: './node_modules/bootstrap-datepicker/dist/js/*.js', to: 'bootstrap/js/[name][ext]' },
+                    { from: './node_modules/bootstrap-datepicker/dist/js/*.js', to: 'bootstrap/js/[name][ext]' }, 
                     { from: './node_modules/@fortawesome/fontawesome-free/css/*.css', to: 'assets/fontawesome/css/[name][ext]' },
                     { from: './node_modules/@fortawesome/fontawesome-free/js/*.js', to: 'assets/fontawesome/js/[name][ext]' }, 
                     { from: './node_modules/print-js/dist/*.css', to: 'assets/printjs/css/[name][ext]' },
