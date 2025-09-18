@@ -4,7 +4,7 @@
     "main": "server.js",
     "scripts": {
         "test": "jest",
-        "dev": "nodemon --trace-deprecation server.js",
+        "dev": "pm2 start server.js --watch --ignore-watch='node_modules public resources' --watch-delay 500",
         "start": "node --trace-deprecation server.js",
         "build": "webpack --config webpack.config.js",
         "build:dev": "webpack --mode development",
@@ -28,12 +28,16 @@
     "license": "MIT",
     "description": "",
     "_moduleAliases": {
+        "@mex": "./mex",
         "@app": "./app",
         "@config": "./config",
         "@lang": "./public/default/js/lang",
         "@service": "./public/store/services",
         "@models": "./app/models",
         "@utils": "./app/utils",
+        "@db": "./config/database",
+        "@database": "./config/database",
+        "@services": "./mex/services",
         "@controllers": "./app/controllers",
         "@routes": "./routes"
     },
@@ -85,6 +89,7 @@
         "multer": "^1.4.5-lts.1",
         "mysql2": "^3.13.0",
         "patch-package": "^8.0.0",
+        "pm2": "^6.0.11",
         "popper.js": "^1.16.1",
         "postinstall-postinstall": "^2.1.0",
         "print-js": "^1.6.0",

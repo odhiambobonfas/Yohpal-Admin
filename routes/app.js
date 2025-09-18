@@ -38,5 +38,7 @@ router.get('/api/settings/get', routeMiddleware, SettingsController.getUserSetti
 
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index); 
+router.get('/role/create', authMiddleware, RolesController.createRoles); 
+router.post('/role/create', authMiddleware, RolesController.createRoles); 
 
 module.exports = router;
