@@ -153,7 +153,7 @@ class AuthController {
             }; 
 
             const token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
-                expiresIn: '1h'
+                expiresIn: config.AUTH.TOKEN_EXPIRY
             });
             
             res.cookie(config.COOKIES.COOKIE_NAME, token, {

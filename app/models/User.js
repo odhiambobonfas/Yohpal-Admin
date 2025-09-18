@@ -1,34 +1,46 @@
-const { DataTypes, Model } = require('sequelize');
-const config = require('@config/config');
-const db = require('@config/database');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+import jwt from 'jsonwebtoken';
+import config from '@config/config';
+import AppModel from '@models/AppModel'; 
 
-class User extends Model {
-    static tableName = 'UserSettings';
+class User extends AppModel {
+    static table = 'users';
 
-    static get collection() {
-        return this.tableName;
-    }
+    static fields = {
+        fullname: 'STRING',
+        username: 'STRING',
+        email: 'STRING',
+        password: 'STRING',
+        contact: 'STRING', 
+        role: 'STRING'
+    };
+
+    static nullableFields = [
+        'contact', 'role'
+    ];
     
-    static query(sequelize) {  
-        User.init({
-            id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-            fullname: { type: DataTypes.STRING, allowNull: true, unique: false },
-            username: { type: DataTypes.STRING, allowNull: true, unique: false },
-            email: { type: DataTypes.STRING, allowNull: true, unique: false },
-            contact: { type: DataTypes.STRING, allowNull: true, unique: false },
-            password: { type: DataTypes.STRING, allowNull: true },
-            role: { type: DataTypes.STRING, allowNull: true },
-        }, { 
-            sequelize,  
-            timestamps: true,
-            createdAt: 'created_at',
-            updatedAt: 'updated_at',
-            tableName: User.tableName,
-        }); 
+    /**
+     * Updates the session with a JWT token.
+     * 
+     * @param {Object} req - The request object
+     * @returns {boolean} - Whether the session update was successful
+     */
+    async updateSession(req) {
+        const cookie_name = config.COOKIES.COOKIE_NAME; 
+        token = jwt.sign(req.cookies[cookie_name], config.APP.JWT_SECRET, { expiresIn: config.AUTH.TOKEN_EXPIRY });
+        req.cookies[cookie_name] = token || null;
+        return !!req.cookies[cookie_name];
+    } 
+
+    /**
+     * Defines all model associations and relationships.
+     * This method is automatically called after all models are initialized.
+     * 
+     * @param {Object.<string, Model>} models - Dictionary of all initialized models,
+     *   keyed by model name. Use this to reference other models when defining associations.
+     */
+    static associate(models) {
+        // Define all associations here
     }
 }
 
-User.query(db.getSequelize());
 module.exports = User;
