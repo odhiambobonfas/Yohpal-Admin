@@ -45,7 +45,7 @@
         "testEnvironment": "node",
         "moduleNameMapper": {
             "^@mex/(.*)$": "<rootDir>/mex/$1",
-            "^@db/(.*)$": "<rootDir>/database/database/$1",
+            "^@db/(.*)$": "<rootDir>/config/database/$1",
             "^@app/(.*)$": "<rootDir>/app/$1",
             "^@config/(.*)$": "<rootDir>/config/$1",
             "^@controllers/(.*)$": "<rootDir>/app/controllers/$1",
