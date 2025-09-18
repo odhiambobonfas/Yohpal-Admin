@@ -3,8 +3,9 @@ const config = require('@config/config');
 const Util = require('@utils/Util');
 
 module.exports = (req, res, next) => { 
-    try {  
-        const token = req.session.token || req.headers.cookie;
+    try {   
+        const cookie_name = config.COOKIES.COOKIE_NAME;
+        const token = req.cookies[cookie_name] || req.session[cookie_name] || req.headers[cookie_name];
         if (!token) {
             req.flash('status', 'error');
             req.flash('message', 'Access denied. Please Log in again!');

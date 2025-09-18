@@ -69,6 +69,8 @@ module.exports = {
         PROXY: true
     },
     COOKIES: { 
+        USE_COOKIES: true,
+        COOKIE_NAME: 'yohpal_admin',
         MAXAGE: 24 * 60 * 60 * 1000,
         SECURE: process.env.APP_ENV === 'production',
         HTTPONLY: true,
