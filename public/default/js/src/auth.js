@@ -70,19 +70,16 @@ class Auth {
 
             const data = new FormData(form);
 
-            console.log(data);
+            console.log(jsonifyFormData(data));
 
             $.ajax({
                 type: form.getAttribute('method'),
                 url: form.getAttribute('action'),
-                data: data,
+                data: jsonifyFormData(data),
                 dataType: 'json', 
-                contentType: false,
+                contentType: 'application/json',
                 processData: false,
-                success: function (res) { 
-                    btn.disabled = false;
-                    toggleButtonContent(btn, null, true);
-
+                success: function (res) {  
                     if (res && res.redirectUrl) {  
                         route(res.redirectUrl);
                     }

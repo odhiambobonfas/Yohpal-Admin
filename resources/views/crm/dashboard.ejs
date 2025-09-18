@@ -1,31 +1,93 @@
 <%- include('partials/header') %>
 
-<div class="dashboard-container">
+<%- include('partials/navbar') %>
+
+<div class="container-fluid ps-0 pe-0 dashboard-container">
     <%- include('partials/sidebar') %>
 
-    <div class="main-content">
+    <div class="main-content p-0 mt-2">
         <%- include('partials/topbar') %>
 
         <% if (message) { %>
-            <div class="form-group">
-                <div class="alert alert-<%= status && status == 'success' ? 'primary' : 'danger' %>" role="alert">
-                    <strong>Alert:</strong> <%= message %>
-                </div>
+        <div class="form-group">
+            <div class="alert alert-<%= status && status == 'success' ? 'primary' : 'danger' %>" role="alert">
+                <strong>Alert:</strong> <%= message %>
             </div>
+        </div>
         <% } %>
 
-        <div class="stats">
-            <div class="stat-box">
-                <h3>Users</h3>
-                <p>120</p>
+        <div class="container-fluid m-0 pb-5">
+            <div class="row m-1">
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>1250000</h5>
+                    <p>Total Yohpal Users</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>512</h5>
+                    <p>Total Promoted Accounts</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>45</h5>
+                    <p>Total Applications</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>45</h5>
+                    <p>Total Deposited Amount</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>45</h5>
+                    <p>Total Yohpal Reviews</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>45</h5>
+                    <p>Total Uploaded Videos</p>
+                </div>
+                <div class="col-3 text-start p-3 shadow-sm">
+                    <h5>45</h5>
+                    <p>Total Yohpal Transactions</p>
+                </div>
             </div>
-            <div class="stat-box">
-                <h3>Posts</h3>
-                <p>350</p>
+
+            <div class="d-flex m-1 mt-3 gap-1">
+                <div class="card col-6"> 
+                    <div class="header p-1 bg-light-gray shadow-sm">
+                        <h5 class="ms-2">Consumer Demographics(Age Breakdown)</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Title</h5>
+                        <p class="card-text">Text</p>
+                    </div>
+                </div>
+                <div class="card col-6">
+                    <div class="header p-1 bg-light-gray shadow-sm">
+                        <h5 class="ms-2">Market Size Growth</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Title</h5>
+                        <p class="card-text">Text</p>
+                    </div>
+                </div> 
             </div>
-            <div class="stat-box">
-                <h3>Messages</h3>
-                <p>45</p>
+
+            <div class="d-flex m-1 mt-3 pb-5 gap-1">
+                <div class="card col-6">
+                    <div class="header p-1 bg-light-gray shadow-sm">
+                        <h5 class="ms-2">Top Followed User</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Title</h5>
+                        <p class="card-text">Text</p>
+                    </div>
+                </div>
+                <div class="card col-6">
+                    <div class="header p-1 bg-light-gray shadow-sm">
+                        <h5 class="ms-2">Top Account Promoted</h5>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Title</h5>
+                        <p class="card-text">Text</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -1,2 +1,19 @@
-<h2>Welcome, <%= user.username %></h2>
-<p>Your quick access panel for managing your account.</p>
+<div class="shadow-lg bg-light-gray p-2 text-dark d-flex  justify-content-between align-items-center">
+    <h4>Welcome back to Yohpal Admin Dashboard</h4>
+    <div class="filter-dropdown">
+        <div class="input-group mb-3">
+            <input type="text" id="daterange" class="form-control" placeholder="Select Date Range">
+
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                data-bs-toggle="dropdown">
+                <i class="fa fa-filter fa-2x" aria-hidden="true"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-range="today">Today</a></li>
+                <li><a class="dropdown-item" href="#" data-range="yesterday">Yesterday</a></li>
+                <li><a class="dropdown-item" href="#" data-range="thismonth">This Month</a></li>
+                <li><a class="dropdown-item" href="#" data-range="lastmonth">Last Month</a></li> 
+            </ul>
+        </div> 
+    </div>
+</div>

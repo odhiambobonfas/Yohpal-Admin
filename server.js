@@ -33,10 +33,11 @@ const path = require('path');
 const Exception = require('@config/exceptions');
 const config = require('@config/config');
 const corsconfig = require('@config/cors');
-const database = require('@config/database');
+const database = require('@database/database');
 const routes = require("@routes/app");
 const flash = require('connect-flash');
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -86,6 +87,10 @@ if (config.COOKIES.REFRESH) {
         }
         next();
     });
+}
+
+if (config.COOKIES.USE_COOKIES) {
+    app.use(cookieParser());
 }
 
 // Use flash session library

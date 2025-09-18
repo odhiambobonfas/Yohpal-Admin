@@ -503,6 +503,15 @@ function serializeFormToArray(form) {
     return result;
 }
 
+/**
+ * Jsonify Form data and parse to backend as Json formatted.
+ * 
+ * @param {FormData} data 
+ * @returns json
+ */
+function jsonifyFormData(data) {
+    return JSON.stringify(Object.fromEntries(data));
+}
 
 /**
  * Hide bootstrap offcanvas gracefully.
@@ -1025,6 +1034,46 @@ function addSpinnerGrowLoadingEffect(selector) {
     });
 }
 
+function setupDateRangeWithBootstrapDatePickerLib() {
+    let start, end;
+
+    $('#daterange').datepicker({
+        format: "dd-mm-yyyy",
+        autoclose: false,
+    });
+    
+    start = end = moment();
+    $('#daterange').val(start.format("DD-MM-YYYY") + " - " + end.format("DD-MM-YYYY"));
+    
+    document.querySelectorAll(".dropdown-menu a").forEach(item => {
+        item.addEventListener("click", e => {
+            e.preventDefault();
+            const range = e.target.dataset.range;
+            let start, end;
+      
+            switch (range) {
+                    case "today":
+                        start = end = moment();
+                        break;
+                    case "yesterday":
+                        start = end = moment().subtract(1, 'days');
+                        break;
+                    case "thismonth":
+                        start = moment().startOf('month');
+                        end   = moment().endOf('month');
+                        break;
+                    case "lastmonth":
+                        start = moment().subtract(1, 'month').startOf('month');
+                        end   = moment().subtract(1, 'month').endOf('month');
+                        break;
+            }
+
+            if (!start && !end) return;
+            $('#daterange').val(start.format("DD-MM-YYYY") + " - " + end.format("DD-MM-YYYY"));
+        });
+      });
+}
+
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {
@@ -1039,4 +1088,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     const masterInstance = new Master(); 
     masterInstance.initOverlay('.main .content-section'); 
     masterInstance.initDonateNowFunc();  
+    setupDateRangeWithBootstrapDatePickerLib();
 });

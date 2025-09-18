@@ -16,6 +16,7 @@ const express = require('express');
 const { upload } = require('@config/storage');
 const authRoutes = require('@routes/auth'); 
 const DashboardController = require('@app/controllers/other/DashboardController'); 
+const RolesController = require('@app/controllers/web/RolesController'); 
 const SettingsController = require('@app/controllers/api/SettingsController'); 
 const YohPalController = require('@app/controllers/api/YohPalController'); 
 const authMiddleware = require('@app/mwares/authMiddleware');
@@ -34,5 +35,10 @@ router.get('/yohpal/api/documentation', routeMiddleware, YohPalController.index)
 
 router.post('/api/settings/update', routeMiddleware, SettingsController.updateSettings);
 router.get('/api/settings/get', routeMiddleware, SettingsController.getUserSettings);
+
+// RBAC routes
+router.get('/roles', authMiddleware, RolesController.index); 
+router.get('/role/create', authMiddleware, RolesController.createRoles); 
+router.post('/role/create', authMiddleware, RolesController.createRoles); 
 
 module.exports = router;

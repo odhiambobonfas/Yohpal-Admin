@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
     APP: {
-        APP_NAME: process.env.APP_NAME || 'My Express',
+        APP_NAME: process.env.APP_NAME || 'Yohpal Admin',
         APP_ENV: process.env.APP_ENV || 'development',
         APP_PORT: process.env.APP_PORT || 5000,
         APP_URL: process.env.APP_URL || 'http://127.0.0.1:5000',
@@ -30,7 +30,7 @@ module.exports = {
     },
     AUTH: {
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecret',
-        TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '24h',
+        TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '1h',
         BCRYPT_SALT_ROUNDS: parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10,
     },
     MAIL: {
@@ -69,6 +69,8 @@ module.exports = {
         PROXY: true
     },
     COOKIES: { 
+        USE_COOKIES: true,
+        COOKIE_NAME: 'yohpal_admin',
         MAXAGE: 24 * 60 * 60 * 1000,
         SECURE: process.env.APP_ENV === 'production',
         HTTPONLY: true,

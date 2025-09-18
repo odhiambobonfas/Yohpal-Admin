@@ -128,7 +128,7 @@ class AuthController {
                 throw new Error(LANG_EN.generic_auth_error);
             }
 
-            const data = await response.json();  
+            const data = await response.json();   
             
             const firebase = new FirebaseUtil();
 
@@ -140,24 +140,28 @@ class AuthController {
                 throw new Error(LANG_EN.generic_auth_error);
             }
 
-            req.session.user = {
-                token: idToken, 
-                refreshToken: refreshToken, 
+            let userPayload = {
                 email: user.email,
-                username: user.username || 'user' + Math.random() < 0.5,
-                name: user.first_name + ' ' + user.last_name,
+                username: user.username || ('user' + Math.floor(Math.random() * 1000)),
+                name: `${user.first_name} ${user.last_name}`,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 bio: user.bio || '',
-				uid: user.uid,
-                role: user.adminType || 'user'
+                uid: user.uid,
+                role: user.adminType || 'user',
+                refreshToken: refreshToken
             }; 
 
-            const token = jwt.sign(req.session.user, config.APP.JWT_SECRET, {
-                expiresIn: '1h'
+            const token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
+                expiresIn: config.AUTH.TOKEN_EXPIRY
             });
             
-            req.session.token = token; 
+            res.cookie(config.COOKIES.COOKIE_NAME, token, {
+                httpOnly: config.COOKIES.HTTPONLY,
+                secure: config.COOKIES.SECURE,
+                sameSite: config.COOKIES.SAMESITE,
+                maxAge: config.COOKIES.MAXAGE || 3600000
+            }); 
 
             res.status(200).json({
                 status: 'success',
@@ -175,22 +179,21 @@ class AuthController {
     }
 
     static async logout(req, res) {
-        try {
-            req.session.destroy(function (err) {
-                if (err) {
-                    throw new Error('Error logging out');
-                }
-
-                res.clearCookie(config.SESSION.SESSION_NAME ?? 'connect.sid');
-
-                res.redirect(`/login?auth=${Util.encodeMessage('You have logged out successfully.')}`);
+        try { 
+            res.clearCookie(config.COOKIES.COOKIE_NAME, {
+                httpOnly: config.COOKIES.HTTPONLY,
+                secure: config.COOKIES.SECURE,
+                sameSite: config.COOKIES.SAMESITE,
+                path: config.COOKIES.PATH || '/'
             });
+    
+            req.flash('status', 'success');
+            req.flash('message', 'You have logged out successfully.');
+    
+            res.redirect(`/login?auth=${Util.encodeMessage('You have logged out successfully.')}`);
         } catch (error) {
-            if (req.session) {
-                req.flash('status', 'error');
-                req.flash('message', 'Unexpected error occurred');
-            }
-
+            req.flash('status', 'error');
+            req.flash('message', 'Unexpected error occurred');
             res.redirect('back');
         }
     }

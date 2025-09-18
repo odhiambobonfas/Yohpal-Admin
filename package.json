@@ -4,11 +4,12 @@
     "main": "server.js",
     "scripts": {
         "test": "jest",
-        "dev": "nodemon --trace-deprecation server.js",
+        "dev": "pm2 start server.js --watch --ignore-watch='node_modules public resources' --watch-delay 500",
         "start": "node --trace-deprecation server.js",
         "build": "webpack --config webpack.config.js",
         "build:dev": "webpack --mode development",
-        "build:prod": "webpack --mode production"
+        "build:prod": "webpack --mode production",
+        "postinstall": "patch-package"
     },
     "keywords": [
         "web boilerplate",
@@ -27,24 +28,59 @@
     "license": "MIT",
     "description": "",
     "_moduleAliases": {
+        "@mex": "./mex",
         "@app": "./app",
         "@config": "./config",
-        "@lang": "./public/default/js/lang", 
+        "@lang": "./public/default/js/lang",
         "@service": "./public/store/services",
         "@models": "./app/models",
         "@utils": "./app/utils",
+        "@db": "./config/database",
+        "@database": "./config/database",
+        "@services": "./mex/services",
         "@controllers": "./app/controllers",
         "@routes": "./routes"
     },
     "jest": {
+        "testEnvironment": "node",
         "moduleNameMapper": {
+            "^@mex/(.*)$": "<rootDir>/mex/$1",
+            "^@mex$": "<rootDir>/mex",
+
             "^@app/(.*)$": "<rootDir>/app/$1",
+            "^@app$": "<rootDir>/app",
+
             "^@config/(.*)$": "<rootDir>/config/$1",
-            "^@controllers/(.*)$": "<rootDir>/app/controllers/$1",
+            "^@config$": "<rootDir>/config",
+
+            "^@lang/(.*)$": "<rootDir>/public/default/js/lang/$1",
+            "^@lang$": "<rootDir>/public/default/js/lang",
+
+            "^@service/(.*)$": "<rootDir>/public/store/services/$1",
+            "^@service$": "<rootDir>/public/store/services",
+
             "^@models/(.*)$": "<rootDir>/app/models/$1",
+            "^@models$": "<rootDir>/app/models",
+
             "^@utils/(.*)$": "<rootDir>/app/utils/$1",
-            "^@routes/(.*)$": "<rootDir>/routes/$1"
-        }
+            "^@utils$": "<rootDir>/app/utils",
+
+            "^@db/(.*)$": "<rootDir>/config/database/$1",
+            "^@db$": "<rootDir>/config/database",
+
+            "^@database/(.*)$": "<rootDir>/config/database/$1",
+            "^@database$": "<rootDir>/config/database",
+
+            "^@services/(.*)$": "<rootDir>/mex/services/$1",
+            "^@services$": "<rootDir>/mex/services",
+
+            "^@controllers/(.*)$": "<rootDir>/app/controllers/$1",
+            "^@controllers$": "<rootDir>/app/controllers",
+
+            "^@routes/(.*)$": "<rootDir>/routes/$1",
+            "^@routes$": "<rootDir>/routes"
+        },
+        "moduleFileExtensions": ["js", "json", "ts", "node"]
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^6.7.2",
@@ -57,6 +93,7 @@
         "bootstrap-datepicker": "^1.10.0",
         "chart.js": "^4.4.8",
         "connect-flash": "^0.1.1",
+        "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "crypto-js": "^4.2.0",
         "datatables": "^1.10.18",
@@ -82,7 +119,10 @@
         "morgan": "^1.10.0",
         "multer": "^1.4.5-lts.1",
         "mysql2": "^3.13.0",
+        "patch-package": "^8.0.0",
+        "pm2": "^6.0.11",
         "popper.js": "^1.16.1",
+        "postinstall-postinstall": "^2.1.0",
         "print-js": "^1.6.0",
         "pug": "^3.0.3",
         "redi": "^0.1.0",

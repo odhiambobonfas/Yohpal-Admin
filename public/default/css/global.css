@@ -1,16 +1,19 @@
 body {
     background-color: #f8f9fa;
 }
+
 .brand-logo {
     font-size: 30px;
     font-weight: bold;
     color: #007bff;
     text-align: center;
 }
+
 .btn-custom {
     background: var(--bs-danger);
     color: #fff;
 }
+
 .btn-custom:hover {
     background: var(--bs-light);
     color: var(--text-dark);
@@ -56,5 +59,30 @@ body>.global-overlay {
 
 .brand-logo-img {
     width: 80px;
-    height: 80px; 
+    height: 80px;
+}
+
+.action-btns .fa {
+    cursor: pointer;
+}
+
+.crm-footer {
+    z-index: -9999;
+}
+
+.bg-light-gray {
+    background-color: var(--bs-light-gray);
+}
+
+.text-decoration-line-none {
+    text-decoration-line: none;
+}
+
+.filter-dropdown .dropdown-toggle::after,
+.calendar-nav .dropdown-toggle::after {
+    display: none;
+}
+
+.btn-xs {
+    font-size: xx-small !important;
 }
