@@ -42,14 +42,17 @@
         "@routes": "./routes"
     },
     "jest": {
+        "testEnvironment": "node",
         "moduleNameMapper": {
+            "^@mex/(.*)$": "<rootDir>/mex/$1",
             "^@app/(.*)$": "<rootDir>/app/$1",
             "^@config/(.*)$": "<rootDir>/config/$1",
             "^@controllers/(.*)$": "<rootDir>/app/controllers/$1",
             "^@models/(.*)$": "<rootDir>/app/models/$1",
             "^@utils/(.*)$": "<rootDir>/app/utils/$1",
             "^@routes/(.*)$": "<rootDir>/routes/$1"
-        }
+        },
+        "moduleFileExtensions": ["js", "json", "ts", "node"]
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^6.7.2",
