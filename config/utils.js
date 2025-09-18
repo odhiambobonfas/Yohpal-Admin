@@ -18,12 +18,20 @@ const utility = {
     nl2br: (text) => {
         return text.replace(/\n/g, '<br>');
     },
-    is_ajax(req) {
+    isAjaxRequest(req) {
         if (req.get('X-Requested-With') === 'XMLHttpRequest') {
             return true;
         }
 
         return false
+    },
+    fbCollectionParser(snapshot={}) {
+        const data = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        return data;
     }
 }
 

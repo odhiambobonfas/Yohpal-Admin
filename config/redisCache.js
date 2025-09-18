@@ -11,7 +11,7 @@ class RedisCache {
      * Initializes the Redis caching client and handles the redis 
      * connection utility
      */
-    initRedisCaching() {
+    async initRedisCaching() {
         this.client = createClient({
             url: config.CACHE.REDIS.REDIS_URL
         });

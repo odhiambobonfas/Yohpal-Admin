@@ -30,7 +30,7 @@ module.exports = {
     },
     AUTH: {
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecret',
-        TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '24h',
+        TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '1h',
         BCRYPT_SALT_ROUNDS: parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10,
     },
     MAIL: {
