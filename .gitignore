@@ -5,3 +5,4 @@ public/store/services/accounts/serviceAccountKey.json
 public/bootstrap
 public/assets
 myexpress-framework
+public/logs/*.txt
