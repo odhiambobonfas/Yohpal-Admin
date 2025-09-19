@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import config from '@config/config';
 import User from '@models/User';
 import Util from '@utils/Util';
+import UserUtil from '@utils/UserUtil';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
@@ -106,8 +107,8 @@ class AuthController {
         try {
             const { email, password } = req.body;
 
-            if (!email || !password) {
-                throw new Error(LANG_EN.invalid_username_password_warning);
+            if (!email || !password) { 
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.invalid_username_password_warning, 'Auth Error!');
             }
 
             const auth_endpoint = Binding.endpoints.firebase_auth; 
@@ -124,8 +125,8 @@ class AuthController {
                 })
             }); 
 
-            if (!response.ok) {
-                throw new Error(LANG_EN.generic_auth_error);
+            if (!response.ok) { 
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
             }
 
             const data = await response.json();   
@@ -134,24 +135,36 @@ class AuthController {
 
             const { idToken, refreshToken } = data;
             
-            const user = await firebase.verifyAuthToken(idToken);
-            
-            if (!user) {
-                throw new Error(LANG_EN.generic_auth_error);
-            }
+            const v = await firebase.verifyAuthToken(idToken);
 
+            console.log(v);
+            
+            if (!v) {
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
+            }
+            
+            let {user, role, permissions} = await UserUtil.getUserByUid(v.uid);
+            
             let userPayload = {
                 email: user.email,
-                username: user.username || ('user' + Math.floor(Math.random() * 1000)),
-                name: `${user.first_name} ${user.last_name}`,
-                first_name: user.first_name,
-                last_name: user.last_name,
+                username: user.userName,
+                name: `${user.firstName} ${user.lastName}`,
+                first_name: user.firstName,
+                last_name: user.lastName,
                 bio: user.bio || '',
                 uid: user.uid,
-                role: user.adminType || 'user',
+                country: user.country,
+                phone_number: user.phoneNumber,
+                adminType: user.adminType || 'user',
+                role: role || null,
+                Permissions: permissions || [],
                 refreshToken: refreshToken
             }; 
 
+            if (userPayload.adminType === 'user') {
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
+            }
+            
             const token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
                 expiresIn: config.AUTH.TOKEN_EXPIRY
             });
