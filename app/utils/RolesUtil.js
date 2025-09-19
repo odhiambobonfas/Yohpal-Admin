@@ -8,6 +8,8 @@ import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import Role from '@models/Role';
 import Exception from '@config/exceptions';
 import utility from '@config/utils';
+import { ucwords } from '@config/utils';
+import LANG_EN from '@lang/en';
 
 class RolesUtil extends Util {
     constructor() {
@@ -38,44 +40,49 @@ class RolesUtil extends Util {
         }
     } 
 
-    static async getRoleByCodeId(code) {
+    async getRoleByCodeId(code) {
         let rolesRef = FirestoreDatabase.collection('roles'); 
-        return await rolesRef.where('code', '==', code).get()
+        return await rolesRef.where('code', '==', code.toUpperCase()).get()
     }
 
-    static async createRoleQuery(input) {
-        try { 
+    async createRoleQuery(input) { 
+        try {
+            let addedBy = ucwords((input.addedBy || 'Unknown'));
+            let inputCode = input.code.toUpperCase();
             const snapshot = await this.getRoleByCodeId(input.code);
 
             if (!snapshot.empty) {
-                throw new Exception(404, `Role with code ${input.code} already exists`);
+                throw new Exception(201, `${LANG_EN.role_exists_exception}`);
             }
-            
-            const roleDocRef = rolesRef.doc(input.code);
+
+            let rolesRef = FirestoreDatabase.collection('roles'); 
+            const roleDocRef = rolesRef.doc();
             await roleDocRef.set({
-                name: input.name,
-                code: input.code,
+                name: ucwords(input.roleName),
+                code: inputCode,
+                status: input.status || 'inactive',
                 isSuperAdmin: (input.isSuperAdmin ? true : false) || false,
                 isAdmin: (input.isAdmin ? true : false) || false,
                 description: input.description ?? '',
+                target: input.targets,
+                addedBy: addedBy,
+                refUserId: input.refUserId,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
             
-            const permissionsRef = FirestoreDatabase.collection('permissions').doc(input.code);
+            const permissionsRef = FirestoreDatabase.collection('permissions').doc();
             await permissionsRef.set({
-                code: input.code,
+                code: inputCode,
                 permissions: input.permissions ?? [],
                 updatedAt: new Date(),
             }, { merge: true });
 
             return true;
         } catch (error) {
-            if (config.APP.APP_DEBUG) {
-                error.mexLogger();
-            }
-            return false;
-        }
+            console.log(error.status);
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+        } 
     } 
 }
 
