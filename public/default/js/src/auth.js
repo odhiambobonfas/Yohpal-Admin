@@ -60,7 +60,7 @@ class Auth {
         btn.addEventListener('click', event => {
             event.preventDefault();
             toggleButtonContent(btn);
-
+            disableElement(btn);
             let form = btn.closest('form');
 
             if (!documentContains(form)) {
@@ -68,9 +68,7 @@ class Auth {
                 return;
             }
 
-            const data = new FormData(form);
-
-            console.log(jsonifyFormData(data));
+            const data = new FormData(form); 
 
             $.ajax({
                 type: form.getAttribute('method'),
@@ -80,11 +78,25 @@ class Auth {
                 contentType: 'application/json',
                 processData: false,
                 success: function (res) {  
-                    if (res && res.redirectUrl) {  
-                        route(res.redirectUrl);
+                    enableElement(btn);
+                    toggleButtonContent(btn, null, true);
+
+                    if (res && res.status && res.status == 'success') {  
+                        setTimeout(() => {  
+                            if(res.redirectUrl) route(res.redirectUrl); 
+                        }, 2000);
+                        return;
                     }
+                    
+                    if (res && res.status && res.status == 'error') {
+                        toast(res.status, 5000, res.message || lang.undefined_error);
+                        return;
+                    }
+
+                    toast('error', 5000, lang.undefined_error);
                 },
                 error: error => {
+                    enableElement(btn);
                     toggleButtonContent(btn, null, true);
                     error = JSON.parse(error.responseText) || error;
                     console.log(`Ajax Error: ${error.message || JSON.parse(error.responseText) || JSON.stringify(error)}`);

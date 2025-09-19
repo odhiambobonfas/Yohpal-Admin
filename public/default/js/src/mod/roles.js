@@ -17,9 +17,7 @@ class rbac extends Master {
             toggleButtonContent(btn);
             disableElement(btn);
             let form = btn.closest('form'); 
-            let data = serializeFormToArray(form);
-
-            console.log(data);
+            let data = serializeFormToArray(form); 
 
             $.ajax({
                 type: form.method,
@@ -37,6 +35,9 @@ class rbac extends Master {
                     if (response && response.status && response.status == 'success') {
                         resetFormAndCloseModal(form);
                         toast(response.status, 5000, response.message || lang.undefined_error);
+                        setTimeout(() => {
+                            route(response.route);
+                        }, 2000);
                         return;
                     }
 
@@ -102,8 +103,8 @@ class rbac extends Master {
         });
     }
 
-    actionOnRolesRes() {
-        // ...
+    actionOnRolesRes() { 
+        // 
     }
 }
 
