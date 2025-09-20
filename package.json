@@ -4,7 +4,9 @@
     "main": "server.js",
     "scripts": {
         "test": "jest",
-        "dev": "pm2 start server.js --watch --ignore-watch='ejs node_modules public resources' --watch-delay 500",
+        "dev": "pm2 start ecosystem.config.js --watch-delay 500",
+        "pm2:stop": "pm2 stop server.js",
+        "pm2:delete": "pm2 delete all",
         "start": "node --trace-deprecation server.js",
         "build": "webpack --config webpack.config.js",
         "build:dev": "webpack --mode development",
