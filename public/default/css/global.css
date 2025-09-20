@@ -86,3 +86,14 @@ body>.global-overlay {
 .btn-xs {
     font-size: xx-small !important;
 }
+
+.bg-danger, .btn-danger {
+    background-color: var(--bs-danger) !important;
+}
+.btn-danger:hover {
+    background-color: var(--bs-danger) !important;
+}
+
+.text-danger {
+    color: var(--bs-danger) !important;
+}
