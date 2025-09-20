@@ -135,16 +135,26 @@ class AuthController {
 
             const { idToken, refreshToken } = data;
             
-            const v = await firebase.verifyAuthToken(idToken);
-
-            console.log(v);
+            const v = await firebase.verifyAuthToken(idToken); 
             
             if (!v) {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
             }
             
             let {user, role, permissions} = await UserUtil.getUserByUid(v.uid);
+
+            permissions = permissions.permissions ?? [];
+
+            console.log(permissions);
+
+            if (!permissions.includes('auth.access')) {
+                throw new Exception(201, 'AUTHORIZATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
+            }
             
+            if (permissions.includes('auth.suspend')) {
+                throw new Exception(201, 'ACCOUNT_SUSPENDED', LANG_EN.account_suspended_exception, 'Auth Error!');
+            }
+
             let userPayload = {
                 email: user.email,
                 username: user.userName,
@@ -157,7 +167,7 @@ class AuthController {
                 phone_number: user.phoneNumber,
                 adminType: user.adminType || 'user',
                 role: role || null,
-                Permissions: permissions || [],
+                Permissions: permissions,
                 refreshToken: refreshToken
             }; 
 

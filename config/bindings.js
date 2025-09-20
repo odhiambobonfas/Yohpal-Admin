@@ -57,9 +57,7 @@ const bindings = {
             create: 'contacts.create',
             edit: 'contacts.edit',
             delete: 'contacts.delete',
-            groups: 'contacts.view.groups',
-            students: 'contacts.view.students',
-            fosters: 'contacts.view.fosters',
+            groups: 'contacts.view.groups',  
         },
 
         // Communication Panel
@@ -103,10 +101,7 @@ const bindings = {
 
         // Reports Panel
         reports: {
-            access: 'reports.access',
-            students: 'reports.students',
-            sponsors: 'reports.view.sponsors',
-            fosters: 'reports.view.fosters',
+            access: 'reports.access',  
             payments: 'reports.view.payments',
             communication: 'reports.view.communication',
             system: 'reports.view.system',

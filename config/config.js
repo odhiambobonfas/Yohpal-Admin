@@ -6,6 +6,7 @@ module.exports = {
         APP_NAME: process.env.APP_NAME || 'Yohpal Admin',
         APP_ENV: process.env.APP_ENV || 'development',
         APP_PORT: process.env.APP_PORT || 5000,
+        APP_IP: process.env.APP_IP || '192.168.100.121',
         APP_URL: process.env.APP_URL || 'http://127.0.0.1:5000',
         APP_SECRET: process.env.APP_SECRET || 'af63ff81e7d3b9d85ff76b2f59b3b7f350186bd7c0c4e513d852a0634a81c722',
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecretkey',

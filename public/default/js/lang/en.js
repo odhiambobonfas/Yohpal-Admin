@@ -9,12 +9,14 @@ const lang = {
 
     // New role/authentication errors
     authentication_error_exception: "Authentication denied. Please contact the administrator for assistance",
+    account_suspended_exception: "Authentication denied. Please contact the administrator for assistance",
     role_name_required: "Role name is required!",
     role_code_required: "Role code is required!",
     target_app_required: "Target application is required!",
     default_role_conflict: "Super admin and admin role cannot be applicable the same time!",
     role_description_limit: "Role description cannot exceed a 100 maximum of characters!",
-    role_exists_exception: "Role you are trying to create already exists"
+    role_exists_exception: "Role you are trying to create already exists",
+    role_unexists_exception: "Role you are trying to update unexists!"
 };
 
 if (typeof module !== 'undefined' && module.exports) {
