@@ -85,7 +85,19 @@ module.exports = {
         USE_SERVICE_ACCOUNT: true,
         SERVICE_ACCOUNT: path.join(path.resolve('.'), 'public/store/services/accounts/serviceAccountKey.json'),
         DATABASE_URL: 'https://rental-management-system-pro.firebaseio.com',
-        FIREBASE_AUTH_KEY: process.env.FIREBASE_AUTH_KEY || ''
+        FIREBASE_AUTH_KEY: process.env.FIREBASE_AUTH_KEY || '',
+        
+        TYPE: process.env.FIREBASE_TYPE || '',
+        PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
+        PRIVATE_KEY_ID: process.env.FIREBASE_PRIVATE_KEY_ID || '',
+        PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+        CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || '',
+        CLIENT_ID: process.env.FIREBASE_CLIENT_ID || '',
+        AUTH_URI: process.env.FIREBASE_AUTH_URI || '',
+        TOKEN_URI: process.env.FIREBASE_TOKEN_URI || '',
+        AUTH_PROVIDER_X509_CERT_URL: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL || '',
+        CLIENT_X509_CERT_URL: process.env.FIREBASE_CLIENT_X509_CERT_URL || '',
+        UNIVERSE_DOMAIN: process.env.FIREBASE_UNIVERSE_DOMAIN || ''
     },
     CACHE: {
         REDIS: {
