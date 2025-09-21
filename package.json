@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
-        "test": "jest",
+        "test": "jest --passWithNoTests",
         "dev": "pm2 start ecosystem.config.js --watch-delay 500",
         "pm2:stop": "pm2 stop server.js",
         "pm2:delete": "pm2 delete all",
@@ -56,7 +56,7 @@
 
             "^@lang/(.*)$": "<rootDir>/public/default/js/lang/$1",
             "^@lang$": "<rootDir>/public/default/js/lang", 
-            
+
             "^@models/(.*)$": "<rootDir>/app/models/$1",
             "^@models$": "<rootDir>/app/models",
 
