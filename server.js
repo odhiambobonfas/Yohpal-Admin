@@ -38,6 +38,7 @@ const routes = require("@routes/app");
 const flash = require('connect-flash');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const { Console } = require("console");
 
 const app = express();
 
@@ -147,8 +148,19 @@ app.use(routes);
 // Start Server only if DB is ready
 (async () => {
     // await database.init();
-    app.listen(config.APP.APP_PORT, () => {
-        console.log(`Server running at ${config.APP.APP_PORT}`);
+    let port = config.APP.APP_PORT;
+    let ip_address = config.APP.APP_IP;
+    let environment = config.APP.APP_ENV;
+    let protocol_annotation;
+
+    if (environment === 'production') {
+        protocol_annotation = 'https';
+    } else {
+        protocol_annotation = 'http';
+    } 
+    
+    app.listen(port, ip_address, () => {
+        console.log(`Server running at ${protocol_annotation}://${ip_address}:${port}`);
     });
 })();
 

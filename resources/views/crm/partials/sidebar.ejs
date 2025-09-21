@@ -5,7 +5,7 @@
             <img width="50" height="50" class="navbar-brand-logo rounded-circle" loading="lazy"
                 src="/store/images/avatars/default-avatar.jpg" alt="Yohpal Logo">
         </div>
-        <h6><%= user.username || 'Account User' %></h6>
+        <h6><%= user.name || user.username || 'Account User' %></h6>
     </div>
 
     <!-- Yohpal Modules -->
@@ -49,7 +49,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="/role/create">
+                                    <a class="nav-link" href="/roles/create">
                                         <i class="fas fa-user-shield me-2"></i> Create Role
                                     </a>
                                 </li>

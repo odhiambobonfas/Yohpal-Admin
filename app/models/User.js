@@ -3,7 +3,9 @@ import config from '@config/config';
 import AppModel from '@models/AppModel'; 
 
 class User extends AppModel {
-    static table = 'users';
+    static table = ''; 
+
+    static collection = 'users';
 
     static fields = {
         fullname: 'STRING',

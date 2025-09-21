@@ -3,8 +3,10 @@
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
-        "test": "jest",
-        "dev": "pm2 start server.js --watch --ignore-watch='node_modules public resources' --watch-delay 500",
+        "test": "jest --passWithNoTests",
+        "dev": "pm2 start ecosystem.config.js --watch-delay 500",
+        "pm2:stop": "pm2 stop server.js",
+        "pm2:delete": "pm2 delete all",
         "start": "node --trace-deprecation server.js",
         "build": "webpack --config webpack.config.js",
         "build:dev": "webpack --mode development",
@@ -31,8 +33,7 @@
         "@mex": "./mex",
         "@app": "./app",
         "@config": "./config",
-        "@lang": "./public/default/js/lang",
-        "@service": "./public/store/services",
+        "@lang": "./public/default/js/lang", 
         "@models": "./app/models",
         "@utils": "./app/utils",
         "@db": "./config/database",
@@ -54,10 +55,7 @@
             "^@config$": "<rootDir>/config",
 
             "^@lang/(.*)$": "<rootDir>/public/default/js/lang/$1",
-            "^@lang$": "<rootDir>/public/default/js/lang",
-
-            "^@service/(.*)$": "<rootDir>/public/store/services/$1",
-            "^@service$": "<rootDir>/public/store/services",
+            "^@lang$": "<rootDir>/public/default/js/lang", 
 
             "^@models/(.*)$": "<rootDir>/app/models/$1",
             "^@models$": "<rootDir>/app/models",

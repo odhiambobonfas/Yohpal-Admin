@@ -6,6 +6,7 @@ module.exports = {
         APP_NAME: process.env.APP_NAME || 'Yohpal Admin',
         APP_ENV: process.env.APP_ENV || 'development',
         APP_PORT: process.env.APP_PORT || 5000,
+        APP_IP: process.env.APP_IP || '192.168.100.121',
         APP_URL: process.env.APP_URL || 'http://127.0.0.1:5000',
         APP_SECRET: process.env.APP_SECRET || 'af63ff81e7d3b9d85ff76b2f59b3b7f350186bd7c0c4e513d852a0634a81c722',
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecretkey',
@@ -84,7 +85,19 @@ module.exports = {
         USE_SERVICE_ACCOUNT: true,
         SERVICE_ACCOUNT: path.join(path.resolve('.'), 'public/store/services/accounts/serviceAccountKey.json'),
         DATABASE_URL: 'https://rental-management-system-pro.firebaseio.com',
-        FIREBASE_AUTH_KEY: process.env.FIREBASE_AUTH_KEY || ''
+        FIREBASE_AUTH_KEY: process.env.FIREBASE_AUTH_KEY || '',
+        
+        TYPE: process.env.FIREBASE_TYPE || '',
+        PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
+        PRIVATE_KEY_ID: process.env.FIREBASE_PRIVATE_KEY_ID || '',
+        PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+        CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || '',
+        CLIENT_ID: process.env.FIREBASE_CLIENT_ID || '',
+        AUTH_URI: process.env.FIREBASE_AUTH_URI || '',
+        TOKEN_URI: process.env.FIREBASE_TOKEN_URI || '',
+        AUTH_PROVIDER_X509_CERT_URL: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL || '',
+        CLIENT_X509_CERT_URL: process.env.FIREBASE_CLIENT_X509_CERT_URL || '',
+        UNIVERSE_DOMAIN: process.env.FIREBASE_UNIVERSE_DOMAIN || ''
     },
     CACHE: {
         REDIS: {

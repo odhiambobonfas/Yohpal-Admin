@@ -21,13 +21,13 @@
     --bs-info: #0dcaf0;
     --bs-warning: #ffc107;
     --bs-light-warning: #f5e6b9;
-    --bs-danger: #dc3545;
+    --bs-danger: #f00000;
     --bs-light: #f8f9fa;
     --bs-dark: #212529;
 
     --text-light: #fff;
     --text-dark: #212529;
-    --text-danger: #dc3545;
+    --text-danger: #f00000;
 
     --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }

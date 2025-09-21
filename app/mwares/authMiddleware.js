@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, config.APP.JWT_SECRET);
-        req.session.user = decoded; 
+        req.session.user = req.cookies.user = decoded;  
         next();
     } catch (error) {
         req.flash('status', 'error');
