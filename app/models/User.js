@@ -27,10 +27,10 @@ class User extends AppModel {
      * @returns {boolean} - Whether the session update was successful
      */
     async updateSession(req) {
-        const cookie_name = config.COOKIES.COOKIE_NAME; 
-        token = jwt.sign(req.cookies[cookie_name], config.APP.JWT_SECRET, { expiresIn: config.AUTH.TOKEN_EXPIRY });
-        req.cookies[cookie_name] = token || null;
-        return !!req.cookies[cookie_name];
+        let cookie = req.session.user;
+        token = jwt.sign(cookie, config.APP.JWT_SECRET, { expiresIn: config.AUTH.TOKEN_EXPIRY });
+        cookie = token || null;
+        return !!cookie;
     } 
 
     /**

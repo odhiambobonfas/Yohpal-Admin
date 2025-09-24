@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('@config/config');
 const User = require('@models/User');
 const db = require('@database/database');
+import RedisCache from '@config/redisCache';
 import { FirestoreDatabase } from '@utils/FirebaseUtil'; 
 import utility from '@config/utils'
 
@@ -46,6 +47,28 @@ class UserUtil extends Util {
             role,
             permissions
         };
+    }
+    
+    async getAllUsersCount() {
+        try {
+            const cacheKey = `yp:users:count`;
+    
+            const count = await RedisCache.cacheParser(
+                cacheKey,
+                async () => {
+                    const usersRef = FirestoreDatabase.collection(User.collection);
+                    const snapshot = await usersRef.count().get();
+    
+                    return snapshot.data().count;
+                },
+                300 
+            );
+    
+            return count;
+        } catch (error) {
+            console.error('Error getting user count:', error);
+            return 0;
+        }
     }    
 }
 

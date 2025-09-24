@@ -32,13 +32,14 @@ const fs = require('fs');
 const path = require('path');
 const Exception = require('@config/exceptions');
 const config = require('@config/config');
+const bindings = require('@config/bindings');
 const corsconfig = require('@config/cors');
 const database = require('@database/database');
-const routes = require("@routes/app");
-const flash = require('connect-flash');
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
-const { Console } = require("console");
+const permissionHelperFuncs = require("@funcs/permissions");
+const routes = require("@routes/app");  
+const jwt = require('jsonwebtoken');
+const session = require('express-session'); 
+const RedisCache = require('@config/redisCache');
 
 const app = express();
 
@@ -49,7 +50,9 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(cors({
     origin: corsconfig.ORIGIN,
-    credentials: corsconfig.CREDENTIALS
+    credentials: corsconfig.CREDENTIALS,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 }));
 
 app.use(helmet());
@@ -63,44 +66,51 @@ if (config.APP.APP_DEBUG) {
     app.use(morgan('combined'));
 }
 
-// session setup
-app.use(session({
-    name: config.SESSION.SESSION_NAME || 'connect.sid',
-    secret: config.APP.SESSION_SECRET,
-    resave: config.SESSION.RESAVE,
-    saveUninitialized: true,
-    proxy: config.SESSION.PROXY,
-    cookie: {
-        secure: config.COOKIES.SECURE,
-        httpOnly: config.COOKIES.HTTPONLY,
-        sameSite: config.COOKIES.SAMESITE,
-        path: config.COOKIES.PATH,
-        maxAge: config.COOKIES.MAXAGE,
-    }
-}));
+app.use(
+    session({
+        name: config.SESSION.SESSION_NAME || 'connect.sid',
+        secret: config.APP.SESSION_SECRET,
+        resave: config.SESSION.RESAVE,
+        saveUninitialized: true,
+        proxy: config.SESSION.PROXY, 
+        secret: config.SESSION.SESSION_SECRET || '', 
+        cookie: {
+            httpOnly: config.COOKIES.HTTPONLY,
+            secure: config.COOKIES.SECURE,
+            sameSite: config.COOKIES.SAMESITE,
+            maxAge: config.COOKIES.MAXAGE,
+            path: config.COOKIES.PATH,
+            domain: config.COOKIES.DOMAIN || undefined
+        },
+    })
+);
 
-if (config.COOKIES.REFRESH) {
-    // Refresh the session expiration each time the user interacts with the 
-    // application
-    app.use((req, res, next) => {
-        if (req.session) {
-            req.session.cookie.maxAge = config.COOKIES.MAXAGE;
+// import everything to the views, custom functions i.e helper 
+// functions
+app.use((req, res, next) => { 
+    res.locals.message = null;
+    res.locals.status = null;
+    res.locals.permissionBindings = Array.from(bindings.permissions);    
+    
+    let user = {};
+    let token = req.session.token;
+
+    if (token) {
+        try {
+            user = jwt.verify(token, config.APP.JWT_SECRET);
+        } catch (err) {
+            console.error("Invalid JWT:", err.message); 
         }
-        next();
-    });
-}
+    } 
 
-if (config.COOKIES.USE_COOKIES) {
-    app.use(cookieParser());
-}
+    // expose user to views
+    res.locals.user = user;
 
-// Use flash session library
-// On the side, make the session flash usable on 
-// views as well.
-app.use(flash());
-app.use((req, res, next) => {
-    res.locals.status = req.flash('status');
-    res.locals.message = req.flash('message');
+    // permission helpers
+    res.locals.hasPermission = (key) => permissionHelperFuncs.hasPermission(user?.permissions || [], key);
+
+    res.locals.hasAnyPermission = (keys) => permissionHelperFuncs.hasAnyPermission(user?.permissions || [], keys);
+
     next();
 });
 

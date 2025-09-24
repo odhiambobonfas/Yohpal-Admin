@@ -17,9 +17,9 @@ const {
     upload
 } = require('@config/storage');
 const authRoutes = require('@routes/auth');
-const DashboardController = require('@app/controllers/other/DashboardController');
+const DashboardController = require('@app/controllers/web/DashboardController');
 const RolesController = require('@app/controllers/web/RolesController');
-const SettingsController = require('@app/controllers/api/SettingsController');
+const SettingsController = require('@app/controllers/web/SettingsController');
 const YohPalController = require('@app/controllers/api/YohPalController');
 const authMiddleware = require('@app/mwares/authMiddleware');
 const routeMiddleware = require('@app/mwares/routeMiddleware');
@@ -33,10 +33,10 @@ authRoutes(router);
 router.get('/dashboard', authMiddleware, DashboardController.index);
 
 // API Routes - Yohpal Website Routes 
-router.get('/yohpal/api/documentation', routeMiddleware, YohPalController.index);
+// router.get('/yohpal/api/documentation', routeMiddleware, YohPalController.index);
 
-router.post('/api/settings/update', routeMiddleware, SettingsController.updateSettings);
-router.get('/api/settings/get', routeMiddleware, SettingsController.getUserSettings);
+// router.post('/api/settings/update', routeMiddleware, SettingsController.updateSettings);
+// router.get('/api/settings/get', routeMiddleware, SettingsController.getUserSettings);
 
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index);
@@ -44,5 +44,12 @@ router.get('/roles/create', authMiddleware, RolesController.createRoles);
 router.post('/roles/create', authMiddleware, RolesController.createRoles);
 router.get('/roles/edit/:id', authMiddleware, RolesController.updateRoles);
 router.post('/roles/update/:id', authMiddleware, RolesController.updateRoles);
+
+// Dashboard routes
+router.get('/dashboard/stats', authMiddleware, DashboardController.index);
+
+// Settings routes
+router.get('/apps/list', authMiddleware, SettingsController.index);
+router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
 
 module.exports = router;

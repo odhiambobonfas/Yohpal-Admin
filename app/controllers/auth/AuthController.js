@@ -7,6 +7,7 @@ import UserUtil from '@utils/UserUtil';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
+import RedisCache from '@config/redisCache';
 import { FirebaseUtil, FirestoreDatabase } from '@utils/FirebaseUtil';
 
 class AuthController {
@@ -90,8 +91,8 @@ class AuthController {
         }
 
         try {
-            req.session.destroy();
-            res.clearCookie(config.SESSION.SESSION_NAME ?? 'connect.sid');
+            if (req.session) req.session.destroy();
+            res.clearCookie(config.COOKIES.COOKIE_NAME ?? 'connect.sid');
         } catch (error) {
             console.error("Error logging out: ", error);
         }
@@ -114,6 +115,7 @@ class AuthController {
             const auth_endpoint = Binding.endpoints.firebase_auth; 
 
             let response = await fetch(auth_endpoint.route + config.FIREBASE.FIREBASE_AUTH_KEY, {
+                credentials: 'include',
                 method: auth_endpoint.method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -143,9 +145,7 @@ class AuthController {
             
             let {user, role, permissions} = await UserUtil.getUserByUid(v.uid);
 
-            permissions = permissions.permissions ?? [];
-
-            console.log(permissions);
+            permissions = permissions.permissions ?? []; 
 
             if (!permissions.includes('auth.access')) {
                 throw new Exception(201, 'AUTHORIZATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
@@ -167,24 +167,19 @@ class AuthController {
                 phone_number: user.phoneNumber,
                 adminType: user.adminType || 'user',
                 role: role || null,
-                Permissions: permissions,
+                permissions: permissions,
                 refreshToken: refreshToken
             }; 
 
             if (userPayload.adminType === 'user') {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
-            
-            const token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
+
+            let token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
                 expiresIn: config.AUTH.TOKEN_EXPIRY
-            });
-            
-            res.cookie(config.COOKIES.COOKIE_NAME, token, {
-                httpOnly: config.COOKIES.HTTPONLY,
-                secure: config.COOKIES.SECURE,
-                sameSite: config.COOKIES.SAMESITE,
-                maxAge: config.COOKIES.MAXAGE || 3600000
             }); 
+            
+            req.session.token = token;
 
             res.status(200).json({
                 status: 'success',
@@ -196,6 +191,7 @@ class AuthController {
                 if (config.APP.APP_DEBUG) error.mexLogger();
                 return res.status(error.status).json({ status: 'error', message: error.message, code: error.code, data: [] });
             } else {   
+                console.log('Server Side Error: ', error);
                 return res.status(500).json({ status: 'error', message: 'Something went wrong. Please try again later.' });
             }
         }
@@ -203,20 +199,10 @@ class AuthController {
 
     static async logout(req, res) {
         try { 
-            res.clearCookie(config.COOKIES.COOKIE_NAME, {
-                httpOnly: config.COOKIES.HTTPONLY,
-                secure: config.COOKIES.SECURE,
-                sameSite: config.COOKIES.SAMESITE,
-                path: config.COOKIES.PATH || '/'
-            });
-    
-            req.flash('status', 'success');
-            req.flash('message', 'You have logged out successfully.');
-    
+            res.clearCookie(config.COOKIES.COOKIE_NAME); 
+            res.clearCookie(config.SESSION.SESSION_NAME); 
             res.redirect(`/login?auth=${Util.encodeMessage('You have logged out successfully.')}`);
-        } catch (error) {
-            req.flash('status', 'error');
-            req.flash('message', 'Unexpected error occurred');
+        } catch (error) { 
             res.redirect('back');
         }
     }

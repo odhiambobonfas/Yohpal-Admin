@@ -16,6 +16,7 @@ body {
     padding: 15px;
     position: fixed; 
     scrollbar-width: none;
+    padding-bottom: 100vh;
 }
 .sidebar::-webkit-scrollbar {  
     scrollbar-width: none;

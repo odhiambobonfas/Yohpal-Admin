@@ -6,3 +6,4 @@ public/bootstrap
 public/assets
 myexpress-framework
 public/logs/*.txt
+tests/none

@@ -261,7 +261,7 @@ function documentContains(target) {
 /**
  * Inserts or appends HTML content into an element.
  *
- * @param {string} content - The HTML string to insert.
+ * @param {string|number} content - The HTML string|number to insert.
  * @param {HTMLElement} element - The target DOM element.
  * @param {boolean} [append=false] - If true, appends content; otherwise, replaces it.
  * @param {string|null} [insertBeforeSelector=null] - Optional CSS selector to insert before a specific child.
@@ -271,12 +271,7 @@ function __append_html(content, element, append = false, insertBeforeSelector = 
         console.warn('__append_html: Invalid target element.');
         return;
     }
-
-    if (typeof content !== 'string') {
-        console.warn('__append_html: Content must be a string.');
-        return;
-    }
-
+    
     // Prepare content as DOM nodes
     const wrapper = document.createElement('div');
     wrapper.innerHTML = content;

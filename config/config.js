@@ -6,11 +6,11 @@ module.exports = {
         APP_NAME: process.env.APP_NAME || 'Yohpal Admin',
         APP_ENV: process.env.APP_ENV || 'development',
         APP_PORT: process.env.APP_PORT || 5000,
-        APP_IP: process.env.APP_IP || '192.168.100.121',
-        APP_URL: process.env.APP_URL || 'http://127.0.0.1:5000',
-        APP_SECRET: process.env.APP_SECRET || 'af63ff81e7d3b9d85ff76b2f59b3b7f350186bd7c0c4e513d852a0634a81c722',
+        APP_IP: process.env.APP_IP || '0.0.0.0',
+        APP_URL: process.env.APP_URL || 'https://admin.yohpal.com',
+        APP_SECRET: process.env.APP_SECRET || 'app_secret',
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecretkey',
-        SESSION_SECRET: process.env.SESSION_SECRET || 'af63ff81e7d3b9d85ff76b2f59b3b7f350186bd7c0c4e513d852a0634a81c722',
+        SESSION_SECRET: process.env.SESSION_SECRET || 'session_secret',
         APP_DEBUG: process.env.APP_DEBUG || true,
     },
     VIEW_ENGINE: process.env.VIEW_ENGINE || 'ejs',
@@ -65,9 +65,10 @@ module.exports = {
         UNIQUE_UPLOAD_NAME: ''
     },
     SESSION: {
-        SESSION_NAME: "myexpress.auth_session", // leave empty to default to connect.sid
+        SESSION_NAME: "yohpal_admin_sess", // leave empty to default to connect.sid
+        SESSION_SECRET: process.env.SESSION_SECRET || '',
         RESAVE: false,
-        PROXY: true
+        PROXY: true,
     },
     COOKIES: { 
         USE_COOKIES: true,
@@ -75,10 +76,9 @@ module.exports = {
         MAXAGE: 24 * 60 * 60 * 1000,
         SECURE: process.env.APP_ENV === 'production',
         HTTPONLY: true,
-        SAMESITE: false, // or Lax, Strict, None, or false
-        MAXAGE: null,
+        SAMESITE: process.env.APP_ENV === 'production' ? 'None' : 'Lax', // or Lax, Strict, None, or false 
         PATH: '/',
-        DOMAIN: '',
+        DOMAIN: process.env.APP_ENV === 'production' ? (process.env.APP_URL || 'https://admin.yohpal.com') : '',
         REFRESH: true
     },
     FIREBASE: {
@@ -101,7 +101,11 @@ module.exports = {
     },
     CACHE: {
         REDIS: {
-            REDIS_URL: 'redis://127.0.0.1:6379',
+            REDIS_USERNAME: process.env.REDIS_USERNAME || '',
+            REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
+            REDIS_URL: process.env.REDIS_URL || '',
+            REDIS_PORT: process.env.REDIS_PORT || 14000,
+            CONNECTION_TIMEOUT: process.env.CONNECTION_TIMEOUT || 10000
         }
     }
 };

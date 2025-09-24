@@ -13,7 +13,7 @@ const bindings = {
         }
     },
 
-    // Role Permission Bindings
+    // Role Permission Bindings 
     permissions: {
         // Authentication
         auth: {
@@ -57,10 +57,11 @@ const bindings = {
             create: 'contacts.create',
             edit: 'contacts.edit',
             delete: 'contacts.delete',
-            groups: 'contacts.view.groups',  
-        },
-
-        // Communication Panel
+            groups: 'contacts.view.groups',
+            contact_groups: 'contacts.group.access',
+        }, 
+        
+        // Communication Panel (merged with chat)
         communication: {
             access: 'communication.access',
             access_chat: 'communication.chat.access',
@@ -71,6 +72,12 @@ const bindings = {
             broadcasts: 'communication.broadcasts',
         },
 
+        chat: {
+            messages: 'chat.messages',
+            groups: 'chat.groups',
+            contacts: 'chat.contacts',
+        },
+
         // Payment Accounts
         accounts: {
             access: 'accounts.access',
@@ -78,6 +85,15 @@ const bindings = {
             create: 'accounts.create',
             edit: 'accounts.edit',
             delete: 'accounts.delete',
+            bank_accounts_access: 'accounts.bank.access',
+        }, 
+
+        invoices: {
+            access: 'invoices.access',
+        },
+
+        expenses: {
+            access: 'expenses.access',
         },
 
         // Transactions
@@ -90,8 +106,36 @@ const bindings = {
             edit: 'transactions.edit',
             delete: 'transactions.delete',
         },
+        
+        hrm: {
+            employees_access: 'hrm.employees.access',
+            payroll_access: 'hrm.payroll.access',
+            attendance_access: 'hrm.attendance.access',
+        },
 
-        // Accounting Panel
+        // Wallet
+        wallet: {
+            deposit: 'wallet.deposit',
+            withdraw: 'wallet.withdraw',
+            transactions: 'wallet.transactions',
+        },
+
+        // Market
+        market: {
+            products: 'market.products',
+            orders: 'market.orders',
+            vendors: 'market.vendors',
+        },
+
+        // Hustle
+        hustle: {
+            hustle_jobs_access: 'hustle.jobs.access',
+            hustle_projects_access: 'hustle.projects.access',
+            access_hustle_clients_access: 'hustle.clients.access',
+            hustle_hustlers_access: 'hustle.hustlers.access',
+        },
+
+        // Accounting
         accounting: {
             access: 'accounting.access',
             overview: 'accounting.view.overview',
@@ -99,15 +143,24 @@ const bindings = {
             statements: 'accounting.view.statements',
         },
 
-        // Reports Panel
+        // Reports
         reports: {
-            access: 'reports.access',  
+            access: 'reports.access',
+            users: 'reports.users',
+            financial: 'reports.financial',
+            activity: 'reports.activity',
             payments: 'reports.view.payments',
             communication: 'reports.view.communication',
             system: 'reports.view.system',
         },
 
-        // Notifications Panel
+        // Profile
+        profile: {
+            view: 'profile.view',
+            edit: 'profile.edit',
+        },
+
+        // Notifications
         notifications: {
             access: 'notifications.access',
             all: 'notifications.view.all',
@@ -116,9 +169,10 @@ const bindings = {
             sms: 'notifications.view.sms',
         },
 
-        // Settings Panel
+        // Settings
         settings: {
             access: 'settings.access',
+            general: 'settings.view.general',
             app_settings_access: 'settings.view.app',
             payment_methods: 'settings.view.payment.methods',
             access_payment_gateways: 'settings.view.payment.access',
@@ -129,7 +183,7 @@ const bindings = {
             others: 'settings.view.others',
         },
 
-        // Developer Panel
+        // Developer
         developer: {
             access: 'developer.access',
             create_app: 'developer.apps.create',

@@ -191,7 +191,7 @@ class RolesController {
                     stayHere
                 } = req.body;
                 
-                let cookie = req.cookies.user; 
+                let cookie = req.session.user; 
                 
                 if (!cookie['uid']) {
                     throw new Exception(403, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.authentication_error_exception, "Role Error!");
