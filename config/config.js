@@ -78,7 +78,7 @@ module.exports = {
         HTTPONLY: true,
         SAMESITE: process.env.APP_ENV === 'production' ? 'None' : 'Lax', // or Lax, Strict, None, or false 
         PATH: '/',
-        DOMAIN: process.env.APP_ENV === 'production' ? (process.env.APP_URL || 'https://admin.yohpal.com') : '',
+        DOMAIN: process.env.APP_ENV === 'production' ? (new URL(process.env.APP_URL).hostname || 'admin.yohpal.com') : undefined,
         REFRESH: true
     },
     FIREBASE: {
