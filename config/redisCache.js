@@ -12,15 +12,21 @@ class RedisCache {
      * connection utility
      */
     async initRedisCaching() {
-        this.client = createClient({
-            url: config.CACHE.REDIS.REDIS_URL
+        this.client = createClient({  
+            username: config.CACHE.REDIS.REDIS_USERNAME,
+            password: config.CACHE.REDIS.REDIS_PASSWORD,
+            socket: {
+                host: 'redis-14000.c341.af-south-1-1.ec2.redns.redis-cloud.com',
+                port: config.CACHE.REDIS.REDIS_PORT,
+                connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT
+            }
         });
 
         this.client.on('error', (err) => {
             console.error('[Redis Error]', err);
         });
 
-        this.client.connect().then(() => {
+        await this.client.connect().then(() => {
             console.log('Redis Client Connected');
         }).catch((err) => {
             console.error('Redis Client Connection Failed: ', err);

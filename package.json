@@ -5,8 +5,11 @@
     "scripts": {
         "test": "jest --passWithNoTests",
         "dev": "pm2 start ecosystem.config.js --watch-delay 500",
+        "dev:nodemon": "nodemon --trace-deprecation server.js",
         "pm2:stop": "pm2 stop server.js",
+        "pm2:update": "pm2 update",
         "pm2:delete": "pm2 delete all",
+        "pm2:reload": "pm2 reload all --update-env",
         "start": "node --trace-deprecation server.js",
         "build": "webpack --config webpack.config.js",
         "build:dev": "webpack --mode development",
@@ -32,8 +35,9 @@
     "_moduleAliases": {
         "@mex": "./mex",
         "@app": "./app",
+        "@funcs": "./app/helpers",
         "@config": "./config",
-        "@lang": "./public/default/js/lang", 
+        "@lang": "./public/default/js/lang",
         "@models": "./app/models",
         "@utils": "./app/utils",
         "@db": "./config/database",
@@ -47,38 +51,35 @@
         "moduleNameMapper": {
             "^@mex/(.*)$": "<rootDir>/mex/$1",
             "^@mex$": "<rootDir>/mex",
-
             "^@app/(.*)$": "<rootDir>/app/$1",
             "^@app$": "<rootDir>/app",
-
+            "^@helpers/(.*)$": "<rootDir>/helpers/$1",
+            "^@helpers$": "<rootDir>/helpers",
             "^@config/(.*)$": "<rootDir>/config/$1",
             "^@config$": "<rootDir>/config",
-
             "^@lang/(.*)$": "<rootDir>/public/default/js/lang/$1",
-            "^@lang$": "<rootDir>/public/default/js/lang", 
-
+            "^@lang$": "<rootDir>/public/default/js/lang",
             "^@models/(.*)$": "<rootDir>/app/models/$1",
             "^@models$": "<rootDir>/app/models",
-
             "^@utils/(.*)$": "<rootDir>/app/utils/$1",
             "^@utils$": "<rootDir>/app/utils",
-
             "^@db/(.*)$": "<rootDir>/config/database/$1",
             "^@db$": "<rootDir>/config/database",
-
             "^@database/(.*)$": "<rootDir>/config/database/$1",
             "^@database$": "<rootDir>/config/database",
-
             "^@services/(.*)$": "<rootDir>/mex/services/$1",
             "^@services$": "<rootDir>/mex/services",
-
             "^@controllers/(.*)$": "<rootDir>/app/controllers/$1",
             "^@controllers$": "<rootDir>/app/controllers",
-
             "^@routes/(.*)$": "<rootDir>/routes/$1",
             "^@routes$": "<rootDir>/routes"
         },
-        "moduleFileExtensions": ["js", "json", "ts", "node"]
+        "moduleFileExtensions": [
+            "js",
+            "json",
+            "ts",
+            "node"
+        ]
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^6.7.2",
@@ -91,6 +92,7 @@
         "bootstrap-datepicker": "^1.10.0",
         "chart.js": "^4.4.8",
         "connect-flash": "^0.1.1",
+        "connect-redis": "^6.1.3",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "crypto-js": "^4.2.0",
@@ -123,8 +125,7 @@
         "postinstall-postinstall": "^2.1.0",
         "print-js": "^1.6.0",
         "pug": "^3.0.3",
-        "redi": "^0.1.0",
-        "redis": "^4.7.0",
+        "redis": "^5.8.2",
         "select2": "^4.1.0-rc.0",
         "sequelize": "^6.37.6",
         "swagger-jsdoc": "^6.2.8",

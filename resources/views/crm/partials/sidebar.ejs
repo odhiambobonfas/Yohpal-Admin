@@ -33,6 +33,7 @@
                     </li>
 
                     <!-- Users Dropdown -->
+                    <% if (hasAnyPermission(['users.access', 'roles.access'])) { %>
                     <li class="nav-item">
                         <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                             href="#usersSubMenu" role="button" aria-expanded="false" aria-controls="usersSubMenu">
@@ -43,26 +44,35 @@
                         </a>
                         <div class="collapse ps-4" id="usersSubMenu">
                             <ul class="nav flex-column">
+                                <% if (hasPermission('roles.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="/roles">
                                         <i class="fa fa-id-badge me-2"></i> Roles
                                     </a>
                                 </li>
+                                <% } %>
+
+                                <% if (hasPermission('roles.create')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="/roles/create">
                                         <i class="fas fa-user-shield me-2"></i> Create Role
                                     </a>
                                 </li>
+                                <% } %>
+
+                                <% if (hasPermission('users.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="/usersList">
                                         <i class="fa fa-users me-2"></i> Users List
                                     </a>
                                 </li>
+                                <% } %>
                             </ul>
                         </div>
                     </li>
-
+                    <% } %>
                     <!-- Contacts Dropdown -->
+                    <% if (hasAnyPermission(['contacts.access', 'contacts.group.access'])) { %>
                     <li class="nav-item">
                         <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                             href="#contactsSubMenu" role="button" aria-expanded="false" aria-controls="contactsSubMenu">
@@ -73,21 +83,27 @@
                         </a>
                         <div class="collapse ps-4" id="contactsSubMenu">
                             <ul class="nav flex-column">
+                                <% if (hasPermission('contacts.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#allContacts">
                                         <i class="fa fa-users me-2"></i> All Contacts
                                     </a>
                                 </li>
+                                <% } %>
+                                <% if (hasPermission('contacts.group.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#groups">
                                         <i class="fa fa-layer-group me-2"></i> Groups
                                     </a>
                                 </li>
+                                <% } %>
                             </ul>
                         </div>
                     </li>
+                    <% } %>
 
                     <!-- Payment Accounts Dropdown -->
+                    <% if (hasAnyPermission(['accounts.access', 'accounts.bank.access'])) { %>
                     <li class="nav-item">
                         <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                             href="#paymentAccountsSubMenu" role="button" aria-expanded="false"
@@ -99,21 +115,27 @@
                         </a>
                         <div class="collapse ps-4" id="paymentAccountsSubMenu">
                             <ul class="nav flex-column">
+                                <% if (hasPermission('accounts.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#accountsList">
                                         <i class="fa fa-wallet me-2"></i> List Accounts
                                     </a>
                                 </li>
+                                <% } %>
+                                <% if (hasPermission('accounts.bank.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#bankAccounts">
                                         <i class="fa fa-university me-2"></i> Bank Accounts
                                     </a>
                                 </li>
+                                <% } %>
                             </ul>
                         </div>
                     </li>
+                    <% } %>
 
                     <!-- Accounting Dropdown -->
+                    <% if (hasAnyPermission(['invoices.access', 'expenses.access', 'transactions.access'])) { %>
                     <li class="nav-item">
                         <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                             href="#accountingSubMenu" role="button" aria-expanded="false"
@@ -125,26 +147,34 @@
                         </a>
                         <div class="collapse ps-4" id="accountingSubMenu">
                             <ul class="nav flex-column">
+                                <% if (hasPermission('invoices.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#invoices">
                                         <i class="fa fa-file-invoice me-2"></i> Invoices
                                     </a>
                                 </li>
+                                <% } %>
+                                <% if (hasPermission('expenses.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#expenses">
                                         <i class="fa fa-money-bill-wave me-2"></i> Expenses
                                     </a>
                                 </li>
+                                <% } %>
+                                <% if (hasPermission('transactions.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#transactions">
                                         <i class="fa fa-exchange-alt me-2"></i> Transactions
                                     </a>
                                 </li>
+                                <% } %>
                             </ul>
                         </div>
                     </li>
+                    <% } %>
 
                     <!-- HRM Dropdown -->
+                    <% if (hasAnyPermission(['hrm.employees.access', 'hrm.payroll.access', 'hrm.attendance.access'])) { %>
                     <li class="nav-item">
                         <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                             href="#hrmSubMenu" role="button" aria-expanded="false" aria-controls="hrmSubMenu">
@@ -155,28 +185,40 @@
                         </a>
                         <div class="collapse ps-4" id="hrmSubMenu">
                             <ul class="nav flex-column">
+                                <% if (hasPermission('hrm.employees.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#employees">
                                         <i class="fa fa-user-tie me-2"></i> Employees
                                     </a>
                                 </li>
+                                <% } %>
+                                <% if (hasPermission('hrm.payroll.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#payroll">
                                         <i class="fa fa-money-check-alt me-2"></i> Payroll
                                     </a>
                                 </li>
+                                <% } %>
+                                <% if (hasPermission('hrm.attendance.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#attendance">
                                         <i class="fa fa-calendar-check me-2"></i> Attendance
                                     </a>
                                 </li>
+                                <% } %>
                             </ul>
                         </div>
                     </li>
+                    <% } %>
                 </ul>
+
             </div>
         </li>
+    </ul>
 
+    <ul class="nav flex-column">
+        <!-- Yohpal Wallet Dropdown -->
+        <% if (hasAnyPermission(['wallet.deposit', 'wallet.withdraw', 'wallet.transactions'])) { %>
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                 href="#walletSubMenu" role="button" aria-expanded="false" aria-controls="walletSubMenu">
@@ -187,26 +229,34 @@
             </a>
             <div class="collapse ps-2" id="walletSubMenu">
                 <ul class="nav flex-column">
+                    <% if (hasPermission('wallet.deposit')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#deposit">
                             <i class="fa fa-arrow-down me-2"></i> Deposit
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('wallet.withdraw')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#withdraw">
                             <i class="fa fa-arrow-up me-2"></i> Withdraw
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('wallet.transactions')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#transactions">
                             <i class="fa fa-list me-2"></i> Transactions
                         </a>
                     </li>
+                    <% } %>
                 </ul>
             </div>
         </li>
+        <% } %>
 
         <!-- Yohpal Market Dropdown -->
+        <% if (hasAnyPermission(['market.products', 'market.orders', 'market.vendors'])) { %>
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                 href="#marketSubMenu" role="button" aria-expanded="false" aria-controls="marketSubMenu">
@@ -217,26 +267,34 @@
             </a>
             <div class="collapse ps-2" id="marketSubMenu">
                 <ul class="nav flex-column">
+                    <% if (hasPermission('market.products')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#products">
                             <i class="fa fa-box me-2"></i> Products
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('market.orders')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#orders">
                             <i class="fa fa-shopping-bag me-2"></i> Orders
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('market.vendors')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#vendors">
                             <i class="fa fa-store me-2"></i> Vendors
                         </a>
                     </li>
+                    <% } %>
                 </ul>
             </div>
         </li>
+        <% } %>
 
         <!-- Yohpal Chat Dropdown -->
+        <% if (hasAnyPermission(['chat.messages', 'chat.groups', 'chat.contacts'])) { %>
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                 href="#chatSubMenu" role="button" aria-expanded="false" aria-controls="chatSubMenu">
@@ -247,26 +305,34 @@
             </a>
             <div class="collapse ps-2" id="chatSubMenu">
                 <ul class="nav flex-column">
+                    <% if (hasPermission('chat.messages')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#messages">
                             <i class="fa fa-envelope me-2"></i> Messages
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('chat.groups')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#groups">
                             <i class="fa fa-users me-2"></i> Groups
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('chat.contacts')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#contacts">
                             <i class="fa fa-address-book me-2"></i> Contacts
                         </a>
                     </li>
+                    <% } %>
                 </ul>
             </div>
         </li>
+        <% } %>
 
         <!-- Yohpal Hustle Dropdown -->
+        <% if (hasAnyPermission(['hustle.jobs.access', 'hustle.projects.access', 'hustle.clients.access', 'hustle.hustlers.access'])) { %>
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                 href="#hustleSubMenu" role="button" aria-expanded="false" aria-controls="hustleSubMenu">
@@ -277,29 +343,38 @@
             </a>
             <div class="collapse ps-2" id="hustleSubMenu">
                 <ul class="nav flex-column">
+                    <% if (hasPermission('hustle.jobs.access')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#jobs">
                             <i class="fa fa-tasks me-2"></i> Jobs
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('hustle.projects.access')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#projects">
                             <i class="fa fa-lightbulb me-2"></i> Projects
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('hustle.clients.access')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#freelancers">
                             <i class="fa fa-user-tie me-2"></i> Clients
                         </a>
                     </li>
+                    <% } %>
+                    <% if (hasPermission('hustle.hustlers.access')) { %>
                     <li class="nav-item">
                         <a class="nav-link" href="#freelancers">
                             <i class="fa fa-user-tie me-2"></i> Hustlers
                         </a>
                     </li>
+                    <% } %>
                 </ul>
             </div>
         </li>
+        <% } %>
     </ul>
 
     <!-- System & Reports -->
@@ -307,12 +382,16 @@
         <i class="fa fa-cogs me-2"></i> System & Reports
     </div>
     <ul class="nav flex-column">
+
+        <% if (hasPermission('profile.view')) { %>
         <li class="nav-item">
-            <a class="nav-link" href="#myprofile">
+            <a class="nav-link" href="/myprofile">
                 <i class="fa fa-user-circle me-2"></i> My Profile
             </a>
         </li>
+        <% } %>
 
+        <% if (hasAnyPermission(['reports.users', 'reports.financial', 'reports.activity'])) { %>
         <!-- Reports Dropdown -->
         <li class="nav-item">
             <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
@@ -324,27 +403,66 @@
             </a>
             <div class="collapse ps-2" id="reportsSubMenu">
                 <ul class="nav flex-column">
+                    <% if (hasPermission('reports.users')) { %>
                     <li class="nav-item">
-                        <a class="nav-link" href="#userReports">
+                        <a class="nav-link" href="/reports/users">
                             <i class="fa fa-users me-2"></i> Users
                         </a>
                     </li>
+                    <% } %>
+
+                    <% if (hasPermission('reports.financial')) { %>
                     <li class="nav-item">
-                        <a class="nav-link" href="#financialReports">
+                        <a class="nav-link" href="/reports/financial">
                             <i class="fa fa-chart-line me-2"></i> Financial
                         </a>
                     </li>
+                    <% } %>
+
+                    <% if (hasPermission('reports.activity')) { %>
                     <li class="nav-item">
-                        <a class="nav-link" href="#activityLog">
+                        <a class="nav-link" href="/reports/activity">
                             <i class="fa fa-history me-2"></i> Activity Log
                         </a>
                     </li>
+                    <% } %>
                 </ul>
             </div>
         </li>
+        <% } %>
+
+        <!-- Yohpal Developer Dropdown -->
+        <% if (hasAnyPermission(['developer.access', 'developer.create'])) { %>
+        <li class="nav-item">
+            <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
+                href="#ypDeveloperSubMenu" role="button" aria-expanded="false" aria-controls="ypDeveloperSubMenu">
+                <span>
+                    <i class="fa fa-code me-2"></i> Yohpal Developer
+                </span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+            <div class="collapse ps-2" id="ypDeveloperSubMenu">
+                <ul class="nav flex-column">
+                    <% if (hasPermission('developer.access')) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/apps/list">
+                            <i class="fa fa-tasks me-2"></i> List Apps
+                        </a>
+                    </li>
+                    <% } %>
+                    <% if (hasPermission('developer.apps.create')) { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/apps/create">
+                            <i class="fa fa-lightbulb me-2"></i> Create Apps
+                        </a>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
+        </li>
+        <% } %>
 
     </ul>
-
     <div class="action-btns d-flex justify-content-around align-items-center text-dark bg-secondary mb-3 py-3">
         <a href="javascript:void(0)" class="btn btn-link text-dark">
             <i class="fa fa-gear fa-1x" title="settings"></i>
