@@ -18,19 +18,47 @@ class RedisCache {
             socket: {
                 host: 'redis-14000.c341.af-south-1-1.ec2.redns.redis-cloud.com',
                 port: config.CACHE.REDIS.REDIS_PORT,
-                connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT
+                connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT,
+                reconnectStrategy: (retries) => {
+                    const delay = Math.min(retries * 100, config.CACHE.REDIS.CONNECTION_TIMEOUT); 
+                    return delay;
+                }
             }
         });
 
-        this.client.on('error', (err) => {
-            console.error('[Redis Error]', err);
+        this.client.on('error', (error) => {
+            if (error.name === 'ConnectionTimeoutError') {
+                console.log('[Redis Error] Connection timeout - reconnecting...'); 
+            } else {
+                console.error('[Redis Error]', error.message || error);
+            }
+        });
+    
+        this.client.on('connect', () => {
+            console.log('[Redis] Connecting...');
+        });
+    
+        this.client.on('ready', () => {
+            console.log('[Redis] Client Connected and Ready');
+        });
+    
+        this.client.on('end', () => {
+            console.warn('[Redis] Connection closed');
         });
 
-        await this.client.connect().then(() => {
-            console.log('Redis Client Connected');
-        }).catch((err) => {
-            console.error('Redis Client Connection Failed: ', err);
+        this.client.on('reconnecting', (info) => {
+            if (info && typeof info.attempt !== 'undefined' && typeof info.delay !== 'undefined') {
+                console.log(`[Redis] Reconnecting attempt #${info.attempt} in ${info.delay}ms`);
+            } else {
+                console.log('[Redis] Reconnecting...');
+            }
         });
+
+        try {
+            await this.client.connect();
+        } catch (err) {
+            console.error('[Redis Connection Failed]', err);
+        }
     }
 
     /**
