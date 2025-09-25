@@ -55,7 +55,7 @@ class UsersController {
                 .editColumn('status', (col) => { 
                     return ucfirst(col);
                 })
-                .editColumn('fullName', (col) => { 
+                .addColumn('fullName', (col) => { 
                     let fullName = 'N/A';
                     if (col) {
                         fullName = `${col.firstName ?? ''} ${col.lastName ?? ''}`.trim();
