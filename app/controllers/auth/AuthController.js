@@ -9,6 +9,7 @@ import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
 import { FirebaseUtil, FirestoreDatabase } from '@utils/FirebaseUtil';
+import {env, isInDevelopment} from "@funcs/global_funcs"; 
 
 class AuthController {
     static async register(req, res) {
@@ -88,19 +89,17 @@ class AuthController {
             } catch (error) {
                 console.error("Error decoding message:", error);
             }
-        }
+        } 
 
-        try {
-            if (req.session) req.session.destroy();
-            res.clearCookie(config.COOKIES.COOKIE_NAME ?? 'connect.sid');
-        } catch (error) {
-            console.error("Error logging out: ", error);
-        }
+        const test_username = isInDevelopment() ? env('TEST_USERNAME') : ''
+        const test_password = isInDevelopment() ? env('TEST_PASSWORD') : ''
 
         return res.render("auth/login", {
             title: "Login Page",
             status: 'error',
-            message: message
+            message: message,
+            test_username: test_username,
+            test_password: test_password,
         });
     }
 

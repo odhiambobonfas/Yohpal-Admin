@@ -36,6 +36,8 @@ const bindings = require('@config/bindings');
 const corsconfig = require('@config/cors');
 const database = require('@database/database');
 const permissionHelperFuncs = require("@funcs/permissions");
+const authentHelperFuncs = require("@funcs/authentication");
+const globalHelperFuncs = require("@funcs/global_funcs");
 const routes = require("@routes/app");  
 const jwt = require('jsonwebtoken');
 const session = require('express-session'); 
@@ -106,9 +108,13 @@ app.use((req, res, next) => {
     // expose user to views
     res.locals.user = user;
 
+    // global function helpers
+    Object.keys(globalHelperFuncs).forEach((key) => {
+        res.locals[key] = globalHelperFuncs[key];
+    });
+
     // permission helpers
     res.locals.hasPermission = (key) => permissionHelperFuncs.hasPermission(user?.permissions || [], key);
-
     res.locals.hasAnyPermission = (keys) => permissionHelperFuncs.hasAnyPermission(user?.permissions || [], keys);
 
     next();
