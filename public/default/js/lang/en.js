@@ -1,4 +1,19 @@
 const lang = {
+    // Request errors
+    req: {
+        request_denied: "Your request has been denied.",
+        invalid_csrf_token: "Invalid CSRF token. Please refresh the page and try again.",
+        session_expired: "Your session has expired. Please log in again.",
+        invalid_request: "Invalid request. Please check your input and try again.",
+        missing_parameters: "Missing required parameters. Please provide all necessary information.",
+        unauthorized_access: "You do not have permission to access this resource.",
+        resource_not_found: "The requested resource could not be found.",
+        internal_server_error: "An internal server error occurred. Please try again later."
+    },  
+
+    // General
+    success: "Operation completed successfully!",
+    error: "An error occurred. Please try again.",
     undefined_error: "An error occurred. Please try again or seek help!",
     nav_route_error: "Invalid route: must be a non-empty string.",
     delete_res_warning: "Delete not applicable at this time!",

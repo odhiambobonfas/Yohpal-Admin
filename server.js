@@ -30,6 +30,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const LANG_EN = require('@lang/en');
 const Exception = require('@config/exceptions');
 const config = require('@config/config');
 const bindings = require('@config/bindings');
@@ -42,6 +43,8 @@ const routes = require("@routes/app");
 const jwt = require('jsonwebtoken');
 const session = require('express-session'); 
 const RedisCache = require('@config/redisCache');
+const blocklist = require('@ip/blocklist');
+const whitelist = require('@ip/whitelist');
 
 const app = express();
 
@@ -90,6 +93,18 @@ app.use(
 // import everything to the views, custom functions i.e helper 
 // functions
 app.use((req, res, next) => { 
+    let clientIp = req.ip;
+
+    // normalize IPv6-wrapped IPv4 addresses
+    if (clientIp.startsWith('::ffff:')) {
+        clientIp = clientIp.substring(7);
+    }
+
+    if (blocklist.includes(clientIp)) {
+        console.warn(`Blocked request from IP: ${clientIp}`);
+        return res.status(403).send(LANG_EN.req.request_denied);
+    }
+
     res.locals.message = null;
     res.locals.status = null;
     res.locals.permissionBindings = Array.from(bindings.permissions);    
