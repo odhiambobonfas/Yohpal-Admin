@@ -1,15 +1,6 @@
-<div class="sidebar shadow-lg h-100">
-    <!-- User Avatar & Name -->
-    <div class="d-flex justify-content-center align-items-center mb-3">
-        <div class="col-3">
-            <img width="50" height="50" class="navbar-brand-logo rounded-circle" loading="lazy"
-                src="/store/images/avatars/default-avatar.jpg" alt="Yohpal Logo">
-        </div>
-        <h6><%= user.name || user.username || 'Account User' %></h6>
-    </div>
-
+<div class="sidebar shadow-lg h-100 border-right-sidebar"> 
     <!-- Yohpal Modules -->
-    <div class="text-light bg-danger p-1">
+    <div class="text-light bg-danger p-1 mt-1">
         <i class="fa fa-cubes me-2"></i> Yohpal Modules
     </div>
     <ul class="nav flex-column">
@@ -62,7 +53,7 @@
 
                                 <% if (hasPermission('users.access')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="/usersList">
+                                    <a class="nav-link" href="/users">
                                         <i class="fa fa-users me-2"></i> Users List
                                     </a>
                                 </li>

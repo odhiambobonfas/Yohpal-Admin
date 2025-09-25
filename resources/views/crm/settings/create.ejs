@@ -1,108 +1,177 @@
-<%- include('crm/partials/header') %>
-<%- include('crm/partials/navbar') %>
+<%- include('crm/partials/header') %> <%- include('crm/partials/navbar') %>
 
-<div class="container-fluid gx-0 px-0 dashboard-container">
-    <%- include('crm/partials/sidebar') %>
-    <div class="main-content p-1 mt-2">
-        <div class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3">
-            <h4>Create Updates</h4>
-            <div class="badge-span d-flex justify-content-center align-items-center">
-                Apps Updates | <span class="badge bg-danger text-light rounded-4">Dashboard</span>
-            </div>
+<div class="container-fluid gx-0 px-0">
+  <div class="row gap-0 gx-0">
+    <div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
+    <div class="col-md-9 mt-2 content-body">
+      <div
+        class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3"
+      >
+        <h4>Create Updates</h4>
+        <div
+          class="badge-span d-flex justify-content-center align-items-center"
+        >
+          Apps Updates |
+          <span class="badge bg-danger text-light rounded-4">Dashboard</span>
         </div>
+      </div>
 
-        <div class="content-body gx-0 px-0">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form class="add-app-form" id="addAppForm" action="/apps/create" method="post"
-                        enctype="multipart/form-data">
-                        <div class="row">
-                            <!-- App Name -->
-                            <div class="col-md-6 mb-3">
-                                <label for="app_name" class="form-label">App Name</label>
-                                <input type="text" class="form-control" id="app_name" name="app_name"
-                                    placeholder="Enter app name" required>
-                            </div>
-
-                            <!-- App Code -->
-                            <div class="col-md-6 mb-3">
-                                <label for="app_code" class="form-label">App Code</label>
-                                <input type="text" class="form-control" id="app_code" name="app_code"
-                                    placeholder="Enter unique code" required>
-                            </div>
-                        </div>
-
-
-                        <div class="row">
-                            <!-- App Version -->
-                            <div class="col-md-4 mb-3">
-                                <label for="app_version" class="form-label">App Version</label>
-                                <input type="text" class="form-control" id="app_version" name="app_version"
-                                    placeholder="e.g. v1.0.0" required>
-                            </div>
-
-                            <!-- App Status -->
-                            <div class="col-md-4 mb-3">
-                                <label for="app_status" class="form-label">App Status</label>
-                                <select id="app_status" name="app_status" class="form-control" required>
-                                    <option value="" disabled selected>-- Select Status --</option>
-                                    <option value="active">Active</option>
-                                    <option value="deprecated">Deprecated</option>
-                                </select>
-                            </div>
-
-                            <!-- File Upload -->
-                            <div class="col-md-4 mb-3">
-                                <label for="update_file" class="form-label">Upload File</label>
-                                <input class="form-control" type="file" id="update_file" name="update_file" required>
-                            </div>
-                        </div>
-
-                        <!-- Target App -->
-                        <div class="col-md-12 mb-3">
-                            <label for="app_target" class="form-label">Target App</label>
-                            <select id="app_target" name="app_target" class="form-control searchSelect" required>
-                                <option value="" disabled selected>-- Select App --</option>
-                                <option value="app">Yohpal App</option>
-                                <option value="market">Yohpal Market</option>
-                                <option value="hustle">Yohpal Hustle</option>
-                                <option value="chat">Yohpal Chat</option>
-                            </select>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="col-12 mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="6"
-                                placeholder="Enter details about the update..." required></textarea>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="form-check form-check-inline">
-                                <label class="form-check-label">
-                                    <input class="form-check-input autoUpdate" type="checkbox" name="autoUpdate"
-                                        id="autoUpdate" value="1"> Auto update the target application
-                                </label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <label class="form-check-label">
-                                    <input class="form-check-input stayHere" type="checkbox" name="stayHere"
-                                        id="stayHere" value="1"> Stay here after uploading an update.
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="d-flex justify-content-end mt-4 gap-2">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fa fa-plus-square" aria-hidden="true"></i> Save Update
-                            </button>
-                        </div>
-                    </form>
+      <div class="content-body gx-0 px-0">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <form
+              class="add-app-form"
+              id="addAppForm"
+              action="/apps/create"
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <div class="row">
+                <!-- App Name -->
+                <div class="col-md-6 mb-3">
+                  <label for="app_name" class="form-label">App Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="app_name"
+                    name="app_name"
+                    placeholder="Enter app name"
+                    required
+                  />
                 </div>
-            </div>
+
+                <!-- App Code -->
+                <div class="col-md-6 mb-3">
+                  <label for="app_code" class="form-label">App Code</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="app_code"
+                    name="app_code"
+                    placeholder="Enter unique code"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- App Version -->
+                <div class="col-md-4 mb-3">
+                  <label for="app_version" class="form-label"
+                    >App Version</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="app_version"
+                    name="app_version"
+                    placeholder="e.g. v1.0.0"
+                    required
+                  />
+                </div>
+
+                <!-- App Status -->
+                <div class="col-md-4 mb-3">
+                  <label for="app_status" class="form-label">App Status</label>
+                  <select
+                    id="app_status"
+                    name="app_status"
+                    class="form-control"
+                    required
+                  >
+                    <option value="" disabled selected>
+                      -- Select Status --
+                    </option>
+                    <option value="active">Active</option>
+                    <option value="deprecated">Deprecated</option>
+                  </select>
+                </div>
+
+                <!-- File Upload -->
+                <div class="col-md-4 mb-3">
+                  <label for="update_file" class="form-label"
+                    >Upload File</label
+                  >
+                  <input
+                    class="form-control"
+                    type="file"
+                    id="update_file"
+                    name="update_file"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Target App -->
+              <div class="col-md-12 mb-3">
+                <label for="app_target" class="form-label">Target App</label>
+                <select
+                  id="app_target"
+                  name="app_target"
+                  class="form-control searchSelect"
+                  required
+                >
+                  <option value="" disabled selected>-- Select App --</option>
+                  <option value="app">Yohpal App</option>
+                  <option value="market">Yohpal Market</option>
+                  <option value="hustle">Yohpal Hustle</option>
+                  <option value="chat">Yohpal Chat</option>
+                </select>
+              </div>
+
+              <!-- Description -->
+              <div class="col-12 mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="description"
+                  name="description"
+                  rows="6"
+                  placeholder="Enter details about the update..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="col-12">
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label">
+                    <input
+                      class="form-check-input autoUpdate"
+                      type="checkbox"
+                      name="autoUpdate"
+                      id="autoUpdate"
+                      value="1"
+                    />
+                    Auto update the target application
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <label class="form-check-label">
+                    <input
+                      class="form-check-input stayHere"
+                      type="checkbox"
+                      name="stayHere"
+                      id="stayHere"
+                      value="1"
+                    />
+                    Stay here after uploading an update.
+                  </label>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex justify-content-end mt-4 gap-2">
+                <button type="submit" class="btn btn-danger">
+                  <i class="fa fa-plus-square" aria-hidden="true"></i> Save
+                  Update
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <%- include('crm/partials/footer') %>
