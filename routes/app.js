@@ -17,10 +17,11 @@ const {
     upload
 } = require('@config/storage');
 const authRoutes = require('@routes/auth');
+const YohPalController = require('@app/controllers/api/YohPalController');
 const DashboardController = require('@app/controllers/web/DashboardController');
 const RolesController = require('@app/controllers/web/RolesController');
 const SettingsController = require('@app/controllers/web/SettingsController');
-const YohPalController = require('@app/controllers/api/YohPalController');
+const UsersController = require('@app/controllers/web/UsersController');
 const authMiddleware = require('@app/mwares/authMiddleware');
 const routeMiddleware = require('@app/mwares/routeMiddleware');
 
@@ -37,6 +38,10 @@ router.get('/dashboard', authMiddleware, DashboardController.index);
 
 // router.post('/api/settings/update', routeMiddleware, SettingsController.updateSettings);
 // router.get('/api/settings/get', routeMiddleware, SettingsController.getUserSettings);
+
+// Users routes
+router.get('/users', authMiddleware, UsersController.index);
+router.get('/users/create', authMiddleware, UsersController.createUser);
 
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index);

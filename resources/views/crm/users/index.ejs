@@ -1,0 +1,122 @@
+<%- include('crm/partials/header') %>
+<%- include('crm/partials/navbar') %>
+
+<div class="container-fluid gx-0 px-0">
+    <div class="row gap-0 gx-0">
+        <div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
+        <div class="col-md-9 mt-2 content-body">
+            <div class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3">
+                <h4>Users Management</h4>
+                <div class="badge-span d-flex justify-content-center align-items-center gap-2">
+                    <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
+                    <span>|</span>
+                    <a href="/users/create" class="text-decoration-line-none">
+                        <span class="badge bg-danger text-light rounded-4">Create Users</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="content-body gx-0 px-0 h-100">
+                <!-- Card Header -->
+                <div class="card-header bg-white shadow-sm d-flex justify-content-between align-items-center p-1">
+                    <button
+                        class="btn btn-sm btn-lg btn-link w-100 text-start text-dark d-flex align-items-center gap-3 text-decoration-line-none"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#userFilters" aria-expanded="false"
+                        aria-controls="userFilters">
+                        <i class="fas fa-filter fa-2x"></i> <span>Toggle Filters</span>
+                    </button> 
+                </div>
+
+                <!-- Collapsible Filters Section -->
+                <div class="container-fluid col-12 collapse mb-3 usersFilters shadow-sm users-filters" id="userFilters">
+                    <div class="col-12 mt-3 row g-3">
+                        <div class="col-md-4 mb-2">
+                            <label for="userName">Username</label>
+                            <input type="text" name="userName" class="form-control userName"
+                                placeholder="Search by username...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="email">Email</label>
+                            <input type="text" name="email" class="form-control email"
+                                placeholder="Search by email...">
+                        </div> 
+
+                        <div class="col-md-4 mb-2">
+                            <label for="country">Country</label>
+                            <input type="text" name="country" class="form-control country"
+                                placeholder="Search by country...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="phoneNumber">Phone Number</label>
+                            <input type="text" name="phoneNumber" class="form-control phoneNumber"
+                                placeholder="Search by phone number...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="createdAt">Create Range</label>
+                            <input type="text" name="createdAt" id="daterange" class="form-control daterange createdAt">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="adminType">Admin Type</label>
+                            <select name="adminType" class="form-control adminType searchSelect">
+                                <option value="">All</option>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                                <option value="superadmin">Super Admin</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="Status">Status</label>
+                            <select name="Status" class="form-control Status searchSelect">
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="roleId">Role</label>
+                            <select name="roleId" class="form-control roleId searchSelect">
+                                <option value="">All Roles</option>
+                                <!-- dynamically populate roles -->
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Table -->
+                <div class="container-fluid col-12 p-0">
+                    <div class="table-responsive m-1">
+                        <table class="table users-table" id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>   
+                                    <th>Role</th>
+                                    <th>Status</th> 
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('crm/partials/footer') %>
+<script type="text/javascript" src="/default/js/src/mod/users.js"></script>
+<%- include('crm/partials/closure') %>
