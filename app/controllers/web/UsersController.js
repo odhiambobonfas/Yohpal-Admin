@@ -126,7 +126,13 @@ class UsersController {
 
             try {  
                 console.log(data);
-                console.log(data.userName);
+                console.log(data.userName);  
+                let user = req.session.user; 
+
+                if (!user || !user.uid) {
+                    throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
+                }
+
                 // validate input data
                 if (!data.firstName?.length) {
                     throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_firstname, "Role Error!");
@@ -163,8 +169,12 @@ class UsersController {
                 if (!["active", "inactive", "pending"].includes(data.status)) {
                     throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_status, "Invalid Status!");
                 }
- 
-                let user = await UsersUtil.createUser(data);
+                
+                if (data.addedBy) {
+                    data.addedBy = user.uid;
+                }
+
+                let create = await UsersUtil.createUser(data);
                 
                 let route;
                 if (!data.stayHere) {
@@ -175,7 +185,7 @@ class UsersController {
                     status: 'success',
                     message: 'User created successfully.',
                     route: route,
-                    data: user
+                    data: create
                 });
             }
             catch (error) {
