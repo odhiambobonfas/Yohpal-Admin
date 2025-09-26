@@ -10,7 +10,8 @@ import utility from '@config/utils'
 import { parseDateRange, parseToISO } from '@funcs/global_funcs';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
-import LANG_EN from '@lang/en';
+import LANG_EN from '@lang/en'; 
+import { ucwords } from '@config/utils';
 
 class UserUtil extends Util {
     constructor() {
@@ -160,6 +161,26 @@ class UserUtil extends Util {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(data.password, salt);
 
+            // check if email or username already exists
+            const existingUsersRef = FirestoreDatabase.collection(User.collection);
+            const emailSnapshot = await existingUsersRef
+                .where('email', '==', data.email) 
+                .get();
+                
+            if (!emailSnapshot.empty) {
+                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.user_email_already_exists, `User with same email: ${ucwords(data.email)}  exists!`);
+            }
+
+            const usernameSnapshot = await FirestoreDatabase.collection(User.collection)
+                .where('userName', '==', data.userName)
+                .get();
+
+            if (!usernameSnapshot.empty) {
+                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username ${ucwords(data.userName)} exists!`);
+            }
+
+            let addedBy = data.addedBy || null;
+
             let newUser = {
                 firstName: data.firstName || "",
                 lastName: data.lastName || "",
@@ -176,11 +197,11 @@ class UserUtil extends Util {
                 bio: data.bio || "",
                 status: data.status || "active",
                 adminType: data.adminType || "user",
+                createdBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null,
+                updatedBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null, 
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             };
-
-            console.log('New User Data:', newUser);
 
             const userRef = await FirestoreDatabase.collection(User.collection).add(newUser);
 
@@ -192,10 +213,9 @@ class UserUtil extends Util {
 
             return newUser;
         } catch (error) {
-            console.error('Error creating user:', error);
+            console.error('Error creating user:', error); 
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
         }
-
-        return {};
     }
 }
 

@@ -1,6 +1,7 @@
 const lang = {
     // Request errors
     req: {
+        // api errors
         request_denied: "Your request has been denied.",
         invalid_csrf_token: "Invalid CSRF token. Please refresh the page and try again.",
         session_expired: "Your session has expired. Please log in again.",
@@ -12,6 +13,10 @@ const lang = {
         bad_gateway: "Bad gateway. Please try again later.",
         service_unavailable: "Service is currently unavailable. Please try again later.",
         gateway_timeout: "Gateway timeout. Please try again later.",
+
+        // user errors
+        unauthenticated: "You must be logged in to perform this action.",
+        forbidden: "You do not have permission to perform this action.",
 
         invalid_data_format: "The data format provided is invalid. Please check and try again.",
         operation_failed: "The operation could not be completed. Please try again.",
@@ -29,6 +34,9 @@ const lang = {
         invalid_status: "The status value provided is invalid. Please use Active, Inactive, or Pending.",
         insufficient_permissions: "You do not have sufficient permissions to perform this action.",
         user_creation_failed: "Failed to create user. Please try again.",
+        user_already_exists: "A user with this email or username already exists.",
+        user_email_already_exists: " A user with this email already exists.",
+        userName_already_exists: " A user with this username already exists."
     },   
 
     // General
