@@ -10,7 +10,6 @@ import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
 import { FirebaseUtil, FirestoreDatabase } from '@utils/FirebaseUtil';
 import {env, isInDevelopment} from "@funcs/global_funcs"; 
-import { stat } from 'fs-extra';
 
 class AuthController {
     static async register(req, res) {
@@ -126,7 +125,7 @@ class AuthController {
                     returnSecureToken: true
                 })
             }); 
-            
+
             if (!response.ok) { 
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
             }
@@ -168,13 +167,10 @@ class AuthController {
                 adminType: user.adminType || 'user',
                 role: role || null,
                 permissions: permissions,
-                refreshToken: refreshToken,
-                status: user.status || 'inactive'
+                refreshToken: refreshToken
             }; 
-            
-            console.log('User Status:', user.status);
 
-            if (user.status !== 'active') {
+            if (userPayload.adminType === 'user') {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
 
