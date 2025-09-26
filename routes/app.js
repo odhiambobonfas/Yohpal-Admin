@@ -13,9 +13,7 @@
  * GitHub: https://github.com/Gicehajunior
  */
 const express = require('express');
-const {
-    upload
-} = require('@config/storage');
+const { upload } = require('@config/storage');
 const authRoutes = require('@routes/auth');
 const YohPalController = require('@app/controllers/api/YohPalController');
 const DashboardController = require('@app/controllers/web/DashboardController');
@@ -41,7 +39,9 @@ router.get('/dashboard', authMiddleware, DashboardController.index);
 
 // Users routes
 router.get('/users', authMiddleware, UsersController.index);
-router.get('/users/create', authMiddleware, UsersController.createUser);
+router.route('/users/create')
+    .get(authMiddleware, UsersController.createUser)
+    .post(authMiddleware, upload.single('profile_picture'), UsersController.createUser);
 
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index);

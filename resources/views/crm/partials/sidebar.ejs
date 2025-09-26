@@ -38,7 +38,7 @@
                                 <% if (hasPermission('roles.access')) { %>
                                 <li class="nav-item">
                                     <a class="nav-link" href="/roles">
-                                        <i class="fa fa-id-badge me-2"></i> Roles
+                                        <i class="fa fa-id-badge me-2"></i> List Roles
                                     </a>
                                 </li>
                                 <% } %>
@@ -47,6 +47,14 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="/roles/create">
                                         <i class="fas fa-user-shield me-2"></i> Create Role
+                                    </a>
+                                </li>
+                                <% } %>
+
+                                <% if (hasPermission('users.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/users/create">
+                                        <i class="fas fa-users-cog me-2"></i> Create Users
                                     </a>
                                 </li>
                                 <% } %>

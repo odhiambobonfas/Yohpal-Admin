@@ -8,8 +8,28 @@ const lang = {
         missing_parameters: "Missing required parameters. Please provide all necessary information.",
         unauthorized_access: "You do not have permission to access this resource.",
         resource_not_found: "The requested resource could not be found.",
-        internal_server_error: "An internal server error occurred. Please try again later."
-    },  
+        internal_server_error: "An internal server error occurred. Please try again later.",
+        bad_gateway: "Bad gateway. Please try again later.",
+        service_unavailable: "Service is currently unavailable. Please try again later.",
+        gateway_timeout: "Gateway timeout. Please try again later.",
+
+        invalid_data_format: "The data format provided is invalid. Please check and try again.",
+        operation_failed: "The operation could not be completed. Please try again.",
+        duplicate_entry: "A record with the same information already exists.",
+
+        invalid_username: "The username provided is invalid. Please check and try again.",
+        invalid_firstname: "The first name provided is invalid. Please check and try again.",
+        invalid_lastname: "The last name provided is invalid. Please check and try again.",
+        invalid_email: "The email address provided is invalid. Please check and try again.",
+        invalid_email_format: "The email address format is incorrect. Please provide a valid email.",
+        invalid_password: "The password provided does not meet the required criteria.",
+        password_mismatch: "The passwords provided do not match. Please check and try again.",
+        user_not_found: "The specified user could not be found.",
+        invalid_role: "The role specified is invalid. Please check and try again.",
+        invalid_status: "The status value provided is invalid. Please use Active, Inactive, or Pending.",
+        insufficient_permissions: "You do not have sufficient permissions to perform this action.",
+        user_creation_failed: "Failed to create user. Please try again.",
+    },   
 
     // General
     success: "Operation completed successfully!",

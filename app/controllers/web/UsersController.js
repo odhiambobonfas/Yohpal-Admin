@@ -8,7 +8,7 @@ import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import Util from '@utils/Util';
 import utility from '@config/utils';
 import mexDtParser from '@config/mexDtParser';
-import { ucfirst, ucwords } from '@config/utils';
+import { ucfirst, ucwords, validateEmail } from '@config/utils';
 import UsersUtil from '@utils/UserUtil'; 
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
@@ -20,7 +20,7 @@ class UsersController {
 
             try { 
                 users = await UsersUtil.getAllUsers(req.query); 
-
+                
                 let mex = new mexDtParser(users);
                 users = mex.addColumn('actions', (col) => {
                     let actions = '';
@@ -57,7 +57,7 @@ class UsersController {
                 })
                 .addColumn('fullName', (col) => { 
                     let fullName = 'N/A';
-                    if (col) {
+                    if (col.firstName?.length || col.lastName?.length) {
                         fullName = `${col.firstName ?? ''} ${col.lastName ?? ''}`.trim();
                     }
 
@@ -74,6 +74,9 @@ class UsersController {
                 })
                 .editColumn('phoneNumber', (col) => { 
                     return ucwords(col || 'N/A');
+                })
+                .addColumn('roleName', (col) => { 
+                    return ucwords(col.role.name || 'N/A');
                 })
                 .editColumn('description', (col) => { 
                     return ucfirst(col || 'N/A');
@@ -117,6 +120,77 @@ class UsersController {
     }
 
     static async createUser(req, res) {
+
+        if (utility.isAjaxRequest(req)) {
+            let data = req.body;  
+
+            try {  
+                console.log(data);
+                console.log(data.userName);
+                // validate input data
+                if (!data.firstName?.length) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_firstname, "Role Error!");
+                }
+
+                if (!data.lastName?.length) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_lastname, "Invalid Last Name!");
+                }
+
+                if (!data.userName?.length) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_username, "Invalid Username!");
+                }
+
+                if (!data.email?.length) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_email, "Invalid Email!");
+                }
+
+                if (!validateEmail(data.email)) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_email_format, "Email Format Error!");
+                }
+
+                if (!data.password?.length) {
+                    throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.invalid_password, "Password Missing!");
+                }
+
+                if (data.password !== data.confirmPassword) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.password_mismatch, "Passwords Do Not Match!");
+                }
+
+                if (!data.roleId?.length) {
+                    throw new Exception(201, "AUTHORIZATION_ERROR_EXCEPTION", LANG_EN.req.invalid_role, "Role Missing!");
+                }
+
+                if (!["active", "inactive", "pending"].includes(data.status)) {
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_status, "Invalid Status!");
+                }
+ 
+                let user = await UsersUtil.createUser(data);
+                
+                let route;
+                if (!data.stayHere) {
+                    route = '/roles';
+                }
+
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'User created successfully.',
+                    route: route,
+                    data: user
+                });
+            }
+            catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                    error.mexLogger();
+                }
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code ||  'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            }
+        }
+
         return res.render("crm/users/create", { 
             title: `${ config.APP.APP_NAME } || List Users`,
             user: req.session.user

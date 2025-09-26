@@ -16,7 +16,7 @@ class RedisCache {
             username: config.CACHE.REDIS.REDIS_USERNAME,
             password: config.CACHE.REDIS.REDIS_PASSWORD,
             socket: {
-                host: 'redis-14000.c341.af-south-1-1.ec2.redns.redis-cloud.com',
+                host: config.CACHE.REDIS.REDIS_URL,
                 port: config.CACHE.REDIS.REDIS_PORT,
                 connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT,
                 reconnectStrategy: (retries) => {
