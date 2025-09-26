@@ -31,7 +31,7 @@ function isInDevelopment() {
     return true;
 }
 
-function parseDateRange(rangeStr, CONVERT_FB_tIMESTAMP=false) {
+function parseDateRange(rangeStr, CONVERT_FB_TIMESTAMP=false) {
     if (!rangeStr || typeof rangeStr !== "string") return null;
 
     const parts = rangeStr.split(" - ");
@@ -40,7 +40,7 @@ function parseDateRange(rangeStr, CONVERT_FB_tIMESTAMP=false) {
     let start = parts[0];
     let end   = parts[1]; 
 
-    if (CONVERT_FB_tIMESTAMP) { 
+    if (CONVERT_FB_TIMESTAMP) { 
         const startISO = parseToISO(start);
         const endISO   = parseToISO(end); 
         start = new Date(`${startISO}T00:00:00Z`);
