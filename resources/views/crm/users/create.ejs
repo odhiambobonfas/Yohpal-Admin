@@ -92,7 +92,8 @@
 					<div class="card-body row">
 						<div class="col-md-6 mb-3">
 							<label for="roleId" class="form-label">Role</label>
-							<select class="form-select searchSelect" id="roleId" name="roleId">
+							<select class="form-select searchSelect" id="roleId" name="roleId"> 
+                                <option value="">Select Role</option>
 								<% allRoles.forEach(role => { %>
 									<option value="<%= role.id %>"><%= role.name %></option>
 								<% }) %>

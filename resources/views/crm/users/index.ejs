@@ -82,8 +82,10 @@
                         <div class="col-md-4 mb-2">
                             <label for="roleId">Role</label>
                             <select name="roleId" class="form-control roleId searchSelect">
-                                <option value="">All Roles</option>
-                                <!-- dynamically populate roles -->
+                                <option value="">Select Role</option> 
+								<% allRoles.forEach(role => { %>
+									<option value="<%= role.id %>"><%= role.name %></option>
+								<% }) %>
                             </select>
                         </div>
 
