@@ -6,7 +6,15 @@
             <img class="brand-logo-img" src="https://hustle.yohpal.com/assets/store/logos/logo_circular.png" alt="Yohpal Logo">
         </div>
     </div> 
-    <p class="text-center text-muted">Login in to your account</p> 
+    <p class="text-center text-muted">Login in to your account</p>
+
+    <% if (message.length > 0) { %>
+        <div class="form-group">
+            <div class="alert alert-<%= status && status == 'success' ? 'primary' : 'danger' %>" role="alert">
+                <strong>Alert:</strong> <%= message %>
+            </div>
+        </div>
+    <% } %>
     
     <form class="login-user-form" action="/login" method="POST">
         <div class="mb-3">
