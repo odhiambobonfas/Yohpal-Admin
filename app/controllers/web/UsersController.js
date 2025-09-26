@@ -63,6 +63,9 @@ class UsersController {
 
                     return ucwords(fullName);
                 }) 
+                .editColumn('email', (col) => { 
+                    return (col || 'N/A');
+                }) 
                 .editColumn('addedBy', (col) => { 
                     return ucwords(col || 'N/A');
                 }) 
@@ -81,12 +84,12 @@ class UsersController {
                 .editColumn('description', (col) => { 
                     return ucfirst(col || 'N/A');
                 })
-                .editColumn('status', (col) => { 
-                    if (col === 'active') {
+                .editColumn('status', (col) => {  
+                    if (col == 'Active') {
                         return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
-                    } else if (col === 'inactive') {
+                    } else if (col == 'Inactive') {
                         return `<span class="badge text-dark bg-warning">${ucfirst(col)}</span>`;
-                    } else if (col === 'suspended') {
+                    } else if (col == 'Suspended') {
                         return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
                     } else {
                         return `<span class="badge text-dark bg-warning">Inactive</span>`;
@@ -124,9 +127,7 @@ class UsersController {
         if (utility.isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {  
-                console.log(data);
-                console.log(data.userName);  
+            try {   
                 let user = req.session.user; 
 
                 if (!user || !user.uid) {
@@ -173,7 +174,7 @@ class UsersController {
                 if (data.addedBy) {
                     data.addedBy = user.uid;
                 }
-
+                
                 let create = await UsersUtil.createUser(data);
                 
                 let route;

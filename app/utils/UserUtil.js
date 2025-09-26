@@ -1,9 +1,6 @@
-const Util = require('@utils/Util');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const Util = require('@utils/Util'); 
 const config = require('@config/config');
-const User = require('@models/User');
-const db = require('@database/database');
+const User = require('@models/User'); 
 import RedisCache from '@config/redisCache';
 import { FirestoreDatabase } from '@utils/FirebaseUtil'; 
 import utility from '@config/utils'
@@ -11,7 +8,7 @@ import { parseDateRange, parseToISO } from '@funcs/global_funcs';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords } from '@config/utils';
+import { ucwords } from '@config/utils';  
 
 class UserUtil extends Util {
     constructor() {
@@ -157,10 +154,7 @@ class UserUtil extends Util {
     }    
 
     async createUser(data={}) { 
-        try { 
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(data.password, salt);
-
+        try {  
             // check if email or username already exists
             const existingUsersRef = FirestoreDatabase.collection(User.collection);
             const emailSnapshot = await existingUsersRef
@@ -179,15 +173,23 @@ class UserUtil extends Util {
                 throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username ${ucwords(data.userName)} exists!`);
             }
 
+            const userRecord = await admin.auth().createUser({
+                email: data.email,
+                password: data.password,
+                displayName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+            });
+
+            if (!userRecord || !userRecord.uid) {
+                throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
+            }
+            
             let addedBy = data.addedBy || null;
 
             let newUser = {
-                firstName: data.firstName || "",
-                lastName: data.lastName || "",
-                fullName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-                userName: data.userName || "",
-                email: data.email || "",
-                password: data.password ? hashedPassword : "",
+                authUid: userRecord.uid,
+                uid: userRecord.uid,
+                firstName: data.firstName || "", 
+                userName: data.userName || "",  
                 Country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
                 roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
@@ -195,8 +197,7 @@ class UserUtil extends Util {
                 profile_picture: data.profilePicture || "",
                 address: data.address || "",
                 bio: data.bio || "",
-                status: data.status || "active",
-                adminType: data.adminType || "user",
+                status: data.status || "active", 
                 createdBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null,
                 updatedBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null, 
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
