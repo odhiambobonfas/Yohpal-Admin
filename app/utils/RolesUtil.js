@@ -28,8 +28,6 @@ class RolesUtil extends Util {
             let collection = await ref.get();
             
             let data = utility.fbCollectionParser(collection);
-    
-            console.log(data);
             
             return data;
         } catch (error) {

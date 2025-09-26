@@ -9,6 +9,8 @@ import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import utility from '@config/utils'
 import { parseDateRange, parseToISO } from '@funcs/global_funcs';
 import admin from 'firebase-admin';
+import Exception from '@config/exceptions';
+import LANG_EN from '@lang/en';
 
 class UserUtil extends Util {
     constructor() {
@@ -72,7 +74,20 @@ class UserUtil extends Util {
             }
 
             let users =  utility.fbCollectionParser(snapshot);
-            
+
+            users = await Promise.all(users.map( async (user) => {
+                let role = {};      
+                // if user has a role reference
+                if (user.roleRef && user.roleRef.get) {
+                    const roleSnap = await user.roleRef.get();
+                    if (roleSnap.exists) {
+                        role = roleSnap.data(); 
+                    }
+                }
+                user.role = role; 
+                return user;
+            })); 
+
             return users;
         } catch (error) {
             console.error('Error getting users:', error);
@@ -139,6 +154,49 @@ class UserUtil extends Util {
             return 0;
         }
     }    
+
+    async createUser(data={}) { 
+        try { 
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(data.password, salt);
+
+            let newUser = {
+                firstName: data.firstName || "",
+                lastName: data.lastName || "",
+                fullName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+                userName: data.userName || "",
+                email: data.email || "",
+                password: data.password ? hashedPassword : "",
+                Country: data.country || "",
+                phoneNumber: data.phoneNumber || "",
+                roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
+                refPermissions: data.permissionId ? FirestoreDatabase.collection('permissions').doc(data.permissionId) : null,
+                profile_picture: data.profilePicture || "",
+                address: data.address || "",
+                bio: data.bio || "",
+                status: data.status || "active",
+                adminType: data.adminType || "user",
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            };
+
+            console.log('New User Data:', newUser);
+
+            const userRef = await FirestoreDatabase.collection(User.collection).add(newUser);
+
+            if (!userRef.id) {
+                throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
+            }
+
+            newUser.id = userRef.id;
+
+            return newUser;
+        } catch (error) {
+            console.error('Error creating user:', error);
+        }
+
+        return {};
+    }
 }
 
 module.exports = new UserUtil();

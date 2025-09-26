@@ -39,6 +39,7 @@ const database = require('@database/database');
 const permissionHelperFuncs = require("@funcs/permissions");
 const authentHelperFuncs = require("@funcs/authentication");
 const globalHelperFuncs = require("@funcs/global_funcs");
+const rolesHelperFuncs = require("@funcs/roles");
 const routes = require("@routes/app");  
 const jwt = require('jsonwebtoken');
 const session = require('express-session'); 
@@ -92,7 +93,7 @@ app.use(
 
 // import everything to the views, custom functions i.e helper 
 // functions
-app.use((req, res, next) => { 
+app.use(async(req, res, next) => { 
     let clientIp = req.ip;
 
     // normalize IPv6-wrapped IPv4 addresses
@@ -131,6 +132,7 @@ app.use((req, res, next) => {
     // permission helpers
     res.locals.hasPermission = (key) => permissionHelperFuncs.hasPermission(user?.permissions || [], key);
     res.locals.hasAnyPermission = (keys) => permissionHelperFuncs.hasAnyPermission(user?.permissions || [], keys);
+    res.locals.allRoles = await rolesHelperFuncs.getAllRoles();
 
     next();
 });
