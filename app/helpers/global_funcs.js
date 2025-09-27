@@ -60,7 +60,7 @@ function parseToISO(dateStr) {
   return `${year}-${month}-${day}`;
 }
 
-module.exports = {
+export default {
     env, 
     isInDevelopment,
     parseToISO,

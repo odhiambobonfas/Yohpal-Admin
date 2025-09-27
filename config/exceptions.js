@@ -44,4 +44,4 @@ class Exception extends Error {
     }
 }
 
-module.exports = Exception;
+export default Exception;

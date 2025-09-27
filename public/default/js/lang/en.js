@@ -1,4 +1,4 @@
-const lang = {
+const LANG_EN = {
     // Request errors
     req: {
         // api errors
@@ -89,4 +89,4 @@ const lang = {
     }
 };
 
-export default lang;
+export default LANG_EN;

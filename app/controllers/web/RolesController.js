@@ -262,4 +262,4 @@ class RolesController {
     }
 }
 
-module.exports = RolesController;
+export default RolesController;

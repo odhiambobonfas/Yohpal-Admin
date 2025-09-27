@@ -9,4 +9,4 @@ class WebController {
     }
 }
 
-module.exports = WebController;
+export default WebController;

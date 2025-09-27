@@ -9,4 +9,4 @@ const whitelist = [
     '213.152.176.252'
 ];
 
-module.exports = whitelist; 
+export default whitelist;

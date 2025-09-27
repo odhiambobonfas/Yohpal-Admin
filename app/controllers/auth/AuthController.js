@@ -9,8 +9,7 @@ import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
 import { FirebaseUtil, FirestoreDatabase } from '@utils/FirebaseUtil';
-import {env, isInDevelopment} from "@funcs/global_funcs"; 
-import { stat } from 'fs-extra';
+import {env, isInDevelopment} from "@funcs/global_funcs";  
 
 class AuthController {
     static async register(req, res) {
@@ -80,7 +79,7 @@ class AuthController {
         }
     }
 
-    static async login(req, res) {
+    static async login(req, res) { 
         let message = 'Please login to access your account!';
 
         if (req.query.message || req.query.auth) {
@@ -101,6 +100,12 @@ class AuthController {
             message: message,
             test_username: test_username,
             test_password: test_password,
+        },(err, html) => {
+            if (err) {
+                console.error("Render error:", err);
+                return res.status(500).send("Template rendering failed");
+            }
+            res.send(html);
         });
     }
 
@@ -172,8 +177,6 @@ class AuthController {
                 status: user.status || 'inactive'
             }; 
             
-            console.log('User Status:', user.status);
-
             if (user.status !== 'active') {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
@@ -211,4 +214,4 @@ class AuthController {
     }
 }
 
-module.exports = AuthController;
+export default AuthController;

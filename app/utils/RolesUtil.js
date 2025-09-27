@@ -154,4 +154,4 @@ class RolesUtil extends Util {
     } 
 }
 
-module.exports = new RolesUtil();
+export default new RolesUtil();

@@ -284,4 +284,4 @@ class UserUtil extends Util {
     }
 }
 
-module.exports = new UserUtil();
+export default new UserUtil();

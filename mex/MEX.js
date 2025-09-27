@@ -42,4 +42,4 @@ class MEX {
     }
 }
 
-module.exports = MEX;
+export default MEX;

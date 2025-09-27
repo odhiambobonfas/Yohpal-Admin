@@ -6,7 +6,7 @@
         "test": "jest --passWithNoTests",
         "dev": "pm2 start ecosystem.config.js --watch-delay 500",
         "dev:logs": "pm2 logs",
-        "dev:nodemon": "nodemon --trace-deprecation server.js",
+        "dev:nodemon": "nodemon --exec ts-node ./server.ts",
         "pm2:stop": "pm2 stop server.js",
         "pm2:update": "pm2 update",
         "pm2:delete": "pm2 delete all",
@@ -33,6 +33,7 @@
     "repository": "https://github.com/Gicehajunior/myexpress-framework",
     "license": "MIT",
     "description": "",
+    "type": "module",
     "_moduleAliases": {
         "@mex": "./mex",
         "@app": "./app",
@@ -149,10 +150,14 @@
         "@babel/preset-env": "^7.26.9",
         "@babel/register": "^7.25.9",
         "babel-loader": "^10.0.0",
+        "babel-plugin-module-resolver": "^5.0.2",
         "copy-webpack-plugin": "^13.0.0",
         "jest": "^29.7.0",
         "nodemon": "^3.1.9",
         "supertest": "^7.0.0",
+        "ts-node": "^10.9.2",
+        "tsconfig-paths": "^4.2.0",
+        "typescript": "^5.9.2",
         "webpack": "^5.98.0",
         "webpack-cli": "^6.0.1"
     }

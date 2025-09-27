@@ -1,7 +1,7 @@
 require('dotenv').config();
 const path = require('path');
 
-module.exports = {
+export default {
     APP: {
         APP_NAME: process.env.APP_NAME || 'Yohpal Admin',
         APP_ENV: process.env.APP_ENV || 'development',
@@ -69,6 +69,7 @@ module.exports = {
         SESSION_SECRET: process.env.SESSION_SECRET || '',
         RESAVE: false,
         PROXY: true,
+        PREFIX: 'sess:'
     },
     COOKIES: { 
         USE_COOKIES: true,

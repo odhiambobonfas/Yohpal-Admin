@@ -1,0 +1,29 @@
+{
+    "compilerOptions": { 
+        "outDir": "./dist",
+        "rootDir": "./",
+        "strict": false,
+        "target": "ES2022",
+        "module": "CommonJS",
+        "allowJs": false,
+        "noImplicitAny": false,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "baseUrl": "./",
+        "paths": {
+            "@mex/*": ["mex/*"],
+            "@app/*": ["app/*"],
+            "@funcs/*": ["app/helpers/*"],
+            "@config/*": ["config/*"],
+            "@ip/*": ["config/ipsConfig/*"],
+            "@lang/*": ["public/default/js/lang/*"],
+            "@models/*": ["app/models/*"],
+            "@utils/*": ["app/utils/*"],
+            "@db/*": ["config/database/*"],
+            "@database/*": ["config/database/*"],
+            "@services/*": ["mex/services/*"],
+            "@controllers/*": ["app/controllers/*"],
+            "@routes/*": ["routes/*"]
+        },  
+    },  
+}

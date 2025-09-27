@@ -23,4 +23,4 @@ class Role extends AppModel {
     }
 }
 
-module.exports = Role;
+export default Role;

@@ -2,7 +2,7 @@ require('dotenv').config();
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = (env, argv) => {
+export default (env, argv) => {
     const mode = argv.mode || process.env.APP_ENV || 'production';
     
     return {

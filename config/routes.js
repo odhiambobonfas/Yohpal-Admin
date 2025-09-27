@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     '/': ['GET'],
     '/yohpal/api/documentation': ['GET'],
     '/api/settings/get': ['GET'],

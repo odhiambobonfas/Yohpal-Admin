@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const config = require('@config/config');
 const Util = require('@utils/Util');
 
-module.exports = (req, res, next) => { 
+export default (req, res, next) => { 
     const token = req.session.token;
 	
     if (!token) {

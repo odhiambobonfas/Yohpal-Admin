@@ -62,4 +62,4 @@ const uploadOptions = {
 if (!storage) delete uploadOptions.storage;
 const upload = multer(uploadOptions);
 
-module.exports = { upload };
+export default { upload }; 

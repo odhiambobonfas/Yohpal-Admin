@@ -61,4 +61,4 @@ router.get('/dashboard/stats', authMiddleware, DashboardController.index);
 router.get('/apps/list', authMiddleware, SettingsController.index);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
 
-module.exports = router;
+export default router;

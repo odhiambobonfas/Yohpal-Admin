@@ -45,4 +45,4 @@ class User extends AppModel {
     }
 }
 
-module.exports = User;
+export default User;

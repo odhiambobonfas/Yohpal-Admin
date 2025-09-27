@@ -12,7 +12,7 @@ const config = require('@config/config');
  * 
  * @module config/database/config
  */
-module.exports = {
+export default {
     mysql: {
         DB_CONN: config.DATABASE.DB_CONN || 'mysql2', // mysql2 for MySQL
         DB_HOST: config.DATABASE.DB_HOST || '127.0.0.1',

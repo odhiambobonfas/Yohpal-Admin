@@ -2,7 +2,7 @@ import config from '@config/config';
 import Exception from '@config/exceptions';
 import allowedRoutes from '@config/routes';
 
-module.exports = (req, res, next) => { 
+export default (req, res, next) => { 
     try {  
         if (!allowedRoutes[req.path] || !allowedRoutes[req.path].includes(req.method)) {
             throw new Exception(

@@ -2,4 +2,4 @@ require('dotenv').config();
 
 // ...
 
-module.exports = {};
+export default {};

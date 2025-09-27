@@ -98,4 +98,4 @@ class XfixCoreCLI {
     }
 }
 
-module.exports = XfixCoreCLI;
+export default XfixCoreCLI;

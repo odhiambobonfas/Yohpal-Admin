@@ -34,7 +34,7 @@ class MigrationService {
         /**
          * Migration template for creating the ${tableName} table.
          */
-        module.exports = {
+        export default {
             up: async (queryInterface, Sequelize) => {
                 // Write migration logic here
                 await queryInterface.createTable('${tableName}', {
@@ -98,4 +98,4 @@ class MigrationService {
     }
 }
 
-module.exports = MigrationService;
+export default MigrationService;

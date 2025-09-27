@@ -41,4 +41,4 @@ const utility = {
     }
 }
 
-module.exports = utility;
+export default utility;

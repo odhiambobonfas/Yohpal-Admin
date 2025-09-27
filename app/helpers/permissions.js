@@ -20,7 +20,7 @@ function hasAnyPermission(userPermissions, keys = []) {
     return keys.some(key => userPermissions.includes(key));
 }
 
-module.exports = {
+export default {
     hasPermission,
     hasAnyPermission
 };

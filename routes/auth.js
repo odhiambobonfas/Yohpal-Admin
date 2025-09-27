@@ -16,4 +16,4 @@ const auth = (router) => {
     router.get('/logout', AuthController.logout);
 }
 
-module.exports = auth;
+export default auth;

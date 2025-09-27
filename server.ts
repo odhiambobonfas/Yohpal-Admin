@@ -1,10 +1,10 @@
 /**
- * MyExpress Framework - Lightweight MVC Web Framework for Node.js
+ * MyExpress Framework - Lightweight MVC Web Framework for Node
  * ---------------------------------------------------------------
  * Designed and Developed by Giceha Junior
  * GitHub: https://github.com/Gicehajunior
  * 
- * MyExpress is a minimal yet powerful Node.js framework built on 
+ * MyExpress is a minimal yet powerful Node framework built on 
  * Express, following the MVC architecture for better code organization. 
  * It is designed to be modular, scalable, and developer-friendly.
  * 
@@ -18,42 +18,41 @@
  * - Easy database initialization
  * 
  * Ensure that the configuration files are properly set before starting.
- */
-require("@babel/register")({
-    presets: ["@babel/preset-env"]
-});
-require('module-alias/register');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const fs = require('fs');
-const path = require('path');
-const LANG_EN = require('@lang/en');
-const Exception = require('@config/exceptions');
-const config = require('@config/config');
-const bindings = require('@config/bindings');
-const corsconfig = require('@config/cors');
-const database = require('@database/database');
-const permissionHelperFuncs = require("@funcs/permissions");
-const authentHelperFuncs = require("@funcs/authentication");
-const globalHelperFuncs = require("@funcs/global_funcs");
-const rolesHelperFuncs = require("@funcs/roles");
-const routes = require("@routes/app");  
-const jwt = require('jsonwebtoken');
-const session = require('express-session'); 
-const RedisCache = require('@config/redisCache');
-const blocklist = require('@ip/blocklist');
-const whitelist = require('@ip/whitelist');
+ */   
+require ('dotenv').config(); // Load environment variables from .env file
+require('module-alias/register'); // Enable module aliasing
+import express from "express"; 
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import fs from "fs";
+import path from "path";
+
+import LANG_EN from "./public/default/js/lang/en.js"; 
+import config from "./config/config.js";
+import bindings from "./config/bindings.js";
+import corsconfig from "./config/cors.js"; 
+
+import permissionHelperFuncs from "./app/helpers/permissions.js";
+import authentHelperFuncs from "./app/helpers/authentication.js";
+import globalHelperFuncs from "./app/helpers/global_funcs.js";
+import rolesHelperFuncs from "./app/helpers/roles.js";
+
+import routes from "./routes/app.js";
+
+import jwt from "jsonwebtoken";
+import session from "express-session";
+
+import RedisStoreFactory from "connect-redis";
+import RedisCache from "./config/redisCache.js";
+import blocklist from "./config/ipsConfig/blocklist.js";
+import whitelist from "./config/ipsConfig/whitelist.js";
 
 const app = express();
 
 // Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: corsconfig.ORIGIN,
     credentials: corsconfig.CREDENTIALS,
@@ -72,14 +71,17 @@ if (config.APP.APP_DEBUG) {
     app.use(morgan('combined'));
 }
 
+const RedisStore = RedisStoreFactory(session);  
+
+// Session Middleware with Redis Store  
 app.use(
     session({
-        name: config.SESSION.SESSION_NAME || 'connect.sid',
+        name: config.SESSION.SESSION_NAME,
+        store: new RedisStore({ client: RedisCache.client }),
         secret: config.APP.SESSION_SECRET,
         resave: config.SESSION.RESAVE,
         saveUninitialized: true,
-        proxy: config.SESSION.PROXY, 
-        secret: config.SESSION.SESSION_SECRET || '', 
+        proxy: config.SESSION.PROXY,  
         cookie: {
             httpOnly: config.COOKIES.HTTPONLY,
             secure: config.COOKIES.SECURE,
@@ -108,10 +110,10 @@ app.use(async(req, res, next) => {
 
     res.locals.message = null;
     res.locals.status = null;
-    res.locals.permissionBindings = Array.from(bindings.permissions);    
+    res.locals.permissionBindings = Object.values(bindings.permissions); 
     
     let user = {};
-    let token = req.session.token;
+    let token = (req as any).session.token;
 
     if (token) {
         try {
@@ -130,8 +132,8 @@ app.use(async(req, res, next) => {
     });
 
     // permission helpers
-    res.locals.hasPermission = (key) => permissionHelperFuncs.hasPermission(user?.permissions || [], key);
-    res.locals.hasAnyPermission = (keys) => permissionHelperFuncs.hasAnyPermission(user?.permissions || [], keys);
+    res.locals.hasPermission = (key) => permissionHelperFuncs.hasPermission(user['permissions'] || [], key);
+    res.locals.hasAnyPermission = (keys) => permissionHelperFuncs.hasAnyPermission(user['permissions'] || [], keys);
     res.locals.allRoles = await rolesHelperFuncs.getAllRoles();
 
     next();
@@ -140,15 +142,17 @@ app.use(async(req, res, next) => {
 // Serve Public Assets 
 app.use(express.static(config.PATHS.PUBLIC, {
     setHeaders: (res, path) => {
-        if (path.endsWith('.js')) {
+        if (path.endsWith('')) {
             res.setHeader('Content-Type', 'application/javascript');
         }
     }
 }));
 
+// Argument of type 'unknown' is not assignable to parameter of type 'string | number | readonly string[]'.ts(2345)
+
 app.use((req, res, next) => {
     Object.entries(config.REQUESTS.ALLOW_HEADERS_LIST).forEach(([key, value]) => {
-        res.setHeader(key, value);
+        res.setHeader(key, value as string | number | readonly string[]);
     });
     next();
 });
@@ -181,7 +185,12 @@ app.use(routes);
 // Start Server only if DB is ready
 (async () => {
     // await database.init();
-    let port = config.APP.APP_PORT;
+    let port: string | number = process.env.PORT || 3000;
+    
+    if (typeof port === "string") {
+        port = parseInt(port, 10);
+    }
+
     let ip_address = config.APP.APP_IP;
     let environment = config.APP.APP_ENV;
     let protocol_annotation;
@@ -197,4 +206,4 @@ app.use(routes);
     });
 })();
 
-module.exports = app; // Export for testing purposes
+export default app; // Export for testing purposes

@@ -55,7 +55,7 @@ class FirebaseUtil extends Utils {
 
 const firebaseUtilInstance = new FirebaseUtil();
 
-module.exports = {
+export default {
     FirebaseUtil: FirebaseUtil, 
     FirestoreDatabase: firebaseUtilInstance.initFirebase().firestore(),
     RealTimeDatabase: firebaseUtilInstance.initFirebase().database()

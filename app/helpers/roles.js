@@ -4,6 +4,6 @@ async function getAllRoles() {
     return await RolesUtil.getAllRoles();
 }
 
-module.exports = {
+export default {
     getAllRoles
 };  

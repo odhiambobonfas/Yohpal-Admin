@@ -23,4 +23,4 @@ class Permissions extends AppModel {
     }
 }
 
-module.exports = Permissions;
+export default Permissions;

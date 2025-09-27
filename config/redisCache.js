@@ -3,7 +3,7 @@ import { createClient } from 'redis';
 
 class RedisCache {
     constructor() {
-        this.client = undefined;
+        this.client = undefined; 
         this.initRedisCaching();
     }
 
@@ -12,7 +12,7 @@ class RedisCache {
      * connection utility
      */
     async initRedisCaching() {
-        this.client = createClient({  
+        this.client = createClient({ 
             username: config.CACHE.REDIS.REDIS_USERNAME,
             password: config.CACHE.REDIS.REDIS_PASSWORD,
             socket: {
@@ -59,6 +59,8 @@ class RedisCache {
         } catch (err) {
             console.error('[Redis Connection Failed]', err);
         }
+
+        return this.client;
     }
 
     /**
