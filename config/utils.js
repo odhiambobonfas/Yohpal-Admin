@@ -35,6 +35,9 @@ const utility = {
     },
     validateEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    },
+    jsonParser(data) {
+        return JSON.parse(JSON.stringify(data));
     }
 }
 

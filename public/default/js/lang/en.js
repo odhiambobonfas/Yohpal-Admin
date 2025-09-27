@@ -34,9 +34,13 @@ const lang = {
         invalid_status: "The status value provided is invalid. Please use Active, Inactive, or Pending.",
         insufficient_permissions: "You do not have sufficient permissions to perform this action.",
         user_creation_failed: "Failed to create user. Please try again.",
+        User_update_failed: "Failed to update user. Please try again.",
         user_already_exists: "A user with this email or username already exists.",
         user_email_already_exists: " A user with this email already exists.",
-        userName_already_exists: " A user with this username already exists."
+        userName_already_exists: " A user with this username already exists.",
+        user_unexists: "A user with this email or username already exists.",
+        user_email_unexists: " A user with this email already exists.",
+        userName_unexists: " A user with this username already exists."
     },   
 
     // General
@@ -59,9 +63,30 @@ const lang = {
     default_role_conflict: "Super admin and admin role cannot be applicable the same time!",
     role_description_limit: "Role description cannot exceed a 100 maximum of characters!",
     role_exists_exception: "Role you are trying to create already exists",
-    role_unexists_exception: "Role you are trying to update unexists!"
+    role_unexists_exception: "Role you are trying to update unexists!",
+    
+    swal: {
+        // Users
+        delete_users_title: "Delete Users",
+        delete_users_confirm_btn: "Yes, delete user(s)!",
+        delete_users_cancel_btn: "No, cancel please!",
+        ready_to_delete_users: "Are you sure you want to delete the selected user(s)? This action cannot be undone.",
+
+        suspend_users_title: "Suspend Users",
+        suspend_users_confirm_btn: "Yes, suspend user(s)!",
+        suspend_users_cancel_btn: "No, cancel please!",
+        ready_to_suspend_user: "Are you sure you want to suspend the selected user(s)?",
+
+        reset_password_title: "Reset Password",
+        reset_password_confirm_btn: "Yes, send reset email!",
+        reset_password_cancel_btn: "No, cancel please!",
+        ready_to_send_reset_password_email_prompt: "Are you sure you want to send a password reset email to the selected user(s)?",
+
+        inactivate_users_title: "Inactivate Users",
+        inactivate_users_confirm_btn: "Yes, inactivate user(s)!",
+        inactivate_users_cancel_btn: "No, cancel please!",
+        ready_to_inactivate_user: "Are you sure you want to inactivate the selected user(s)?",
+    }
 };
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = lang;
-}
+export default lang;

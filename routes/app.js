@@ -42,6 +42,10 @@ router.get('/users', authMiddleware, UsersController.index);
 router.route('/users/create')
     .get(authMiddleware, UsersController.createUser)
     .post(authMiddleware, upload.single('profile_picture'), UsersController.createUser);
+    
+router.route('/users/edit/:id')
+    .get(authMiddleware, UsersController.editUser)
+    .post(authMiddleware, upload.single('profile_picture'), UsersController.editUser);
 
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index);

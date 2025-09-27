@@ -6,5 +6,26 @@
                 "modules": "auto"
             }
         ]
+    ],
+    "plugins": [
+        ["module-resolver", {
+            "root": ["./"],
+            "alias": {
+                "@mex": "./mex",
+                "@app": "./app",
+                "@funcs": "./app/helpers",
+                "@config": "./config",
+                "@ip": "./config/ipsConfig",
+                "@lang": "./public/default/js/lang",
+                "@models": "./app/models",
+                "@utils": "./app/utils",
+                "@db": "./config/database",
+                "@database": "./config/database",
+                "@services": "./mex/services",
+                "@controllers": "./app/controllers",
+                "@routes": "./routes"
+            },
+            "extensions": [".js", ".json"]
+        }]
     ]
 }

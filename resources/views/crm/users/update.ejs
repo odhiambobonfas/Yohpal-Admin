@@ -1,0 +1,174 @@
+<%- include('crm/partials/header') %>
+<%- include('crm/partials/navbar') %>
+
+<div class="container-fluid gx-0 px-0">
+    <div class="row gap-0 gx-0">
+        <div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
+        <div class="col-md-9 mt-2 content-body">
+            <div class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-1">
+                <h4>Update Users</h4>
+                <div class="badge-span d-flex justify-content-center align-items-center gap-2">
+                    <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
+                    <span>|</span>
+                    <a href="/users" class="text-decoration-line-none">
+                        <span class="badge bg-danger text-light rounded-4">List Users</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="content-body gx-0 px-0 h-100">
+                <form action="/users/edit/<%= userData.uid %>" method="POST" enctype="multipart/form-data"
+                    class="p-1">
+                    <!-- Personal Information -->
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            Personal Information
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="firstName"
+                                        value="<%= userData.firstName %>" placeholder="Enter first name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="lastName"
+                                        value="<%= userData.lastName %>" placeholder="Enter last name" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="userName" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="userName" name="userName"
+                                    value="<%= userData.userName %>" placeholder="Enter username">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3"
+                                    placeholder="Short bio"> <%= userData.bio %> </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            Contact Details
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input readonly type="email" class="form-control" id="email" name="email"
+                                    value="<%= userData.email %>" placeholder="Enter email" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label for="phoneNumber" class="form-label">Phone Number</label>
+                                    <input type="text" class="form-control" id="phoneNumber" name="phoneNumber"
+                                        value="<%= userData.phoneNumber %>" placeholder="e.g. 254712345678">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="country" class="form-label">Country</label>
+                                    <input type="text" class="form-control" id="country" name="country"
+                                        value="<%= userData.country %>" placeholder="Enter country">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile -->
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            Profile
+                        </div>
+                        <div class="card-body">
+                            <div class="col-12 row justify-content-between align-items-center">
+                                <div class="col-8 mb-3">
+                                    <label for="profile_picture" class="form-label">Profile Picture</label>
+                                    <input type="file" class="form-control" id="profile_picture" name="profile_picture"
+                                        accept="image/*">
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <label for="profile_preview" class="form-label text-center">Profile Picture
+                                        Preview:</label>
+                                    <!-- Preview Section -->
+                                    <div class="mt-3">
+                                        <img id="profile_preview"
+                                            src="<%= userData.profile_picture ? userData.profile_picture : '/store/images/avatars/default-avatar.jpg' %>"
+                                            alt="Profile Preview" class="img-thumbnail rounded-circle"
+                                            style="max-width: 200px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role & Status -->
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-danger text-dark">
+                            Role & Status
+                        </div>
+                        <div class="card-body row">
+                            <div class="col-md-6 mb-3">
+                                <label for="roleId" class="form-label">Role</label>
+                                <select class="form-select searchSelect" id="roleId" name="roleId">
+                                    <option value="">Select Role</option>
+                                    <% allRoles.forEach(role => { %>
+                                    <option <%= role.code == roleData.code %> value="<%= role.id %>"><%= role.name %>
+                                    </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select searchSelect" id="status" name="status">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            Security
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                    placeholder="Enter password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+                                    placeholder="Confirm password" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input class="form-check-input stayHere" type="checkbox" name="stayHere" id="stayHere"
+                                value="1" />
+                            Stay here after adding the role.
+                        </label>
+                    </div>
+                    <!-- Submit -->
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger update-user-submit-btn"><i
+                                class="fas fa-plus-circle me-2"></i>Add User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('crm/partials/footer') %>
+<script type="text/javascript" src="/default/js/src/mod/users.js"></script>
+<%- include('crm/partials/closure') %>

@@ -126,4 +126,4 @@ class RedisCache {
     }
 }
 
-module.exports = new RedisCache();
+export default new RedisCache();

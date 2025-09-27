@@ -1069,6 +1069,32 @@ function setupDateRangeWithBootstrapDatePickerLib() {
       });
 }
 
+/**
+ * Enable preview for any file input
+ * 
+ * @param {string} inputId - ID of the file input element
+ * @param {string} previewId - ID of the img element for preview
+ */
+function enableImagePreview(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+
+    if (!input || !preview) return;
+
+    input.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result; 
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = "/store/images/avatars/default-avatar.jpg"; 
+        }
+    });
+}
+
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {
