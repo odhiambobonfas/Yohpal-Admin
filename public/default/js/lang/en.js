@@ -89,4 +89,8 @@ const LANG_EN = {
     }
 };
 
+if (typeof window !== "undefined") {
+    window.LANG_EN = LANG_EN;
+}
+
 export default LANG_EN;

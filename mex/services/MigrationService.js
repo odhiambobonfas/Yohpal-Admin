@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');  
-const chalk = require('chalk');  
-const config = require('@config/config'); 
-const Database = require('@db/database');
+import fs from "fs";
+import path from "path";
+import chalk from "chalk";
+import config from "@config/config";
+import Database from "@db/database";
 
 class MigrationService {
     constructor() {

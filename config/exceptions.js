@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const winston = require('winston'); 
-const moment = require('moment');
-const config = require('@config/config');
+import fs from "fs";
+import path from "path";
+import winston from "winston";
+import moment from "moment";
+import config from "@config/config";
 
 class Exception extends Error {
     constructor(status, code, message, reason = null, logLevel='info', logFile = 'error_log.txt') {

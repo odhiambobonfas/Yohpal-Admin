@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const chalk = require('chalk');
-const { program } = require('commander');
-const MigrationService = require('@services/MigrationService');
+import chalk from "chalk";
+import { program } from "commander";
+import MigrationService from "@services/MigrationService";
 
 class XfixCoreCLI {
     constructor(migrationService) {

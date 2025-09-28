@@ -1,5 +1,5 @@
-const multer = require("multer");
-const config = require('@config/config');
+import multer from "multer";
+import config from "@config/config";
 
 let storageOptions = {};
 
@@ -60,6 +60,5 @@ const uploadOptions = {
 };
 
 if (!storage) delete uploadOptions.storage;
-const upload = multer(uploadOptions);
 
-export default { upload }; 
+export const upload = multer(uploadOptions);

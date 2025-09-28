@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const { Sequelize } = require('sequelize');
-const app_config = require('@config/config'); 
-const database_config = require('@database/config'); 
+import fs from 'fs';
+import path from "path";
+import { Sequelize } from 'sequelize';
+import app_config from '@config/config';
+import database_config from '@database/config';
 
 class Database {
     /**

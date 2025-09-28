@@ -4,7 +4,7 @@
         "rootDir": "./",
         "strict": false,
         "target": "ES2022",
-        "module": "CommonJS",
+        "module": "commonjs",
         "allowJs": false,
         "noImplicitAny": false,
         "skipLibCheck": true,

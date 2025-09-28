@@ -1,5 +1,5 @@
-const path = require('path');
-const config = require('@config/config');
+import path from "path";
+import config from '@config/config';
 
 /**
  * Configuration for database connections.

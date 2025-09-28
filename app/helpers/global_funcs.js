@@ -1,4 +1,4 @@
-require('dotenv').config();
+import "dotenv/config"; // Load environment variables from .env file
 import dayjs from 'dayjs';
 import admin from 'firebase-admin';
 
@@ -9,7 +9,7 @@ import admin from 'firebase-admin';
  * @param {string} key 
  * @returns 
  */
-function env(key) {
+export function env(key) {
     if (!key) {
         return null;
     }
@@ -23,7 +23,7 @@ function env(key) {
  * 
  * @returns bool
  */
-function isInDevelopment() {
+export function isInDevelopment() {
     if (env('APP_ENV') === 'production') {
         return false;
     }
@@ -31,7 +31,7 @@ function isInDevelopment() {
     return true;
 }
 
-function parseDateRange(rangeStr, CONVERT_FB_TIMESTAMP=false) {
+export function parseDateRange(rangeStr, CONVERT_FB_TIMESTAMP=false) {
     if (!rangeStr || typeof rangeStr !== "string") return null;
 
     const parts = rangeStr.split(" - ");
@@ -55,14 +55,16 @@ function parseDateRange(rangeStr, CONVERT_FB_TIMESTAMP=false) {
     };
 }
 
-function parseToISO(dateStr) { 
+export function parseToISO(dateStr) { 
   const [day, month, year] = dateStr.split("-");
   return `${year}-${month}-${day}`;
-}
+} 
 
-export default {
+let globalFuncs = {
     env, 
     isInDevelopment,
     parseToISO,
     parseDateRange
 };
+
+export default globalFuncs;

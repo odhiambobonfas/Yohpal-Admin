@@ -1,5 +1,5 @@
-require('dotenv').config();
-const path = require('path');
+import "dotenv/config"; // Load environment variables from .env file
+import path from "path";
 
 export default {
     APP: {
@@ -65,6 +65,7 @@ export default {
         UNIQUE_UPLOAD_NAME: ''
     },
     SESSION: {
+        SESSION_STORAGE: 'memory',
         SESSION_NAME: "yohpal_admin_sess", // leave empty to default to connect.sid
         SESSION_SECRET: process.env.SESSION_SECRET || '',
         RESAVE: false,
@@ -102,9 +103,10 @@ export default {
     },
     CACHE: {
         REDIS: {
+            USE_REDIS_LOCAL: process.env.USE_REDIS_LOCAL || true,
             REDIS_USERNAME: process.env.REDIS_USERNAME || '',
             REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
-            REDIS_URL: process.env.REDIS_URL || '',
+            REDIS_URL: process.env.REDIS_URL || 'redis://127.0.0.1',
             REDIS_PORT: process.env.REDIS_PORT || 14000,
             CONNECTION_TIMEOUT: process.env.CONNECTION_TIMEOUT || 10000
         }

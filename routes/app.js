@@ -12,16 +12,16 @@
  * Designed and Developed by Giceha Junior
  * GitHub: https://github.com/Gicehajunior
  */
-const express = require('express');
-const { upload } = require('@config/storage');
-const authRoutes = require('@routes/auth');
-const YohPalController = require('@app/controllers/api/YohPalController');
-const DashboardController = require('@app/controllers/web/DashboardController');
-const RolesController = require('@app/controllers/web/RolesController');
-const SettingsController = require('@app/controllers/web/SettingsController');
-const UsersController = require('@app/controllers/web/UsersController');
-const authMiddleware = require('@app/mwares/authMiddleware');
-const routeMiddleware = require('@app/mwares/routeMiddleware');
+import express from "express";
+import { upload } from "@config/storage";
+import authRoutes from "@routes/auth";
+import YohPalController from "@app/controllers/api/YohPalController";
+import DashboardController from "@app/controllers/web/DashboardController";
+import RolesController from "@app/controllers/web/RolesController";
+import SettingsController from "@app/controllers/web/SettingsController";
+import UsersController from "@app/controllers/web/UsersController";
+import authMiddleware from "@app/mwares/authMiddleware";
+import routeMiddleware from "@app/mwares/routeMiddleware";
 
 const router = express.Router();
 

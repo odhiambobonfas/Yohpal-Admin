@@ -8,7 +8,7 @@ import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
-import { FirebaseUtil, FirestoreDatabase } from '@utils/FirebaseUtil';
+import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import {env, isInDevelopment} from "@funcs/global_funcs";  
 
 class AuthController {
@@ -110,7 +110,7 @@ class AuthController {
     }
 
     static async authlogin(req, res) {
-        try {
+        try { 
             const { email, password } = req.body;
 
             if (!email || !password) { 
@@ -138,7 +138,7 @@ class AuthController {
 
             const data = await response.json();   
             
-            const firebase = new FirebaseUtil();
+            const firebase = new FirebaseUtility();
 
             const { idToken, refreshToken } = data;
             
@@ -184,6 +184,8 @@ class AuthController {
             let token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
                 expiresIn: config.AUTH.TOKEN_EXPIRY
             }); 
+
+            console.log(req.session);
             
             req.session.token = token;
 

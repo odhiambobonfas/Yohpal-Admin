@@ -1,14 +1,13 @@
-const Util = require('@utils/Util'); 
-const config = require('@config/config');
-const User = require('@models/User'); 
+import Util from '@utils/Util';
+import config from '@config/config';
+import User from '@models/User';
 import RedisCache from '@config/redisCache';
-import { FirestoreDatabase } from '@utils/FirebaseUtil'; 
-import utility from '@config/utils'
-import { parseDateRange, parseToISO } from '@funcs/global_funcs';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords } from '@config/utils';  
+import { ucwords, fbCollectionParser } from '@config/utils';  
+import { FirestoreDatabase } from '@utils/FirebaseUtil';  
+import { parseDateRange } from '@funcs/global_funcs';
 
 class UserUtil extends Util {
     constructor() {
@@ -71,7 +70,7 @@ class UserUtil extends Util {
                 return [];
             }
 
-            let users =  utility.fbCollectionParser(snapshot);
+            let users =  fbCollectionParser(snapshot);
 
             users = await Promise.all(users.map( async (user) => {
                 let role = {};      

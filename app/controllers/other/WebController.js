@@ -1,7 +1,7 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('@models/User');
-const config = require('@config/config');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User from '@models/User';
+import config from '@config/config';
 
 class WebController {
     static async index(req, res) {

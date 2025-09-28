@@ -4,7 +4,7 @@ import User from '@models/User';
 import Exception from '@config/exceptions';
 import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
-import { FirebaseUtil, FirestoreDatabase, RealTimeDatabase } from '@utils/FirebaseUtil';
+import { FirebaseUtility, FirestoreDatabase, RealTimeDatabase } from '@utils/FirebaseUtil';
 import Util from '@utils/Util';
 
 class SettingsController {

@@ -1,0 +1,5 @@
+{
+    "watch": ["server.ts", "config", "routes", "app", "config"],
+    "ignore": ["public/*", "resources/*", "tests/*"],
+    "ext": "js,json,ts"
+}

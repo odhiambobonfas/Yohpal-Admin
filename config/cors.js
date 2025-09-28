@@ -1,5 +1,5 @@
-require('dotenv').config();
-const path = require('path');
+import "dotenv/config"; // Load environment variables from .env file
+import path from "path";
 
 export default { 
     // Allow frontend domain

@@ -5,17 +5,16 @@ import Exception from '@config/exceptions';
 import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
-import Util from '@utils/Util';
-import utility from '@config/utils';
+import Util from '@utils/Util'; 
 import mexDtParser from '@config/mexDtParser';
-import { ucfirst, ucwords } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 import RolesUtil from '@utils/RolesUtil'; 
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
 
 class RolesController {
     static async index(req, res) {
-        if (utility.isAjaxRequest(req)) {
+        if (isAjaxRequest(req)) {
             let roles = [];
 
             try {
@@ -90,7 +89,7 @@ class RolesController {
 
     static async createRoles(req, res) {
         const permissions = Binding.permissions;
-        if (utility.isAjaxRequest(req)) { 
+        if (isAjaxRequest(req)) { 
             try {
                 const { 
                     roleName,
@@ -178,7 +177,7 @@ class RolesController {
             ?   role.permissions.permissions
             :   [];
 
-        if (utility.isAjaxRequest(req)) { 
+        if (isAjaxRequest(req)) { 
             try {
                 const { 
                     roleName,

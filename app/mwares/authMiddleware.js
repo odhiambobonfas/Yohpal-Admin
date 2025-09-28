@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const config = require('@config/config');
-const Util = require('@utils/Util');
+import jwt from "jsonwebtoken";
+import config from "@config/config";
+import Util from "@utils/Util";
 
 export default (req, res, next) => { 
     const token = req.session.token;

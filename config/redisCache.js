@@ -3,8 +3,7 @@ import { createClient } from 'redis';
 
 class RedisCache {
     constructor() {
-        this.client = undefined; 
-        this.initRedisCaching();
+        this.client = undefined;  
     }
 
     /**
@@ -12,19 +11,30 @@ class RedisCache {
      * connection utility
      */
     async initRedisCaching() {
-        this.client = createClient({ 
-            username: config.CACHE.REDIS.REDIS_USERNAME,
-            password: config.CACHE.REDIS.REDIS_PASSWORD,
-            socket: {
-                host: config.CACHE.REDIS.REDIS_URL,
-                port: config.CACHE.REDIS.REDIS_PORT,
-                connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT,
-                reconnectStrategy: (retries) => {
-                    const delay = Math.min(retries * 100, config.CACHE.REDIS.CONNECTION_TIMEOUT); 
-                    return delay;
+        let redisOptions; 
+        if (config.APP.APP_ENV?.trim() == 'development' && config.CACHE.REDIS.USE_REDIS_LOCAL) { 
+            const host = config.CACHE.REDIS.REDIS_URL || 'redis://127.0.0.1';
+            const port = config.CACHE.REDIS.REDIS_PORT || 6379; 
+            redisOptions = {
+                url: `${host}:${port}`
+            };
+        } else { 
+            redisOptions = { 
+                username: config.CACHE.REDIS.REDIS_USERNAME,
+                password: config.CACHE.REDIS.REDIS_PASSWORD,
+                socket: {
+                    host: config.CACHE.REDIS.REDIS_URL,
+                    port: config.CACHE.REDIS.REDIS_PORT,
+                    connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT,
+                    tls: {},
+                    reconnectStrategy: (retries) => {
+                        return Math.min(retries * 100, config.CACHE.REDIS.CONNECTION_TIMEOUT);
+                    }
                 }
-            }
-        });
+            };
+        }
+        
+        this.client = createClient(redisOptions);
 
         this.client.on('error', (error) => {
             if (error.name === 'ConnectionTimeoutError') {
@@ -53,12 +63,6 @@ class RedisCache {
                 console.log('[Redis] Reconnecting...');
             }
         });
-
-        try {
-            await this.client.connect();
-        } catch (err) {
-            console.error('[Redis Connection Failed]', err);
-        }
 
         return this.client;
     }
@@ -128,4 +132,4 @@ class RedisCache {
     }
 }
 
-export default new RedisCache();
+export default RedisCache;
