@@ -65,7 +65,7 @@ export default {
         UNIQUE_UPLOAD_NAME: ''
     },
     SESSION: {
-        SESSION_STORAGE: 'memory',
+        SESSION_STORAGE: process.env.SESSION_STORAGE || 'memory',
         SESSION_NAME: "yohpal_admin_sess", // leave empty to default to connect.sid
         SESSION_SECRET: process.env.SESSION_SECRET || '',
         RESAVE: false,
