@@ -64,6 +64,13 @@ class RedisCache {
             }
         });
 
+        try {
+            await this.client.connect();
+            console.log("[Redis] client.connect() completed successfully");
+        } catch (error) {
+            console.log("[Redis] client.connect() failed to coomplete!", error);
+        }
+
         return this.client;
     }
 

@@ -81,9 +81,7 @@ const InitializeServer = async () => {
         if (config.SESSION.SESSION_STORAGE == 'redis'){
             const rd = new RedisCache();
             const client = await rd.initRedisCaching();
-            await client.connect();
-            console.log("[Redis] client.connect() completed successfully");
-    
+
             store = new RedisStore({ client });
         }
     } catch (err) {

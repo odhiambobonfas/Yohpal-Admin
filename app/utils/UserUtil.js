@@ -132,9 +132,12 @@ class UserUtil extends Util {
     
     async getAllUsersCount() {
         try {
+            const rd = new RedisCache();
+            await rd.initRedisCaching(); 
+
             const cacheKey = `yp:users:count`;
     
-            const count = await RedisCache.cacheParser(
+            const count = await rd.cacheParser(
                 cacheKey,
                 async () => {
                     const usersRef = FirestoreDatabase.collection(User.collection);
