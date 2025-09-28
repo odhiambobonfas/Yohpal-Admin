@@ -97,3 +97,9 @@ body>.global-overlay {
 .text-danger {
     color: var(--bs-danger) !important;
 }
+
+.rounded-circle {
+    border-radius: 50% !important;
+    height: 200px;
+    width: 200px;
+}

@@ -30,4 +30,4 @@ class AppModel extends Model {
     }
 }
 
-module.exports = AppModel;
+export default AppModel;

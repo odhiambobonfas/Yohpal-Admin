@@ -1,5 +1,5 @@
-require('dotenv').config();
+import "dotenv/config"; // Load environment variables from .env file
 
 // ...
 
-module.exports = {};
+export default {};

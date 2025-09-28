@@ -9,4 +9,4 @@ const blocklist = [
     '213.152.176.252'
 ];
 
-module.exports = blocklist; 
+export default blocklist;

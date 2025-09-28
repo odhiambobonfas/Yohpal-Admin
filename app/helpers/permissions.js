@@ -5,7 +5,7 @@
  * @param {string} key - The permission key to check
  * @returns {boolean} - Returns true if the user has the specified permission, false otherwise
  */
-function hasPermission(userPermissions, key) {
+export function hasPermission(userPermissions, key) {
     return userPermissions.includes(key);
 }
 
@@ -16,11 +16,6 @@ function hasPermission(userPermissions, key) {
  * @param {Array<string>} keys - List of permission keys to check against
  * @returns {boolean} - Returns true if the user has at least one of the specified permissions, false otherwise
  */
-function hasAnyPermission(userPermissions, keys = []) { 
+export function hasAnyPermission(userPermissions, keys = []) { 
     return keys.some(key => userPermissions.includes(key));
-}
-
-module.exports = {
-    hasPermission,
-    hasAnyPermission
-};
+} 

@@ -8,8 +8,8 @@ import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
-import { FirebaseUtil, FirestoreDatabase } from '@utils/FirebaseUtil';
-import {env, isInDevelopment} from "@funcs/global_funcs"; 
+import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
+import {env, isInDevelopment} from "@funcs/global_funcs";  
 
 class AuthController {
     static async register(req, res) {
@@ -79,7 +79,7 @@ class AuthController {
         }
     }
 
-    static async login(req, res) {
+    static async login(req, res) { 
         let message = 'Please login to access your account!';
 
         if (req.query.message || req.query.auth) {
@@ -100,11 +100,17 @@ class AuthController {
             message: message,
             test_username: test_username,
             test_password: test_password,
+        },(err, html) => {
+            if (err) {
+                console.error("Render error:", err);
+                return res.status(500).send("Template rendering failed");
+            }
+            res.send(html);
         });
     }
 
     static async authlogin(req, res) {
-        try {
+        try { 
             const { email, password } = req.body;
 
             if (!email || !password) { 
@@ -125,14 +131,14 @@ class AuthController {
                     returnSecureToken: true
                 })
             }); 
-
+            
             if (!response.ok) { 
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
             }
 
             const data = await response.json();   
             
-            const firebase = new FirebaseUtil();
+            const firebase = new FirebaseUtility();
 
             const { idToken, refreshToken } = data;
             
@@ -167,16 +173,19 @@ class AuthController {
                 adminType: user.adminType || 'user',
                 role: role || null,
                 permissions: permissions,
-                refreshToken: refreshToken
+                refreshToken: refreshToken,
+                status: user.status || 'inactive'
             }; 
-
-            if (userPayload.adminType === 'user') {
+            
+            if (user.status !== 'active') {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
 
             let token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
                 expiresIn: config.AUTH.TOKEN_EXPIRY
             }); 
+
+            console.log(req.session);
             
             req.session.token = token;
 
@@ -207,4 +216,4 @@ class AuthController {
     }
 }
 
-module.exports = AuthController;
+export default AuthController;

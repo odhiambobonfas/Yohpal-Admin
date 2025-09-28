@@ -1,15 +1,14 @@
-const Util = require('@utils/Util');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const config = require('@config/config');
-const User = require('@models/User');
-const db = require('@database/database');
+import Util from '@utils/Util';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import config from '@config/config';
+import User from '@models/User';
+import db from '@database/database';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import Role from '@models/Role';
 import Permissions from '@models/Permissions';
 import Exception from '@config/exceptions';
-import utility from '@config/utils';
-import { ucwords } from '@config/utils';
+import { ucwords, fbCollectionParser } from '@config/utils';
 import LANG_EN from '@lang/en';
 
 class RolesUtil extends Util {
@@ -27,14 +26,10 @@ class RolesUtil extends Util {
             let ref = FirestoreDatabase.collection(Role.collection);
             let collection = await ref.get();
             
-            let data = utility.fbCollectionParser(collection);
+            let data = fbCollectionParser(collection);
             
             return data;
-        } catch (error) {
-            if (config.APP.APP_DEBUG) {
-                error.mexLogger();
-            }
-
+        } catch (error) { 
             return [];
         }
     } 
@@ -154,4 +149,4 @@ class RolesUtil extends Util {
     } 
 }
 
-module.exports = new RolesUtil();
+export default new RolesUtil();

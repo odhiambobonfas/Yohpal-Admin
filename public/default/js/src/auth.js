@@ -41,9 +41,8 @@ class Auth {
                     },
                     error: error => {
                         registerBtn.disabled = false;
-                        __append_html('Register', registerBtn);
-                        error = JSON.parse(error.responseText) || error;
-                        console.log(`Ajax Error: ${error.message || JSON.parse(error.responseText) || JSON.stringify(error)}`);
+                        __append_html('Register', registerBtn); 
+                        console.log(`Ajax Error: ${error.message || error.responseText || JSON.stringify(error)}`);
                         toast('error', 8000, error.message || 'An error occurred. Please try again!');
                     }
                 });
@@ -96,9 +95,8 @@ class Auth {
                 },
                 error: error => {
                     enableElement(btn);
-                    toggleButtonContent(btn, null, true);
-                    error = JSON.parse(error.responseText) || error;
-                    console.log(`Ajax Error: ${error.message || JSON.parse(error.responseText) || JSON.stringify(error)}`);
+                    toggleButtonContent(btn, null, true); 
+                    console.log(`Ajax Error: ${error.message || error.responseText || JSON.stringify(error)}`);
                     toast('error', 8000, error.message || 'An error occurred. Please try again!');
                 }
             });

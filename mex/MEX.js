@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+import { DataTypes } from "sequelize";
 
 class MEX {
     constructor() {
@@ -42,4 +42,4 @@ class MEX {
     }
 }
 
-module.exports = MEX;
+export default MEX;

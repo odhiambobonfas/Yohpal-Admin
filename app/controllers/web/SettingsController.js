@@ -5,17 +5,16 @@ import Exception from '@config/exceptions';
 import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
-import Util from '@utils/Util';
-import utility from '@config/utils';
 import mexDtParser from '@config/mexDtParser';
-import { ucfirst, ucwords } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 import RolesUtil from '@utils/RolesUtil'; 
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
+import Util from '@utils/Util'; 
 
 class SettingsController {
     static async index(req, res) {
-        if (utility.isAjaxRequest(req)) {
+        if (isAjaxRequest(req)) {
             let roles = [];
 
             try {
@@ -89,7 +88,7 @@ class SettingsController {
     }
 
     static async createAppUpdate(req, res) {
-        if (utility.isAjaxRequest(req)) {
+        if (isAjaxRequest(req)) {
             // ...
         }
 
@@ -100,4 +99,4 @@ class SettingsController {
     }
 }
 
-module.exports = SettingsController;
+export default SettingsController;

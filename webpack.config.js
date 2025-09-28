@@ -1,8 +1,12 @@
-require('dotenv').config();
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+import "dotenv/config"; // Load environment variables from .env file
+import path from "path";
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import { fileURLToPath } from 'url';
 
-module.exports = (env, argv) => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default (env, argv) => {
     const mode = argv.mode || process.env.APP_ENV || 'production';
     
     return {

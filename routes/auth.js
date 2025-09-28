@@ -1,8 +1,8 @@
-const auth = (router) => { 
-    const { upload } = require('@config/storage');
-    const AuthController = require('@app/controllers/auth/AuthController');
-    const WebController = require('@app/controllers/other/WebController'); 
+import { upload } from "@config/storage";
+import AuthController from "@app/controllers/auth/AuthController";
+import WebController from "@app/controllers/other/WebController";
 
+const auth = (router) => { 
     // login routes
     router.get('/', AuthController.login);
     router.get('/login', AuthController.login);
@@ -16,4 +16,4 @@ const auth = (router) => {
     router.get('/logout', AuthController.logout);
 }
 
-module.exports = auth;
+export default auth;

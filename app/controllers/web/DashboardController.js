@@ -1,15 +1,14 @@
-const jwt = require('jsonwebtoken');
-const config = require('@config/config');
-const User = require('@models/User'); 
-const UserUtil = require('@utils/UserUtil');
-const mexDtParser = require('@config/mexDtParser');
-const utils = require('@config/utils');
-const Exception = require('@config/exceptions'); 
-import utility from '@config/utils';
+import jwt from 'jsonwebtoken';
+import config from '@config/config';
+import User from '@models/User';
+import UserUtil from '@utils/UserUtil';
+import mexDtParser from '@config/mexDtParser'; 
+import Exception from '@config/exceptions';
+import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 
 class DashboardController {
     static async index(req, res) {  
-        if (utility.isAjaxRequest(req)) {
+        if (isAjaxRequest(req)) {
             let totalYpUsers = await UserUtil.getAllUsersCount();
             let totalPromotedAccounts = null;
             let totalApplications = null;
@@ -64,7 +63,7 @@ class DashboardController {
                         <button type="button" class="btn btn-primary btn-sm" data-id='${row.id}'>Delete</button>`;
                 })
                 .editColumn('username', (username) => { 
-                    return utils.ucwords(username);  
+                    return ucwords(username);  
                 })
                 .deleteColumn('id')
                 .make();
@@ -81,4 +80,4 @@ class DashboardController {
     }
 }
 
-module.exports = DashboardController;
+export default DashboardController;

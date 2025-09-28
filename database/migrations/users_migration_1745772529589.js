@@ -1,7 +1,7 @@
 /**
  * Migration template for creating the users table.
  */
-module.exports = {
+export default {
     up: async (queryInterface, Sequelize) => {
         // Write migration logic here
         await queryInterface.createTable('users', {

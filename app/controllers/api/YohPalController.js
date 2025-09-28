@@ -10,4 +10,4 @@ class YohPalController {
     }
 }
 
-module.exports = YohPalController;
+export default YohPalController;

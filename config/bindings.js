@@ -196,6 +196,4 @@ const bindings = {
     }
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = bindings;
-}
+export default bindings;

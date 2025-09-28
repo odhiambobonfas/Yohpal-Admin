@@ -1,17 +1,13 @@
-const Util = require('@utils/Util');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const config = require('@config/config');
-const User = require('@models/User');
-const db = require('@database/database');
+import Util from '@utils/Util';
+import config from '@config/config';
+import User from '@models/User';
 import RedisCache from '@config/redisCache';
-import { FirestoreDatabase } from '@utils/FirebaseUtil'; 
-import utility from '@config/utils'
-import { parseDateRange, parseToISO } from '@funcs/global_funcs';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords } from '@config/utils';
+import { ucwords, fbCollectionParser } from '@config/utils';  
+import { FirestoreDatabase } from '@utils/FirebaseUtil';  
+import { parseDateRange } from '@funcs/global_funcs';
 
 class UserUtil extends Util {
     constructor() {
@@ -74,7 +70,7 @@ class UserUtil extends Util {
                 return [];
             }
 
-            let users =  utility.fbCollectionParser(snapshot);
+            let users =  fbCollectionParser(snapshot);
 
             users = await Promise.all(users.map( async (user) => {
                 let role = {};      
@@ -136,9 +132,12 @@ class UserUtil extends Util {
     
     async getAllUsersCount() {
         try {
+            const rd = new RedisCache();
+            await rd.initRedisCaching(); 
+
             const cacheKey = `yp:users:count`;
     
-            const count = await RedisCache.cacheParser(
+            const count = await rd.cacheParser(
                 cacheKey,
                 async () => {
                     const usersRef = FirestoreDatabase.collection(User.collection);
@@ -157,10 +156,7 @@ class UserUtil extends Util {
     }    
 
     async createUser(data={}) { 
-        try { 
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(data.password, salt);
-
+        try {  
             // check if email or username already exists
             const existingUsersRef = FirestoreDatabase.collection(User.collection);
             const emailSnapshot = await existingUsersRef
@@ -168,7 +164,7 @@ class UserUtil extends Util {
                 .get();
                 
             if (!emailSnapshot.empty) {
-                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.user_email_already_exists, `User with same email: ${ucwords(data.email)}  exists!`);
+                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.user_email_already_exists, `User with same email: ${ucwords(data.email)}, exists!`);
             }
 
             const usernameSnapshot = await FirestoreDatabase.collection(User.collection)
@@ -176,18 +172,27 @@ class UserUtil extends Util {
                 .get();
 
             if (!usernameSnapshot.empty) {
-                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username ${ucwords(data.userName)} exists!`);
+                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username: ${ucwords(data.userName)}, exists!`);
             }
 
+            const userRecord = await admin.auth().createUser({
+                email: data.email,
+                password: data.password,
+                displayName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+            });
+
+            if (!userRecord || !userRecord.uid) {
+                throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
+            }
+            
             let addedBy = data.addedBy || null;
 
             let newUser = {
-                firstName: data.firstName || "",
-                lastName: data.lastName || "",
-                fullName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-                userName: data.userName || "",
-                email: data.email || "",
-                password: data.password ? hashedPassword : "",
+                authUid: userRecord.uid,
+                uid: userRecord.uid,
+                firstName: ucwords(data.firstName) || "", 
+                lastName: ucwords(data.lastName) || "", 
+                userName: data.userName.toLowerCase() || "", 
                 Country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
                 roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
@@ -195,8 +200,7 @@ class UserUtil extends Util {
                 profile_picture: data.profilePicture || "",
                 address: data.address || "",
                 bio: data.bio || "",
-                status: data.status || "active",
-                adminType: data.adminType || "user",
+                status: data.status || "active", 
                 createdBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null,
                 updatedBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null, 
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -217,6 +221,69 @@ class UserUtil extends Util {
             throw new Exception((error.status || 500), error.code, error.message, error.reason);
         }
     }
+
+    async updateUser(data = {}) {
+        try {
+            const usersRef = FirestoreDatabase.collection(User.collection);
+
+            const emailSnapshot = await usersRef.where('email', '==', data.email).get();
+            if (emailSnapshot.empty) {
+                throw new Exception(
+                    404,
+                    "USER_NOT_FOUND",
+                    LANG_EN.req.user_email_unexists,
+                    `User with the email: ${ucwords(data.email)} does not exist!`
+                );
+            }
+            
+            const userDoc = emailSnapshot.docs[0];
+            const uid = userDoc.data().uid;
+            
+            const usernameSnapshot = await usersRef.where('userName', '==', data.userName).get();
+            if (!usernameSnapshot.empty && usernameSnapshot.docs[0].id !== userDoc.id) {
+                throw new Exception(
+                    409,
+                    "USERNAME_TAKEN",
+                    LANG_EN.req.userName_exists,
+                    `Username ${ucwords(data.userName)} is already taken by another user`
+                );
+            }
+            
+            const userRecord = await admin.auth().updateUser(uid, {
+                email: data.email,
+                password: data.password,
+                displayName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+            });
+
+            if (!userRecord) {
+                throw new Exception(500, "USER_UPDATE_FAILED", LANG_EN.req.user_update_failed, "User update error");
+            }
+            
+            let userObj = {
+                firstName: ucwords(data.firstName) || "",
+                lastName: ucwords(data.lastName) || "", 
+                userName: data.userName.toLowerCase() || "",
+                country: data.country || "",
+                phoneNumber: data.phoneNumber || "",
+                roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
+                refPermissions: data.permissionId ? FirestoreDatabase.collection('permissions').doc(data.permissionId) : null,
+                profile_picture: data.profilePicture || "",
+                address: data.address || "",
+                bio: data.bio || "",
+                status: data.status || "active",
+                updatedBy: data.addedBy ? FirestoreDatabase.collection(User.collection).doc(data.addedBy) : null,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            };
+
+            // Update Firestore document
+            await usersRef.doc(userDoc.id).update(userObj);
+
+            return true;
+        } catch (error) {
+            console.error('Error updating user:', error);
+            throw new Exception(error.status || 500, error.code, error.message, error.reason);
+        }
+    }
 }
 
-module.exports = new UserUtil();
+export default new UserUtil();

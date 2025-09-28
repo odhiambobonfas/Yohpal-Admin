@@ -69,4 +69,4 @@ class mexDtParser {
     }
 }
 
-module.exports = mexDtParser;
+export default mexDtParser;

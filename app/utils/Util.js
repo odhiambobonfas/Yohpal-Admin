@@ -1,9 +1,9 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const config = require('@config/config');
-const User = require('@models/User');
-const db = require('@database/database');
-const CryptoJS = require('crypto-js'); 
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import config from '@config/config';
+import User from '@models/User';
+import db from '@database/database';
+import CryptoJS from 'crypto-js';
 
 class Util {
     /**
@@ -68,4 +68,4 @@ class Util {
     }
 }
 
-module.exports = Util;
+export default Util;

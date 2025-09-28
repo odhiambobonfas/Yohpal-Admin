@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');  
-const chalk = require('chalk');  
-const config = require('@config/config'); 
-const Database = require('@db/database');
+import fs from "fs";
+import path from "path";
+import chalk from "chalk";
+import config from "@config/config";
+import Database from "@db/database";
 
 class MigrationService {
     constructor() {
@@ -34,7 +34,7 @@ class MigrationService {
         /**
          * Migration template for creating the ${tableName} table.
          */
-        module.exports = {
+        export default {
             up: async (queryInterface, Sequelize) => {
                 // Write migration logic here
                 await queryInterface.createTable('${tableName}', {
@@ -98,4 +98,4 @@ class MigrationService {
     }
 }
 
-module.exports = MigrationService;
+export default MigrationService;
