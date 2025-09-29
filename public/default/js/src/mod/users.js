@@ -146,7 +146,7 @@ class User extends Master {
             ],
             fnDrawCallback: () => {
                 const inst = new User();
-                inst.actionOnUsersRes();
+                inst.actionOnUsersRes(); 
                 watchFilterChanges('.usersFilters', inst.getListUsers.bind(inst));
             },
             language: getDataTableLanguage(),
@@ -233,7 +233,7 @@ class User extends Master {
 
                     $.ajax({
                         type: 'PATCH',
-                        url: `/users/status/update/${id}`,
+                        url: `/users/update/${id}`,
                         data: jsonifyFormData(data),
                         dataType: 'json', 
                         contentType: 'application/json',

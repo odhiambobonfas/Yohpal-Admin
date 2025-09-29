@@ -72,15 +72,24 @@ class RolesController {
                     `;
 
                     return action_dropdown;
-                })
-                .editColumn('status', (col) => { 
-                    return ucfirst(col);
-                })
+                }) 
                 .editColumn('addedBy', (col) => { 
                     return ucwords(col || 'N/A');
                 })
                 .editColumn('description', (col) => { 
                     return ucfirst(col || 'N/A');
+                })
+                .editColumn('status', (col) => { 
+                    col = col ? col.toLowerCase() : 'inactive';
+                    if (col === 'active') {
+                        return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
+                    } else if (col === 'inactive') {
+                        return `<span class="badge text-dark bg-warning">${ucfirst(col)}</span>`;
+                    } else if (col === 'suspended') {
+                        return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
+                    } else {
+                        return `<span class="badge text-dark bg-warning">Inactive</span>`;
+                    } 
                 })
                 .make();
 
@@ -297,11 +306,11 @@ class RolesController {
 
             let snapshot = await RolesUtil.getRoleByDocId(roleId);
 
-            if (snapshot.isSuperAdmin) {
+            if (snapshot.isSuperAdmin && status !== 'active') {
                 throw new Exception(201, "DEFAULT_ROLE_STATUS_EXCEPTION", LANG_EN.default_role_status_exception, "Default Role Status Error!");
             }
 
-            if (snapshot.isAdmin) {
+            if (snapshot.isAdmin && status !== 'active') {
                 throw new Exception(201, "ADMIN_ROLE_STATUS_EXCEPTION", LANG_EN.admin_role_status_exception, "Admin Role Status Error!");
             }
 
@@ -340,13 +349,9 @@ class RolesController {
 
             let snapshot = await RolesUtil.getRoleByDocId(roleId);
 
-            if (snapshot.isSuperAdmin) {
+            if (snapshot.isSuperAdmin && snapshot.isSuperAdmin) {
                 throw new Exception(201, "DEFAULT_ROLE_DELETE_EXCEPTION", LANG_EN.default_role_delete_exception, "Default Role Deletion Error!");
-            }
-
-            if (snapshot.isAdmin) {
-                throw new Exception(201, "ADMIN_ROLE_DELETE_EXCEPTION", LANG_EN.admin_role_delete_exception, "Admin Role Deletion Error!");
-            }
+            } 
 
             const query = await RolesUtil.deleteRoleQuery(roleId);
 

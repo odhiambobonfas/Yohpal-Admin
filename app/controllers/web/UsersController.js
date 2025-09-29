@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
-import { isAjaxRequest, ucfirst, ucwords, validateEmail, jsonParser } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords, validateEmail, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil'; 
 import Binding from '@config/bindings'; 
@@ -17,15 +17,15 @@ class UsersController {
     static async index(req, res) {
         if (isAjaxRequest(req)) {
             let users = [];
-            let user = req.session.user;
-
+            let user = req.session.user; 
             try { 
                 users = await UsersUtil.getAllUsers(req.query); 
                 
                 let mex = new mexDtParser(users);
                 users = mex.addColumn('actions', (col) => {
                     let actions = '';
-                    let id = col['id'];
+                    let id = col['uid'] || col['id'];
+                    let status = col['status'] || 'unset';  
                     
                     if (hasPermission(user?.permissions || [], 'users.edit')) {
                         actions += `<a class="btn btn-sm dropdown-item" href="/users/edit/${id}">
@@ -39,28 +39,22 @@ class UsersController {
                             </a>`
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.activate')) {
-                        if (col['status'] !== 'active') {
-                            actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
-                                    <i class="fas fa-check-circle me-1"></i> Activate
-                                </a>`
-                        }
+                    if (hasPermission(user?.permissions || [], 'users.activate') && ['inactive', 'pending', 'unset'].includes(status)) { 
+                        actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
+                                <i class="fas fa-check-circle me-1"></i> Activate
+                            </a>` 
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.deactivate')) {
-                        if (col['status'] !== 'inactive') {
-                            actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
-                                    <i class="fas fa-times-circle me-1"></i> Deactivate
-                                </a>`
-                        }
+                    if (hasPermission(user?.permissions || [], 'users.deactivate') && ['active', 'unset'].includes(status)) { 
+                        actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
+                                <i class="fas fa-times-circle me-1"></i> Deactivate
+                            </a>` 
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.suspend')) {
-                        if (col['status'] !== 'suspended') {
-                            actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
-                                    <i class="fas fa-user-slash me-1"></i> Suspend
-                                </a>`
-                        }
+                    if (hasPermission(user?.permissions || [], 'users.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
+                        actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
+                                <i class="fas fa-user-slash me-1"></i> Suspend
+                            </a>` 
                     }
 
                     let action_dropdown = `
@@ -110,6 +104,7 @@ class UsersController {
                     return ucfirst(col || 'N/A');
                 })
                 .editColumn('status', (col) => { 
+                    col = col ? col.toLowerCase() : 'inactive';
                     if (col === 'active') {
                         return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
                     } else if (col === 'inactive') {
@@ -206,7 +201,7 @@ class UsersController {
                 
                 let route;
                 if (!data.stayHere) {
-                    route = '/roles';
+                    route = '/users';
                 }
 
                 return res.status(200).json({
@@ -284,7 +279,7 @@ class UsersController {
                     data.updatedBy = user.uid;
                 }
                 
-                let create = await UsersUtil.updateUser(data);
+                let create = await UsersUtil.updateUser(uid, data);
                 
                 let route;
                 if (!data.stayHere) {
@@ -309,14 +304,18 @@ class UsersController {
                     title: error.title || 'Unexpected Error'
                 });
             }
-        }
+        } 
+
+        let {user, role} = await UsersUtil.getUserByUid(uid);  
         
-        let {user, role} = await UsersUtil.getUserByUid(uid);
-        console.log(role);
+        if (!user || !user.uid) { 
+            return res.redirect('/users');
+        }
+
         return res.render("crm/users/update", { 
             title: `${ config.APP.APP_NAME } || List Users`,
-            userData: jsonParser(user),
-            roleData: jsonParser(role),
+            userData: user,
+            roleData: role,
             user: req.session.user
         });
     }

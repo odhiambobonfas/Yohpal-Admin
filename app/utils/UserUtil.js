@@ -94,8 +94,47 @@ class UserUtil extends Util {
     }
 
     
-    async getUserByUid(id) {  
-        const usersRef = FirestoreDatabase.collection(User.collection).doc(id);
+    async getUserByUid(uid) {
+        const usersRef = FirestoreDatabase.collection(User.collection)
+            .where("uid", "==", uid);
+
+        const snapshot = await usersRef.get();
+
+        if (snapshot.empty) {
+            return {};
+        }
+
+        const userDoc = snapshot.docs[0];
+        let user = userDoc.data() ?? {};
+
+        let role = {};
+        let permissions = {};
+
+        // if user has a role reference
+        if (user.roleRef && user.roleRef.get) {
+            const roleSnap = await user.roleRef.get();
+            if (roleSnap.exists) {
+                role = roleSnap.data();
+
+                // if role has a permissions reference
+                if (role.refPermissions && role.refPermissions.get) {
+                    const permSnap = await role.refPermissions.get();
+                    if (permSnap.exists) {
+                        permissions = permSnap.data();
+                    }
+                }
+            }
+        }
+
+        return {
+            user,
+            role,
+            permissions
+        };
+    }
+
+    async getUserByDocid(uid) {  
+        let usersRef = FirestoreDatabase.collection(User.collection).doc(uid);
         const snapshot = await usersRef.get();  
         
         if (!snapshot.exists) {
@@ -193,6 +232,7 @@ class UserUtil extends Util {
                 firstName: ucwords(data.firstName) || "", 
                 lastName: ucwords(data.lastName) || "", 
                 userName: data.userName.toLowerCase() || "", 
+                email: data.email.toLowerCase() || "", 
                 Country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
                 roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
@@ -222,71 +262,92 @@ class UserUtil extends Util {
         }
     }
 
-    async updateUser(data) {
+    async updateUser(uid, data) {
         try {
+            if (!uid) {
+                throw new Exception(400, "INVALID_INPUT", LANG_EN.req.invalid_request, "Invalid input data");
+            }
+
             const usersRef = FirestoreDatabase.collection(User.collection);
+            const userSnapshot = await usersRef.where('uid', '==', uid).get();
 
-            const emailSnapshot = await usersRef.where('email', '==', data.email).get();
-            if (emailSnapshot.empty) {
-                throw new Exception(
-                    404,
-                    "USER_NOT_FOUND",
-                    LANG_EN.req.user_email_unexists,
-                    `User with the email: ${ucwords(data.email)} does not exist!`
-                );
+            if (userSnapshot.empty) {
+                throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.user_not_found, `User with UID: ${ucwords(uid)} does not exist!`);
             }
-            
-            const userDoc = emailSnapshot.docs[0];
-            const uid = userDoc.data().uid;
-            
-            const usernameSnapshot = await usersRef.where('userName', '==', data.userName).get();
-            if (!usernameSnapshot.empty && usernameSnapshot.docs[0].id !== userDoc.id) {
-                throw new Exception(
-                    409,
-                    "USERNAME_TAKEN",
-                    LANG_EN.req.userName_exists,
-                    `Username ${ucwords(data.userName)} is already taken by another user`
-                );
-            }
-            
-            const userRecord = await admin.auth().updateUser(uid, {
-                email: data.email,
-                password: data.password,
-                displayName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-            });
 
-            if (!userRecord) {
-                throw new Exception(500, "USER_UPDATE_FAILED", LANG_EN.req.user_update_failed, "User update error");
-            }
-            
-            let userObj = {
-                firstName: ucwords(data.firstName) || "",
-                lastName: ucwords(data.lastName) || "", 
-                userName: data.userName.toLowerCase() || "",
-                country: data.country || "",
-                phoneNumber: data.phoneNumber || "",
-                roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
-                refPermissions: data.permissionId ? FirestoreDatabase.collection('permissions').doc(data.permissionId) : null,
-                profile_picture: data.profilePicture || "",
-                address: data.address || "",
-                bio: data.bio || "",
-                status: data.status || "active",
-                updatedBy: data.addedBy ? FirestoreDatabase.collection(User.collection).doc(data.addedBy) : null,
-                updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            };
+            const userDoc = userSnapshot.docs[0];
+            let updatedData = {};
 
-            // Update Firestore document
-            await usersRef.doc(userDoc.id).update(userObj);
+            if (data.firstName) {
+                updatedData.firstName = ucwords(data.firstName);
+            }
+            if (data.lastName) {
+                updatedData.lastName = ucwords(data.lastName);
+            }
+            if (data.userName) {
+                // Check if username already exists (excluding current user)
+                const usernameSnapshot = await usersRef
+                    .where('userName', '==', data.userName)
+                    .get();
+
+                if (!usernameSnapshot.empty) {
+                    const conflict = usernameSnapshot.docs.find(doc => doc.id !== userDoc.id);
+                    if (conflict) {
+                        throw new Exception(
+                            201,
+                            "USER_ALREADY_EXISTS",
+                            LANG_EN.req.userName_already_exists,
+                            `User with same username: ${ucwords(data.userName)}, exists!`
+                        );
+                    }
+                }
+                updatedData.userName = data.userName.toLowerCase();
+            }
+            if (data.country) {
+                updatedData.country = data.country; // fixed casing (was Country)
+            }
+            if (data.email) {
+                updatedData.email = data.email; // fixed casing (was Country)
+            }
+            if (data.phoneNumber) {
+                updatedData.phoneNumber = data.phoneNumber;
+            }
+            if (data.roleId) {
+                updatedData.roleRef = FirestoreDatabase.collection('roles').doc(data.roleId);
+            }
+            if (data.permissionId) {
+                updatedData.refPermissions = FirestoreDatabase.collection('permissions').doc(data.permissionId);
+            }
+            if (data.profilePicture) {
+                updatedData.profile_picture = data.profilePicture;
+            }
+            if (data.address) {
+                updatedData.address = data.address;
+            }
+            if (data.bio) {
+                updatedData.bio = data.bio;
+            }
+            if (data.status) {
+                updatedData.status = data.status;
+            }
+            if (data.updatedBy) {
+                updatedData.updatedBy = FirestoreDatabase.collection(User.collection).doc(data.updatedBy);
+            }
+
+            updatedData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+            await usersRef.doc(userDoc.id).update(updatedData); // fixed doc reference
 
             return true;
         } catch (error) {
             console.error('Error updating user:', error);
-            throw new Exception(error.status || 500, error.code, error.message, error.reason);
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
         }
     }
 
     async updateUserStatus(data) {
         let { uid, status, updatedBy } = data; 
+        
         try {
             if (!uid || !status) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.uid_and_status_required, "Invalid input data");
@@ -294,9 +355,9 @@ class UserUtil extends Util {
 
             const usersRef = FirestoreDatabase.collection(User.collection);
             const userSnapshot = await usersRef.where('uid', '==', uid).get();
-
+            console.log(userSnapshot);
             if (userSnapshot.empty) {
-                throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.user_unexists, `User with UID: ${ucwords(uid)} does not exist!`);
+                throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.operation_failed, `User with UID: ${ucwords(uid)} does not exist!`);
             }
 
             const userDoc = userSnapshot.docs[0];

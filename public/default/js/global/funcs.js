@@ -1095,6 +1095,12 @@ function enableImagePreview(inputId, previewId) {
     });
 }
 
+function fixDatatableRendering() {
+    $('.dropdown-toggle').dropdown({
+        dropdownParent: $('body')
+    }); 
+}
+
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {
@@ -1110,4 +1116,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     masterInstance.initOverlay('.main .content-section'); 
     masterInstance.initDonateNowFunc();  
     setupDateRangeWithBootstrapDatePickerLib();
+    fixDatatableRendering();
 });

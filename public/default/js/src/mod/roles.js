@@ -230,7 +230,7 @@ class rbac extends Master {
 
                     $.ajax({
                         type: 'PATCH',
-                        url: `/roles/status/update/${id}`,
+                        url: `/roles/edit/${id}`,
                         data: jsonifyFormData(data),
                         dataType: 'json', 
                         contentType: 'application/json',

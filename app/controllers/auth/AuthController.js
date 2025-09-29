@@ -148,7 +148,7 @@ class AuthController {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
             }
             
-            let {user, role, permissions} = await UserUtil.getUserByUid(v.uid);
+            let {user, role, permissions} = await UserUtil.getUserByDocid(v.uid);
 
             permissions = permissions.permissions ?? []; 
 

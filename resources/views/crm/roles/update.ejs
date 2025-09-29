@@ -15,28 +15,28 @@
             </div>
             <div class="content-body gx-0 px-0">
                 <div class="card-body p-2">
-                    <form class="update-role-form" id="updateRoleForm" action="/roles/update/<%= roleId %>" method="post"
+                    <form class="update-role-form" id="updateRoleForm" action="/roles/edit/<%= roleId %>" method="post"
                         enctype="multipart/form-data">
                     
                         <div class="mb-3 col-12 gap-1 d-flex align-items-center">
                             <div class="mb-3 col-5">
                                 <label for="roleName" class="form-label">Role Name</label>
                                 <input type="text" id="roleName" name="roleName" class="form-control" required
-                                    value="<%= role.name %>"
+                                    value="<%= role?.name %>"
                                     placeholder="Enter your custom role to update...">
                             </div>
                             <div class="mb-3 col-4">
                                 <label for="code" class="form-label">Role Code</label>
                                 <input type="text" id="code" name="code" class="form-control" required
-                                    value="<%= role.code %>"
+                                    value="<%= role?.code %>"
                                     placeholder="Enter your custom unique role code...">
                             </div>
                             <div class="mb-3 col-3">
                                 <label for="status" class="form-label">Role Status</label>
                                 <select class="form-control" name="status" id="status">
                                     <option value="">-- Select status --</option>
-                                    <option value="active" <%= role.status === 'active' ? 'selected' : '' %>>Active</option>
-                                    <option value="inactive" <%= role.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                    <option value="active" <%= role?.status === 'active' ? 'selected' : '' %>>Active</option>
+                                    <option value="inactive" <%= role?.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
                                 </select>
                             </div>
                         </div>
@@ -46,9 +46,9 @@
                                 <label for="targets">Target Applications/Modules</label>
                                 <select multiple class="form-control searchSelect" name="targets" id="targets">
                                     <option value="">-- Select target apps --</option>
-                                    <option value="admin" <%= role.target.includes('admin') ? 'selected' : '' %>>Yohpal Admin App</option>
-                                    <option value="market" <%= role.target.includes('market') ? 'selected' : '' %>>Market Application</option>
-                                    <option value="hustle" <%= role.target.includes('hustle') ? 'selected' : '' %>>Hustle Application</option>
+                                    <option value="admin" <%= role?.target?.includes('admin') ? 'selected' : '' %>>Yohpal Admin App</option>
+                                    <option value="market" <%= role?.target?.includes('market') ? 'selected' : '' %>>Market Application</option>
+                                    <option value="hustle" <%= role?.target?.includes('hustle') ? 'selected' : '' %>>Hustle Application</option>
                                 </select>
                             </div>
                         </div>
@@ -57,13 +57,13 @@
                             <div class="form-check form-check-inline">
                                 <label class="form-check-label">
                                     <input class="form-check-input isSuperAdmin" type="checkbox" name="isSuperAdmin" id="isSuperAdmin"
-                                        value="1" <%= role.isSuperAdmin ? 'checked' : '' %>> Is Super Admin
+                                        value="1" <%= role?.isSuperAdmin ? 'checked' : '' %>> Is Super Admin
                                 </label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <label class="form-check-label">
                                     <input class="form-check-input isAdmin" type="checkbox" name="isAdmin" id="isAdmin"
-                                        value="1" <%= role.isAdmin ? 'checked' : '' %>> Is Admin
+                                        value="1" <%= role?.isAdmin ? 'checked' : '' %>> Is Admin
                                 </label>
                             </div>
                         </div>
@@ -71,7 +71,7 @@
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
                             <textarea name="description" id="description" class="form-control description" rows="6"
-                                placeholder="Enter role description here..."><%= role.description %></textarea>
+                                placeholder="Enter role description here..."><%= role?.description %></textarea>
                         </div>
                         
                         <hr>
@@ -86,7 +86,7 @@
                                     <div class="form-check mb-2">
                                         <input class="form-check-input" type="checkbox" name="permissions[]"
                                             id="perm_<%= group %>_<%= code %>" value="<%= permission %>"
-                                            <%= (role.permissions.includes(permission)) ? 'checked' : '' %>>
+                                            <%= (role?.permissions?.includes(permission)) ? 'checked' : '' %>>
                                         <label class="form-check-label" for="perm_<%= group %>_<%= code %>">
                                             <%= code.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) %>
                                         </label>
@@ -100,7 +100,7 @@
                         <div class="form-check form-check-inline">
                             <label class="form-check-label">
                                 <input class="form-check-input stayHere" type="checkbox" name="stayHere" id="stayHere"
-                                    value="1"> Stay here after updating the role.
+                                    value="1"> Stay here after updating the role?.
                             </label>
                         </div>
 

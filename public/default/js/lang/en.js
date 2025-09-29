@@ -74,6 +74,11 @@ const LANG_EN = {
     
     swal: {
         // Users
+        activate_users_title: "Activate Users",  
+        activate_users_confirm_btn: "Yes, activate user(s)",
+        activate_users_cancel_btn: "No, cancel please!",
+        ready_to_activate_user: "Are you sure you want to activate the selected user(s)?",
+
         delete_users_title: "Delete Users",
         delete_users_confirm_btn: "Yes, delete user(s)!",
         delete_users_cancel_btn: "No, cancel please!",

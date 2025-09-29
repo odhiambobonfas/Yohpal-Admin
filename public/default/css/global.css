@@ -103,3 +103,11 @@ body>.global-overlay {
     height: 200px;
     width: 200px;
 }
+
+.dropdown-menu {
+  z-index: 9999 !important;
+}
+
+table {
+    height: 50vh;
+}
