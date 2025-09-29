@@ -88,7 +88,6 @@ const InitializeServer = async () => {
         console.error("[Redis] Failed to initialize store, falling back to memory store:", err.message);
     }
 
-
     app.use(session({
         name: config.SESSION.SESSION_NAME,
         store: store,
