@@ -181,6 +181,10 @@ class AuthController {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
 
+            if (user?.role?.status !== 'active') {
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
+            }
+
             let token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
                 expiresIn: config.AUTH.TOKEN_EXPIRY
             }); 

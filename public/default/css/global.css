@@ -104,13 +104,13 @@ body>.global-overlay {
     width: 200px;
 }
 
-.dropdown-menu {
-  z-index: 9999 !important;
+.table-responsive {
+    height: 100vh !important;
 }
 
-table {
-    height: 50vh;
-}
+.dropdown-menu {
+  z-index: 9999 !important;
+} 
 
 .active {
     color: var(--text-dark) !important;
