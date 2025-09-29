@@ -184,8 +184,6 @@ class AuthController {
             let token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
                 expiresIn: config.AUTH.TOKEN_EXPIRY
             }); 
-
-            console.log(req.session);
             
             req.session.token = token;
 

@@ -49,6 +49,9 @@ const bindings = {
             edit: 'roles.edit',
             delete: 'roles.delete',
             assign: 'roles.assign',
+            activate: 'roles.activate',
+            deactivate: 'roles.deactivate',
+            suspend: 'roles.suspend',
         },
 
         // Contacts Panel

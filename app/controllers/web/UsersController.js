@@ -7,6 +7,7 @@ import allowedRoutes from '@config/routes';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
 import { isAjaxRequest, ucfirst, ucwords, validateEmail, jsonParser } from '@config/utils';
+import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil'; 
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
@@ -16,6 +17,7 @@ class UsersController {
     static async index(req, res) {
         if (isAjaxRequest(req)) {
             let users = [];
+            let user = req.session.user;
 
             try { 
                 users = await UsersUtil.getAllUsers(req.query); 
@@ -25,16 +27,40 @@ class UsersController {
                     let actions = '';
                     let id = col['id'];
                     
-                    if (id) {
+                    if (hasPermission(user?.permissions || [], 'users.edit')) {
                         actions += `<a class="btn btn-sm dropdown-item" href="/users/edit/${id}">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>`
                     }
 
-                    if (id) {
-                        actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                    if (hasPermission(user?.permissions || [], 'users.delete')) {
+                        actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </a>`
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'users.activate')) {
+                        if (col['status'] !== 'active') {
+                            actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
+                                    <i class="fas fa-check-circle me-1"></i> Activate
+                                </a>`
+                        }
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'users.deactivate')) {
+                        if (col['status'] !== 'inactive') {
+                            actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
+                                    <i class="fas fa-times-circle me-1"></i> Deactivate
+                                </a>`
+                        }
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'users.suspend')) {
+                        if (col['status'] !== 'suspended') {
+                            actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
+                                    <i class="fas fa-user-slash me-1"></i> Suspend
+                                </a>`
+                        }
                     }
 
                     let action_dropdown = `
@@ -69,6 +95,9 @@ class UsersController {
                     return ucwords(col || 'N/A');
                 })
                 .editColumn('userName', (col) => { 
+                    return ucwords(col || 'N/A');
+                })
+                .editColumn('email', (col) => { 
                     return ucwords(col || 'N/A');
                 })
                 .editColumn('phoneNumber', (col) => { 
@@ -248,7 +277,7 @@ class UsersController {
                 }
 
                 if (!["active", "inactive", "pending"].includes(data.status)) {
-                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_status, "Invalid Status!");
+                    throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.request_denied, "Invalid Status!");
                 }
                 
                 if (data.updatedBy) {
@@ -290,6 +319,86 @@ class UsersController {
             roleData: jsonParser(role),
             user: req.session.user
         });
+    }
+
+    static async updateUserStatus(req, res) {
+        let uid = req.params.id; 
+        let {status} = req.body;
+        let data = { uid: uid, status: status };  
+
+        try {   
+            let user = req.session.user; 
+
+            if (!user || !user.uid) {
+                throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
+            }
+
+            if (!uid?.length) {
+                throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.user_not_found, "User Not Found!");
+            } 
+
+            if (!["active", "inactive", "suspended", "pending"].includes(status)) {
+                throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.request_denied, "Invalid Status!");
+            }
+            
+            if (data.updatedBy) {
+                data.updatedBy = user.uid;
+            }
+            
+            let create = await UsersUtil.updateUserStatus(data); 
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'User status updated successfully.', 
+                data: create
+            });
+        }
+        catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        } 
+    }
+
+    static async deleteUser(req, res) {
+        let uid = req.params.id;   
+
+        try {   
+            let user = req.session.user; 
+
+            if (!user || !user.uid) {
+                throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
+            }
+
+            if (!uid?.length) {
+                throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.user_not_found, "User Not Found!");
+            }  
+            
+            let create = await UsersUtil.deleteUser(uid); 
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'User deleted successfully.', 
+                data: create
+            });
+        }
+        catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        } 
     }
 }
 

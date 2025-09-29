@@ -31,7 +31,7 @@ class User extends Master {
                 enableElement(btn);
 
                 if (!res.ok) {
-                    toast('error', 5000, lang.undefined_error);
+                    toast('error', 5000, LANG_EN.undefined_error);
                     return;
                 }
 
@@ -40,7 +40,7 @@ class User extends Master {
 
                 if (response?.status === 'success') {
                     resetFormAndCloseModal(form);
-                    toast(response.status, 5000, response.message || lang.undefined_error);
+                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                     setTimeout(() => {
                         if (response.route) route(response.route);
                     }, 2000);
@@ -48,17 +48,17 @@ class User extends Master {
                 }
 
                 if (response?.status === 'error') {
-                    toast(response.status, 5000, response.message || lang.undefined_error);
+                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                     return;
                 }
 
-                toast('error', 5000, lang.undefined_error);
+                toast('error', 5000, LANG_EN.undefined_error);
 
             } catch (error) {
                 console.log(error.message || error);
                 toggleButtonContent(btn, '', true);
                 enableElement(btn);
-                toast('error', 5000, lang.undefined_error);
+                toast('error', 5000, LANG_EN.undefined_error);
             }
         });
     }
@@ -91,7 +91,7 @@ class User extends Master {
                 enableElement(btn);
 
                 if (!res.ok) {
-                    toast('error', 5000, lang.undefined_error);
+                    toast('error', 5000, LANG_EN.undefined_error);
                     return;
                 }
 
@@ -100,7 +100,7 @@ class User extends Master {
 
                 if (response?.status === 'success') {
                     resetFormAndCloseModal(form);
-                    toast(response.status, 5000, response.message || lang.undefined_error);
+                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                     setTimeout(() => {
                         if (response.route) route(response.route);
                     }, 2000);
@@ -108,17 +108,17 @@ class User extends Master {
                 }
 
                 if (response?.status === 'error') {
-                    toast(response.status, 5000, response.message || lang.undefined_error);
+                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                     return;
                 }
 
-                toast('error', 5000, lang.undefined_error);
+                toast('error', 5000, LANG_EN.undefined_error);
 
             } catch (error) {
                 console.log(error.message || error);
                 toggleButtonContent(btn, '', true);
                 enableElement(btn);
-                toast('error', 5000, lang.undefined_error);
+                toast('error', 5000, LANG_EN.undefined_error);
             }
         });
     }
@@ -154,7 +154,7 @@ class User extends Master {
     }
 
     actionOnUsersRes() { 
-                const btns = document.querySelectorAll('.usersTable .action-btns');
+        const btns = document.querySelectorAll('.users-table .action-btns');
         btns.forEach(btn => {
             if (!documentContains(btn)) return;
             btn = cloneNodeElement(btn);
@@ -164,43 +164,184 @@ class User extends Master {
                 let clickedBtn = event.target;
                 let clickedId = clickedBtn.getAttribute('data-id');
 
-                if (containsClass(clickedBtn, 'suspend')) this.updateUserStatus(btn, clickedId, 'suspended', {
-                    title: lang.swal.suspend_users_title,
-                    text: lang.swal.ready_to_suspend_user,
-                    confirmButtonText: lang.swal.suspend_users_confirm_btn,
-                    cancelButtonText: lang.swal.suspend_users_cancel_btn,
-                });
 
                 if (containsClass(clickedBtn, 'reset-pass')) this.sendResetPasswordEmailPrompt(btn, clickedId, {
-                    title: lang.swal.reset_password_title,
-                    text: lang.swal.ready_to_send_reset_password_email_prompt,
-                    confirmButtonText: lang.swal.reset_password_confirm_btn,
-                    cancelButtonText: lang.swal.reset_password_cancel_btn,
+                    title: LANG_EN.swal.reset_password_title,
+                    text: LANG_EN.swal.ready_to_send_reset_password_email_prompt,
+                    confirmButtonText: LANG_EN.swal.reset_password_confirm_btn,
+                    cancelButtonText: LANG_EN.swal.reset_password_cancel_btn,
+                });
+
+                if (containsClass(clickedBtn, 'suspend')) this.updateUserStatus(btn, clickedId, 'suspended', {
+                    title: LANG_EN.swal.suspend_users_title,
+                    text: LANG_EN.swal.ready_to_suspend_user,
+                    confirmButtonText: LANG_EN.swal.suspend_users_confirm_btn,
+                    cancelButtonText: LANG_EN.swal.suspend_users_cancel_btn,
                 });
 
                 if (containsClass(clickedBtn, 'deactivate')) this.updateUserStatus(btn, clickedId, 'inactive', {
-                    title: lang.swal.inactivate_users_title,
-                    text: lang.swal.ready_to_inactivate_user,
-                    confirmButtonText: lang.swal.inactivate_users_confirm_btn,
-                    cancelButtonText: lang.swal.inactivate_users_cancel_btn,
+                    title: LANG_EN.swal.inactivate_users_title,
+                    text: LANG_EN.swal.ready_to_inactivate_user,
+                    confirmButtonText: LANG_EN.swal.inactivate_users_confirm_btn,
+                    cancelButtonText: LANG_EN.swal.inactivate_users_cancel_btn,
                 });
 
                 if (containsClass(clickedBtn, 'activate')) this.updateUserStatus(btn, clickedId, 'active', {
-                    title: lang.swal.activate_users_title,
-                    text: lang.swal.ready_to_activate_user,
-                    confirmButtonText: lang.swal.activate_users_confirm_btn,
-                    cancelButtonText: lang.swal.activate_users_cancel_btn,
+                    title: LANG_EN.swal.activate_users_title,
+                    text: LANG_EN.swal.ready_to_activate_user,
+                    confirmButtonText: LANG_EN.swal.activate_users_confirm_btn,
+                    cancelButtonText: LANG_EN.swal.activate_users_cancel_btn,
+                });
+
+                if (containsClass(clickedBtn, 'delete')) this.deleteUser(btn, clickedId, 'active', {
+                    title: LANG_EN.swal.delete_users_title,
+                    text: LANG_EN.swal.ready_to_delete_users,
+                    confirmButtonText: LANG_EN.swal.delete_users_confirm_btn,
+                    cancelButtonText: LANG_EN.swal.delete_users_cancel_btn,
                 });
             });
         })
     }
 
-    updateUserStatus(btn, id, status, swalData) {
-        // ...
+    updateUserStatus(btn, id, status, swlObj) {
+        Swal.fire({
+            title: swlObj?.title,
+            text: swlObj?.text,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: swlObj?.confirmButtonText,
+            cancelButtonText: swlObj?.cancelButtonText || 'Cancel',
+            customClass: {
+                confirmButton: "btn btn-warning me-3",
+                cancelButton: "btn btn-outline-secondary"
+            },
+            buttonsStyling: false,
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                (new Master()).showOverlay();
+
+                setTimeout(() => {
+                    if (!documentContains) return;
+                    let data = new FormData();
+                    data.append('status', status); 
+
+                    $.ajax({
+                        type: 'PATCH',
+                        url: `/users/status/update/${id}`,
+                        data: jsonifyFormData(data),
+                        dataType: 'json', 
+                        contentType: 'application/json',
+                        processData: false,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        success: function (response) {
+                            enableElement(btn);
+                            console.log(response);
+                            toggleButtonContent(btn, '', true);
+                            (new Master()).hideOverlay();
+
+                            if (response && response.status && response.status == 'success') {
+                                (new User()).getListUsers();
+                                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                                return;
+                            }
+
+                            if (response && response.status && response.status == 'error') {
+                                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                                return;
+                            }
+
+                            toast('error', 5000, LANG_EN.undefined_error);
+                        },
+                        error: error => {
+                            enableElement(btn);
+                            toggleButtonContent(btn, '', true);
+                            console.log(error.message || error);
+                            (new Master()).hideOverlay();
+                            toast('error', 5000, LANG_EN.undefined_error);
+                        }
+                    });
+                }, 2000);
+            }
+        });
     }
 
     sendResetPasswordEmailPrompt(btn, id, swalData) {
         // ...
+    }
+
+    deleteUser(btn, id, status, swlObj) {
+        Swal.fire({
+            title: swlObj?.title,
+            text: swlObj?.text,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: swlObj?.confirmButtonText,
+            cancelButtonText: swlObj?.cancelButtonText || 'Cancel',
+            customClass: {
+                confirmButton: "btn btn-danger me-3",
+                cancelButton: "btn btn-outline-secondary"
+            },
+            buttonsStyling: false,
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            },
+        }).then((result) => {
+            if (result.isConfirmed) {
+                (new Master()).showOverlay();
+
+                setTimeout(() => {
+                    if (!documentContains) return; 
+                    
+                    $.ajax({
+                        type: 'DELETE',
+                        url: `/users/delete/${id}`, 
+                        dataType: "json",
+                        contentType: false,
+                        processData: false,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        success: function (response) {
+                            enableElement(btn);
+                            console.log(response);
+                            toggleButtonContent(btn, '', true);
+                            (new Master()).hideOverlay();
+
+                            if (response && response.status && response.status == 'success') {
+                                (new User()).getListUsers();
+                                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                                return;
+                            }
+
+                            if (response && response.status && response.status == 'error') {
+                                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                                return;
+                            }
+
+                            toast('error', 5000, LANG_EN.undefined_error);
+                        },
+                        error: error => {
+                            enableElement(btn);
+                            toggleButtonContent(btn, '', true);
+                            console.log(error.message || error);
+                            (new Master()).hideOverlay();
+                            toast('error', 5000, LANG_EN.undefined_error);
+                        }
+                    });
+                }, 2000);
+            }
+        });
     }
 }
 

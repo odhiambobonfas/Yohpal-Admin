@@ -47,12 +47,16 @@ router.route('/users/edit/:id')
     .get(authMiddleware, UsersController.editUser)
     .post(authMiddleware, upload.single('profile_picture'), UsersController.editUser);
 
+router.patch('/users/status/update/:id', authMiddleware, UsersController.updateUserStatus); 
+router.delete('/users/delete/:id', authMiddleware, UsersController.deleteUser); 
+
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index);
 router.get('/roles/create', authMiddleware, RolesController.createRoles);
 router.post('/roles/create', authMiddleware, RolesController.createRoles);
 router.get('/roles/edit/:id', authMiddleware, RolesController.updateRoles);
-router.post('/roles/update/:id', authMiddleware, RolesController.updateRoles);
+router.patch('/roles/status/update/:id', authMiddleware, RolesController.updateRoleStatus);
+router.delete('/roles/delete/:id', authMiddleware, RolesController.deleteRole); 
 
 // Dashboard routes
 router.get('/dashboard/stats', authMiddleware, DashboardController.index);

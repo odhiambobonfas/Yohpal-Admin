@@ -10,6 +10,7 @@ import Permissions from '@models/Permissions';
 import Exception from '@config/exceptions';
 import { ucwords, fbCollectionParser } from '@config/utils';
 import LANG_EN from '@lang/en';
+import admin from 'firebase-admin';
 
 class RolesUtil extends Util {
     constructor() {
@@ -83,15 +84,15 @@ class RolesUtil extends Util {
                 addedBy: addedBy,
                 refUser: FirestoreDatabase.collection(User.collection).doc(input.refUserId),
                 refPermissions: FirestoreDatabase.collection(Permissions.collection).doc(inputCode),
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
             
             const permissionsRef = FirestoreDatabase.collection(Permissions.collection).doc(inputCode);
             await permissionsRef.set({
                 code: inputCode,
                 permissions: input.permissions ?? [],
-                updatedAt: new Date(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
 
             return true;
@@ -130,7 +131,7 @@ class RolesUtil extends Util {
                 addedBy: addedBy,
                 refUser: FirestoreDatabase.collection(User.collection).doc(input.refUserId),
                 refPermissions: FirestoreDatabase.collection(Permissions.collection).doc(inputCode),
-                updatedAt: new Date(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
             
             // create if not exists, merge otherwise
@@ -138,7 +139,7 @@ class RolesUtil extends Util {
             await permissionsRef.set({
                 code: inputCode,
                 permissions: input.permissions ?? [],
-                updatedAt: new Date(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
             
             return true;
@@ -147,6 +148,62 @@ class RolesUtil extends Util {
             throw new Exception((error.status || 500), error.code, error.message, error.reason);
         } 
     } 
+
+    async updateRoleStatusQuery(roleId, status) {
+        try {
+            if (!roleId) { 
+                throw new Exception(201, 'GENERIC_EXCEPTION' `${LANG_EN.undefined_error}`, 'Role ID Not Found Error!');
+            } 
+            
+            let rolesRef = FirestoreDatabase.collection(Role.collection);
+            let roleDocRef = rolesRef.doc(roleId);
+            const roleSnapshot = await roleDocRef.get();
+
+            if (!roleSnapshot.exists) {
+                throw new Exception(201, 'ROLE_UNEXISTS_EXCEPTION' `${LANG_EN.role_unexists_exception}`, 'Role Unexists Error!');
+            }
+
+            await roleDocRef.update({
+                status: status || 'inactive',
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+            
+            return true;
+        } catch (error) {
+            console.log(error.status);
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+        }
+    }
+
+    async deleteRoleQuery(roleId) {
+        try {
+            if (!roleId) { 
+                throw new Exception(201, 'GENERIC_EXCEPTION' `${LANG_EN.undefined_error}`, 'Role ID Not Found Error!');
+            } 
+            
+            let rolesRef = FirestoreDatabase.collection(Role.collection);
+            let roleDocRef = rolesRef.doc(roleId);
+            const roleSnapshot = await roleDocRef.get();
+
+            if (!roleSnapshot.exists) {
+                throw new Exception(201, 'ROLE_UNEXISTS_EXCEPTION' `${LANG_EN.role_unexists_exception}`, 'Role Unexists Error!');
+            }
+
+            const roleData = roleSnapshot.data();
+            if (roleData && roleData.code) {
+                // delete permissions associated with this role
+                const permissionsRef = FirestoreDatabase.collection(Permissions.collection).doc(roleData.code);
+                await permissionsRef.delete();
+            }
+
+            await roleDocRef.delete();
+            
+            return true;
+        } catch (error) {
+            console.log(error.status);
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+        }
+    }
 }
 
 export default new RolesUtil();

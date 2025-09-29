@@ -87,11 +87,11 @@ class Auth {
                     enableElement(btn);
                     
                     if (res && res.status && res.status == 'error') {
-                        toast(res.status, 5000, res.message || lang.undefined_error);
+                        toast(res.status, 5000, res.message || LANG_EN.undefined_error);
                         return;
                     }
 
-                    toast('error', 5000, lang.undefined_error);
+                    toast('error', 5000, LANG_EN.undefined_error);
                 },
                 error: error => {
                     enableElement(btn);

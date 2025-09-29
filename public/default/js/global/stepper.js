@@ -117,23 +117,23 @@ class DynamicStepper extends Master {
                                     __append_html(response.donate_modal_dialog_dom, donateModalDialog)
                                 }
 
-                                toast(response.status, 5000, response.message || lang.undefined_error);
+                                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                                 return;
                             }
 
                             if (response && response.status && response.status == 'error') {
-                                toast(response.status, 5000, response.message || lang.undefined_error);
+                                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                                 return;
                             }
 
-                            toast('error', 5000, lang.undefined_error);
+                            toast('error', 5000, LANG_EN.undefined_error);
                         },
                         error: error => {
                             enableElement(btn);
                             toggleButtonContent(btn, '', true);
                             console.log(error.message || error); 
                             (new Master()).hideOverlay();
-                            toast('error', 5000, lang.undefined_error);
+                            toast('error', 5000, LANG_EN.undefined_error);
                         }
                     });
                 }, 2000);

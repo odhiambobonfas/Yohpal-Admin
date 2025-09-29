@@ -155,7 +155,7 @@ class UserUtil extends Util {
         }
     }    
 
-    async createUser(data={}) { 
+    async createUser(data) { 
         try {  
             // check if email or username already exists
             const existingUsersRef = FirestoreDatabase.collection(User.collection);
@@ -222,7 +222,7 @@ class UserUtil extends Util {
         }
     }
 
-    async updateUser(data = {}) {
+    async updateUser(data) {
         try {
             const usersRef = FirestoreDatabase.collection(User.collection);
 
@@ -281,6 +281,63 @@ class UserUtil extends Util {
             return true;
         } catch (error) {
             console.error('Error updating user:', error);
+            throw new Exception(error.status || 500, error.code, error.message, error.reason);
+        }
+    }
+
+    async updateUserStatus(data) {
+        let { uid, status, updatedBy } = data; 
+        try {
+            if (!uid || !status) {
+                throw new Exception(400, "INVALID_INPUT", LANG_EN.uid_and_status_required, "Invalid input data");
+            }
+
+            const usersRef = FirestoreDatabase.collection(User.collection);
+            const userSnapshot = await usersRef.where('uid', '==', uid).get();
+
+            if (userSnapshot.empty) {
+                throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.user_unexists, `User with UID: ${ucwords(uid)} does not exist!`);
+            }
+
+            const userDoc = userSnapshot.docs[0];
+
+            await usersRef.doc(userDoc.id).update({
+                status: status,
+                updatedBy: updatedBy ? FirestoreDatabase.collection(User.collection).doc(updatedBy) : null,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error updating user status:', error);
+            throw new Exception(error.status || 500, error.code, error.message, error.reason);
+        }
+    }
+
+    async deleteUser(uid) {
+        try {
+            if (!uid) {
+                throw new Exception(400, "INVALID_INPUT", LANG_EN.req.invalid_request, "Invalid input data");
+            }
+
+            const usersRef = FirestoreDatabase.collection(User.collection);
+            const userSnapshot = await usersRef.where('uid', '==', uid).get();
+
+            if (userSnapshot.empty) {
+                throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.user_not_found, `User with UID: ${ucwords(uid)} does not exist!`);
+            }
+
+            const userDoc = userSnapshot.docs[0];
+
+            // Delete user from Firebase Authentication
+            await admin.auth().deleteUser(uid);
+
+            // Delete user document from Firestore
+            await usersRef.doc(userDoc.id).delete();
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting user:', error);
             throw new Exception(error.status || 500, error.code, error.message, error.reason);
         }
     }

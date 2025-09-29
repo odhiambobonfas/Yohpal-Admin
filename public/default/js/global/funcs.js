@@ -566,7 +566,7 @@ function getDataTableLanguage(overrides = {}) {
 function route(endpoint) {
     if (typeof endpoint !== 'string' || !endpoint.trim()) {
         console.error('Invalid route: must be a non-empty string.');
-        toast('error', 5000, lang.nav_route_error)
+        toast('error', 5000, LANG_EN.nav_route_error)
         return;
     }
 
@@ -929,7 +929,7 @@ function ajaxDtParser(method, url, data={}, callbackFuncs=[]) {
         },
         error: (err) => {
             console.log(err.message || err);
-            toast('error', 3000, lang.undefined_error);
+            toast('error', 3000, LANG_EN.undefined_error);
         }
     }
 }

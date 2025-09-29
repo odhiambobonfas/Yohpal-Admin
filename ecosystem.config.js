@@ -1,7 +1,7 @@
 export default {
     apps: [{
-        name: "server.js",
-        script: "./server.js",
+        name: "server.ts",
+        script: "./server.ts",
         watch: true,
         ignore_watch: [
             "*.json", "node_modules", "logs", "public", "resources", "tests", "*.ejs",

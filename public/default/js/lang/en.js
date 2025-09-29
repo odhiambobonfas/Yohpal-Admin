@@ -36,11 +36,18 @@ const LANG_EN = {
         user_creation_failed: "Failed to create user. Please try again.",
         User_update_failed: "Failed to update user. Please try again.",
         user_already_exists: "A user with this email or username already exists.",
-        user_email_already_exists: " A user with this email already exists.",
-        userName_already_exists: " A user with this username already exists.",
+        user_email_already_exists: "A user with this email already exists.",
+        userName_already_exists: "A user with this username already exists.",
         user_unexists: "A user with this email or username already exists.",
-        user_email_unexists: " A user with this email already exists.",
-        userName_unexists: " A user with this username already exists."
+        user_email_unexists: "A user with this email already exists.",
+        userName_unexists: "A user with this username already exists.",
+        uid_and_status_required: "User ID and status are required to update user status.",
+
+        // role errors
+        role_id_required: "Role ID is required.",
+        role_status_required: "Role status is required.",
+        default_role_status_exception: "Default roles cannot have their status changed.",
+        admin_role_status_exception: "Admin roles cannot have their status changed."
     },   
 
     // General
@@ -70,7 +77,7 @@ const LANG_EN = {
         delete_users_title: "Delete Users",
         delete_users_confirm_btn: "Yes, delete user(s)!",
         delete_users_cancel_btn: "No, cancel please!",
-        ready_to_delete_users: "Are you sure you want to delete the selected user(s)? This action cannot be undone.",
+        ready_to_delete_users: "Are you sure you want to delete the selected user(s)? This action cannot be undone.", 
 
         suspend_users_title: "Suspend Users",
         suspend_users_confirm_btn: "Yes, suspend user(s)!",
@@ -86,6 +93,26 @@ const LANG_EN = {
         inactivate_users_confirm_btn: "Yes, inactivate user(s)!",
         inactivate_users_cancel_btn: "No, cancel please!",
         ready_to_inactivate_user: "Are you sure you want to inactivate the selected user(s)?",
+
+        suspend_role_title: "Suspend Role",
+        ready_to_suspend_role: "Are you sure you want to suspend this role? Users assigned to this role may lose access to certain features.",
+        suspend_role_confirm_btn: "Yes, suspend role!",
+        suspend_role_cancel_btn: "No, cancel please!",
+        inactivate_role_title: "Inactivate Role",
+
+        ready_to_inactivate_role: "Are you sure you want to inactivate this role? Users assigned to this role may lose access to certain features.",
+        inactivate_role_confirm_btn: "Yes, inactivate role!",
+        inactivate_role_cancel_btn: "No, cancel please!",
+
+        activate_role_title: "Activate Role",
+        ready_to_activate_role: "Are you sure you want to activate this role? Users assigned to this role will regain access to features.",
+        activate_role_confirm_btn: "Yes, activate role!",
+        activate_role_cancel_btn: "No, cancel please!",
+
+        delete_role_title: "Delete Role",
+        ready_to_delete_role: "Are you sure you want to delete this role? This action cannot be undone.",
+        delete_role_confirm_btn: "Yes, delete role!",
+        delete_role_cancel_btn: "No, cancel please!",
     }
 };
 

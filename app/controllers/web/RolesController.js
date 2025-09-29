@@ -8,6 +8,7 @@ import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import Util from '@utils/Util'; 
 import mexDtParser from '@config/mexDtParser';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
+import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import RolesUtil from '@utils/RolesUtil'; 
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
@@ -16,7 +17,7 @@ class RolesController {
     static async index(req, res) {
         if (isAjaxRequest(req)) {
             let roles = [];
-
+            let user = req.session.user;
             try {
                 roles = await RolesUtil.getAllRoles(); 
 
@@ -25,15 +26,36 @@ class RolesController {
                     let actions = '';
                     let id = col['id'];
                     
-                    if (id) {
+                    if (hasPermission(user?.permissions || [], 'roles.edit') || hasPermission(user?.permissions || [], 'roles.assign')) {
                         actions += `<a class="btn btn-sm dropdown-item" href="/roles/edit/${id}">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>`
                     }
 
-                    if (id) {
+                    if (hasPermission(user?.permissions || [], 'roles.delete')) {
                         actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`
+                    }
+
+                    // activate
+                    if (hasPermission(user?.permissions || [], 'roles.activate') && col['status'] !== 'active') {
+                        actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
+                                <i class="fas fa-check-circle me-1"></i> Activate
+                            </a>`
+                    }
+
+                    // deactivate
+                    if (hasPermission(user?.permissions || [], 'roles.deactivate') && col['status'] !== 'inactive') {
+                        actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
+                                <i class="fas fa-times-circle me-1"></i> Deactivate
+                            </a>`
+                    }
+
+                    // suspend
+                    if (hasPermission(user?.permissions || [], 'roles.suspend') && col['status'] !== 'suspended') {
+                        actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
+                                <i class="fas fa-pause-circle me-1"></i> Suspend
                             </a>`
                     }
 
@@ -258,6 +280,97 @@ class RolesController {
             role: role ?? [],
             permission_bindings: Object.entries(permissions)
         });
+    }
+
+    static async updateRoleStatus(req, res) {
+        try {
+            const roleId = req.params.id;
+            const { status } = req.body;
+            
+            if (!roleId) {
+                throw new Exception(201, "ROLE_ID_EXCEPTION", LANG_EN.role_id_required, "Role ID Error!");
+            } 
+
+            if (!status) {
+                throw new Exception(201, "ROLE_STATUS_EXCEPTION", LANG_EN.role_status_required, "Role Status Error!");
+            } 
+
+            let snapshot = await RolesUtil.getRoleByDocId(roleId);
+
+            if (snapshot.isSuperAdmin) {
+                throw new Exception(201, "DEFAULT_ROLE_STATUS_EXCEPTION", LANG_EN.default_role_status_exception, "Default Role Status Error!");
+            }
+
+            if (snapshot.isAdmin) {
+                throw new Exception(201, "ADMIN_ROLE_STATUS_EXCEPTION", LANG_EN.admin_role_status_exception, "Admin Role Status Error!");
+            }
+
+            const query = await RolesUtil.updateRoleStatusQuery(roleId, status);
+
+            if (!query) {
+                throw new Exception(201, "UPDATE_ROLE_STATUS_QUERY_EXCEPTION", "Role status could not be updated!", "Role status update error!");
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Role status updated successfully!'
+            });
+
+        } catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+            
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        } 
+    }
+
+    static async deleteRole(req, res) {
+        try {
+            const roleId = req.params.id;
+            
+            if (!roleId) {
+                throw new Exception(201, "ROLE_ID_EXCEPTION", LANG_EN.role_id_required, "Role ID Error!");
+            } 
+
+            let snapshot = await RolesUtil.getRoleByDocId(roleId);
+
+            if (snapshot.isSuperAdmin) {
+                throw new Exception(201, "DEFAULT_ROLE_DELETE_EXCEPTION", LANG_EN.default_role_delete_exception, "Default Role Deletion Error!");
+            }
+
+            if (snapshot.isAdmin) {
+                throw new Exception(201, "ADMIN_ROLE_DELETE_EXCEPTION", LANG_EN.admin_role_delete_exception, "Admin Role Deletion Error!");
+            }
+
+            const query = await RolesUtil.deleteRoleQuery(roleId);
+
+            if (!query) {
+                throw new Exception(201, "DELETE_ROLE_QUERY_EXCEPTION", "Role could not be deleted!", "Role deletion error!");
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Role deleted successfully!'
+            });
+
+        } catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+            
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        } 
     }
 }
 

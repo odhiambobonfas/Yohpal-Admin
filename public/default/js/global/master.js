@@ -95,7 +95,7 @@ class Master {
                     (new Master()).hideOverlay();
 
                     if (!response) {
-                        toast('error', 5000, lang.undefined_error);
+                        toast('error', 5000, LANG_EN.undefined_error);
                         return;
                     }
                     
@@ -107,14 +107,14 @@ class Master {
                     let target_modal = event.target.getAttribute(attribute);
 
                     if (!target_modal?.length) {
-                        toast('error', 5000, lang.undefined_error);
+                        toast('error', 5000, LANG_EN.undefined_error);
                         return;
                     }
     
                     let modal = document.querySelector(`${target_modal}`);
     
                     if (!response.modal) {
-                        toast('error', 5000, lang.undefined_error);
+                        toast('error', 5000, LANG_EN.undefined_error);
                         return;
                     }
     
@@ -150,7 +150,7 @@ class Master {
                     console.log(error);
                     (new Master()).hideOverlay();
                     event.target.disabled = false;
-                    toast('error', 5000, error.message || lang.undefined_error);
+                    toast('error', 5000, error.message || LANG_EN.undefined_error);
                 }
             });
         }, 1000);
