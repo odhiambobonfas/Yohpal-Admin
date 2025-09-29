@@ -111,3 +111,13 @@ body>.global-overlay {
 table {
     height: 50vh;
 }
+
+.active {
+    color: var(--text-dark) !important;
+    border-color: var(--bs-danger) !important;
+    background-color: var(--bs-light-gray) !important;
+}
+
+.ulg li {
+    cursor: pointer !important;
+}

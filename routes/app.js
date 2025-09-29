@@ -64,7 +64,8 @@ router.delete('/roles/delete/:id', authMiddleware, RolesController.deleteRole);
 router.get('/dashboard/stats', authMiddleware, DashboardController.index);
 
 // Settings routes
-router.get('/apps/list', authMiddleware, SettingsController.index);
+router.get('/settings', authMiddleware, SettingsController.index);
+router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
 
 export default router;

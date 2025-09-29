@@ -13,7 +13,14 @@ import LANG_EN from '@lang/en';
 import Util from '@utils/Util'; 
 
 class SettingsController {
-    static async index(req, res) {
+    static async index(req, res) { 
+        return res.render("crm/settings/index", { 
+            title: `${ config.APP.APP_NAME } || App Settings`,
+            user: req.session.user
+        });
+    }
+
+    static async appsList(req, res) {
         if (isAjaxRequest(req)) {
             let roles = [];
 
@@ -81,7 +88,7 @@ class SettingsController {
             }
         }
 
-        return res.render("crm/settings/apps", { 
+        return res.render("crm/settings/appsList", { 
             title: `${ config.APP.APP_NAME } || List Application Updates`,
             user: req.session.user
         });
