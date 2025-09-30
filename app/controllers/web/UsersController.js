@@ -92,7 +92,7 @@ class UsersController {
                     return ucwords(col || 'N/A');
                 })
                 .editColumn('email', (col) => { 
-                    return ucwords(col || 'N/A');
+                    return (col || 'N/A');
                 })
                 .editColumn('phoneNumber', (col) => { 
                     return ucwords(col || 'N/A');

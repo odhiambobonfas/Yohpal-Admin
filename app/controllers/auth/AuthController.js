@@ -181,7 +181,7 @@ class AuthController {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
 
-            if (user?.role?.status !== 'active') {
+            if (!role.status || role.status !== 'active') {
                 throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
             }
 

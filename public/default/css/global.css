@@ -87,9 +87,11 @@ body>.global-overlay {
     font-size: xx-small !important;
 }
 
-.bg-danger, .btn-danger {
+.bg-danger,
+.btn-danger {
     background-color: var(--bs-danger) !important;
 }
+
 .btn-danger:hover {
     background-color: var(--bs-danger) !important;
 }
@@ -104,13 +106,18 @@ body>.global-overlay {
     width: 200px;
 }
 
-.table-responsive {
-    height: 100vh !important;
+.table-responsive .dropdown-menu {
+    position: absolute !important;
+    z-index: 1000 !important;
 }
 
-.dropdown-menu {
-  z-index: 9999 !important;
-} 
+.table-responsive {
+    scrollbar-width: none;
+}
+
+.table-responsive::-webkit-scrollbar {  
+    scrollbar-width: none;
+}
 
 .active {
     color: var(--text-dark) !important;
@@ -120,4 +127,31 @@ body>.global-overlay {
 
 .ulg li {
     cursor: pointer !important;
+}
+
+.chart-container { 
+    justify-content: space-around;
+    align-items: flex-start;
+    gap: 0px;
+    margin: 3px;
+    padding: 0% !important; 
+    width: 100% !important;
+    display: block;
+}  
+
+canvas {
+    height: 100% !important;
+    padding: 0% !important;
+}
+
+.growth-chart {
+    height: 350px !important;
+    width: 100%;   /* optional: makes it scale full width too */
+    display: block;
+    padding-top: 3rem;
+}
+
+.ts-user-avatar {
+    width: 32px !important;
+    height: 32px !important;
 }

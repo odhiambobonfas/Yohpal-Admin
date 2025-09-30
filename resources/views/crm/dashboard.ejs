@@ -1,96 +1,302 @@
 <%- include('crm/partials/header') %> <%- include('crm/partials/navbar') %>
 
 <div class="container-fluid gx-0 px-0">
-  <div class="row gap-0 gx-0">
-    <div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
-    <div class="col-md-9 mt-2 content-body">
-      <%- include('crm/partials/topbar') %> <% if (message) { %>
-      <div class="form-group">
-        <div
-          class="alert alert-<%= status && status == 'success' ? 'primary' : 'danger' %>"
-          role="alert"
-        >
-          <strong>Alert:</strong> <%= message %>
-        </div>
-      </div>
-      <% } %>
+	<div class="row gap-0 gx-0">
+		<div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
+		<div class="col-md-9 mt-2 content-body">
+			<%- include('crm/partials/topbar') %> <% if (message) { %>
+			<div class="form-group">
+				<div class="alert alert-<%= status && status == 'success' ? 'danger' : 'danger' %>" role="alert">
+					<strong>Alert:</strong> <%= message %>
+				</div>
+			</div>
+			<% } %>
 
-      <div class="container-fluid m-0 pb-5">
-        <div class="row">
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-yohpal-users">1250000</h5>
-            <p>Total Yohpal Users</p>
-          </div>
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-promoted-accounts">512</h5>
-            <p>Total Promoted Accounts</p>
-          </div>
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-applications">45</h5>
-            <p>Total Applications</p>
-          </div>
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-deposited-amount">45</h5>
-            <p>Total Deposited Amount</p>
-          </div>
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-yohpal-reviews">45</h5>
-            <p>Total Yohpal Reviews</p>
-          </div>
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-uploaded-videos">45</h5>
-            <p>Total Uploaded Videos</p>
-          </div>
-          <div class="col-3 text-start p-3 shadow-sm">
-            <h5 class="stat-count" data-id="total-yohpal-transactions">45</h5>
-            <p>Total Yohpal Transactions</p>
-          </div>
-        </div>
+			<div class="container-fluid m-0 p-0 pb-5">
+				<div class="row m-1 mt-3">
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-yohpal-users">1250000</h5>
+						<p>Total Yohpal Users</p>
+					</div>
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-promoted-accounts">512</h5>
+						<p>Total Promoted Accounts</p>
+					</div>
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-applications">45</h5>
+						<p>Total Applications</p>
+					</div>
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-deposited-amount">45</h5>
+						<p>Total Deposited Amount</p>
+					</div>
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-yohpal-reviews">45</h5>
+						<p>Total Yohpal Reviews</p>
+					</div>
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-uploaded-videos">45</h5>
+						<p>Total Uploaded Videos</p>
+					</div>
+					<div class="col-3 text-start p-5 shadow-sm">
+						<h5 class="stat-count" data-id="total-yohpal-transactions">45</h5>
+						<p>Total Yohpal Transactions</p>
+					</div>
+				</div>
 
-        <div class="d-flex m-1 mt-3 gap-1">
-          <div class="card col-6">
-            <div class="header p-1 bg-light-gray shadow-sm">
-              <h5 class="ms-2">Consumer Demographics(Age Breakdown)</h5>
-            </div>
-            <div class="card-body">
-              <h5 class="card-title">Title</h5>
-              <p class="card-text">Text</p>
-            </div>
-          </div>
-          <div class="card col-6">
-            <div class="header p-1 bg-light-gray shadow-sm">
-              <h5 class="ms-2">Market Size Growth</h5>
-            </div>
-            <div class="card-body">
-              <h5 class="card-title">Title</h5>
-              <p class="card-text">Text</p>
-            </div>
-          </div>
-        </div>
+				<div class="d-flex m-1 mt-3 gap-1">
+					<div class="card col-6">
+						<div class="header p-1 bg-light-gray shadow-sm">
+							<h5 class="ms-2">Consumer Demographics(Age Breakdown)</h5>
+						</div>
+						<div class="card-body">
+							<div class="chart-container">
+								<canvas class="ageChart" id="ageChart"></canvas>
+							</div>
+						</div>
+					</div>
+					<div class="card col-6">
+						<div class="header p-1 bg-light-gray shadow-sm">
+							<h5 class="ms-2">Market Size Growth</h5>
+						</div>
+						<div class="card-body">
+							<div class="chart-container growth-chart">
+								<canvas class="growthChart" id="growthChart"></canvas>
+							</div>
+						</div>
+					</div>
+				</div>
 
-        <div class="d-flex m-1 mt-3 pb-5 gap-1">
-          <div class="card col-6">
-            <div class="header p-1 bg-light-gray shadow-sm">
-              <h5 class="ms-2">Top Followed User</h5>
-            </div>
-            <div class="card-body">
-              <h5 class="card-title">Title</h5>
-              <p class="card-text">Text</p>
-            </div>
-          </div>
-          <div class="card col-6">
-            <div class="header p-1 bg-light-gray shadow-sm">
-              <h5 class="ms-2">Top Account Promoted</h5>
-            </div>
-            <div class="card-body">
-              <h5 class="card-title">Title</h5>
-              <p class="card-text">Text</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+				<div class="d-flex m-1 mt-3 gap-1">
+					<!-- Top Followed Users Section -->
+					<div class="card col-6">
+						<div class="header p-3 bg-light-gray shadow-sm border-bottom">
+							<h5 class="m-0 text-dark"><i class="fas fa-user-friends me-2 text-danger"></i>Top Followed Users</h5>
+						</div>
+						<div class="card-body p-1">
+							<div class="table-responsive">
+								<table class="table table-hover mb-0 followed-users-table" id="followed-users-table">
+									<thead class="table-light">
+										<tr>
+											<th class="ps-3">User</th>
+											<th>Followers</th>
+											<th>Growth</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<img src="/store/images/avatars/default-avatar.jpg" class="rounded-circle me-2 ts-user-avatar" alt="User">
+													<div>
+														<div class="fw-semibold">@john_doe</div>
+														<small class="text-muted">Influencer</small>
+													</div>
+												</div>
+											</td>
+											<td class="fw-bold">284K</td>
+											<td>
+												<span class="badge bg-success-subtle text-success">
+													<i class="fas fa-arrow-up me-1"></i>12.5%
+												</span>
+											</td>
+											<td>
+												<span class="badge bg-success">Active</span>
+											</td>
+										</tr>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<img src="/store/images/avatars/default-avatar.jpg" class="rounded-circle me-2 ts-user-avatar" alt="User">
+													<div>
+														<div class="fw-semibold">@sarah_m</div>
+														<small class="text-muted">Creator</small>
+													</div>
+												</div>
+											</td>
+											<td class="fw-bold">156K</td>
+											<td>
+												<span class="badge bg-success-subtle text-success">
+													<i class="fas fa-arrow-up me-1"></i>8.3%
+												</span>
+											</td>
+											<td>
+												<span class="badge bg-success">Active</span>
+											</td>
+										</tr>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<img src="/store/images/avatars/default-avatar.jpg" class="rounded-circle me-2 ts-user-avatar" alt="User">
+													<div>
+														<div class="fw-semibold">@tech_guru</div>
+														<small class="text-muted">Expert</small>
+													</div>
+												</div>
+											</td>
+											<td class="fw-bold">98K</td>
+											<td>
+												<span class="badge bg-danger-subtle text-danger">
+													<i class="fas fa-arrow-down me-1"></i>2.1%
+												</span>
+											</td>
+											<td>
+												<span class="badge bg-warning">Inactive</span>
+											</td>
+										</tr>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<img src="/store/images/avatars/default-avatar.jpg" class="rounded-circle me-2 ts-user-avatar" alt="User">
+													<div>
+														<div class="fw-semibold">@travel_diaries</div>
+														<small class="text-muted">Blogger</small>
+													</div>
+												</div>
+											</td>
+											<td class="fw-bold">210K</td>
+											<td>
+												<span class="badge bg-success-subtle text-success">
+													<i class="fas fa-arrow-up me-1"></i>15.7%
+												</span>
+											</td>
+											<td>
+												<span class="badge bg-success">Active</span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div> 
+					</div>
+				
+					<!-- Top Account Promoted Section -->
+					<div class="card col-6">
+						<div class="header p-3 bg-light-gray shadow-sm border-bottom">
+							<h5 class="m-0 text-dark"><i class="fas fa-chart-line me-2 text-success"></i>Top Promoted Accounts</h5>
+						</div>
+						<div class="card-body p-1">
+							<div class="table-responsive">
+								<table class="table table-hover mb-0 promoted-users-accounts-table" id="promoted-users-accounts-table">
+									<thead class="table-light">
+										<tr>
+											<th class="ps-3">Account</th>
+											<th>Promotion Score</th>
+											<th>Engagement</th>
+											<th>ROI</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<div class="bg-danger rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+														<i class="fas fa-store text-white" style="font-size: 14px;"></i>
+													</div>
+													<div>
+														<div class="fw-semibold">FashionHub</div>
+														<small class="text-muted">Retail</small>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="fw-bold text-danger">94.5</div>
+												<div class="progress" style="height: 4px; width: 80px;">
+													<div class="progress-bar bg-danger" style="width: 94%"></div>
+												</div>
+											</td>
+											<td>
+												<span class="fw-semibold">12.8%</span>
+											</td>
+											<td>
+												<span class="badge bg-success">+42%</span>
+											</td>
+										</tr>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+														<i class="fas fa-utensils text-white" style="font-size: 14px;"></i>
+													</div>
+													<div>
+														<div class="fw-semibold">FoodieDelight</div>
+														<small class="text-muted">Restaurant</small>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="fw-bold text-success">88.2</div>
+												<div class="progress" style="height: 4px; width: 80px;">
+													<div class="progress-bar bg-success" style="width: 88%"></div>
+												</div>
+											</td>
+											<td>
+												<span class="fw-semibold">9.3%</span>
+											</td>
+											<td>
+												<span class="badge bg-success">+28%</span>
+											</td>
+										</tr>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+														<i class="fas fa-laptop text-white" style="font-size: 14px;"></i>
+													</div>
+													<div>
+														<div class="fw-semibold">TechGadgets</div>
+														<small class="text-muted">Electronics</small>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="fw-bold text-warning">76.8</div>
+												<div class="progress" style="height: 4px; width: 80px;">
+													<div class="progress-bar bg-warning" style="width: 76%"></div>
+												</div>
+											</td>
+											<td>
+												<span class="fw-semibold">7.1%</span>
+											</td>
+											<td>
+												<span class="badge bg-warning">+15%</span>
+											</td>
+										</tr>
+										<tr>
+											<td class="ps-3">
+												<div class="d-flex align-items-center">
+													<div class="bg-info rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+														<i class="fas fa-dumbbell text-white" style="font-size: 14px;"></i>
+													</div>
+													<div>
+														<div class="fw-semibold">FitLife</div>
+														<small class="text-muted">Fitness</small>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="fw-bold text-info">82.4</div>
+												<div class="progress" style="height: 4px; width: 80px;">
+													<div class="progress-bar bg-info" style="width: 82%"></div>
+												</div>
+											</td>
+											<td>
+												<span class="fw-semibold">10.5%</span>
+											</td>
+											<td>
+												<span class="badge bg-success">+33%</span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div> 
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <%- include('crm/partials/footer') %>
