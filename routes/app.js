@@ -65,6 +65,8 @@ router.get('/dashboard/stats', authMiddleware, DashboardController.index);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
+router.post('/api/setting/create', authMiddleware, SettingsController.createApiSetting);
+router.get('/api-settings', authMiddleware, SettingsController.getApiSettingsList);
 router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
 

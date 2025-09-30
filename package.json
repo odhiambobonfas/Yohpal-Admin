@@ -11,7 +11,7 @@
         "pm2:update": "pm2 update",
         "pm2:delete": "pm2 delete all",
         "pm2:reload": "pm2 reload all --update-env",
-        "start": "node --trace-deprecation server.ts",
+        "start": "node --trace-deprecation  --loader @esbuild-kit/esm-loader server.ts server.ts",
         "build": "webpack --config webpack.config.js",
         "build:dev": "webpack --config --mode development",
         "build:prod": "webpack --config --mode production"
@@ -32,7 +32,7 @@
     "repository": "https://github.com/Gicehajunior/myexpress-framework",
     "license": "MIT",
     "description": "",
-    "type": "module", 
+    "type": "module",
     "jest": {
         "testEnvironment": "node",
         "moduleNameMapper": {
@@ -79,7 +79,7 @@
         "bcryptjs": "^3.0.2",
         "bootstrap": "^5.3.3",
         "bootstrap-datepicker": "^1.10.0",
-        "chart.js": "^4.4.8", 
+        "chart.js": "^4.4.8",
         "connect-redis": "^6.1.3",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
@@ -114,6 +114,7 @@
         "postinstall-postinstall": "^2.1.0",
         "print-js": "^1.6.0",
         "pug": "^3.0.3",
+        "qs": "^6.14.0",
         "redis": "^5.8.2",
         "select2": "^4.1.0-rc.0",
         "sequelize": "^6.37.6",

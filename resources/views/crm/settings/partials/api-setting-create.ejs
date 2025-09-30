@@ -1,0 +1,169 @@
+<div class="modal fade" id="createApiSettingModal" tabindex="-1" aria-labelledby="createApiSettingModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form id="createApiSettingForm" class="create-api-setting-form" action="/api/setting/create"
+				enctype="multipart/form-data" method="POST">
+				<div class="modal-header">
+					<h5 class="modal-title" id="createApiSettingModalLabel">Create API Setting</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-body">
+					<!-- General Info -->
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="provider" class="form-label">Provider</label>
+							<select id="provider" name="provider" class="form-select" required>
+								<option value="">-- Select Provider --</option>
+								<option selected value="mpesa">M-Pesa</option>
+								<option value="paypal">PayPal</option>
+								<option value="custom">Custom</option>
+							</select>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="code" class="form-label">Unique Code</label>
+							<input type="text" id="code" name="code" class="form-control" required>
+						</div>
+					</div>
+
+					<div class="row"> 
+						<div class="col-md-6 mb-3">
+							<label for="phone" class="form-label">Phone Number</label>
+							<input type="text" id="phone" name="phone" class="form-control" required>
+                            <Small>Account holder's phone</Small>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="email" class="form-label">Email</label>
+							<input type="text" id="email" name="email" class="form-control" required>
+                            <Small>Account holder's email</Small>
+						</div> 
+					</div>
+
+                    <!-- Target App -->
+                    <div class="col-md-12 mb-3">
+                        <label for="targetApp" class="form-label">Target App</label>
+                        <select id="targetApp" name="targetApp" class="form-control searchSelect" required>
+                            <option value="" disabled selected>-- Select App --</option>
+                            <option value="app">Yohpal App</option>
+                            <option value="market">Yohpal Market</option>
+                            <option value="hustle">Yohpal Hustle</option>
+                            <option value="chat">Yohpal Chat</option>
+                            <option value="manager">Yohpal Manager</option>
+                        </select>
+                    </div>
+
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="environ" class="form-label">Environment</label>
+							<select id="environ" name="environ" class="form-select" required>
+								<option value="">-- Select Category --</option>
+								<option value="sandbox">Sandbox</option>
+								<option value="live">Live</option>
+							</select>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="status" class="form-label">Status</label>
+							<select id="status" name="status" class="form-select" required>
+								<option value="active">Active</option>
+								<option value="inactive">Inactive</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- M-Pesa Form -->
+					<div class="provider-form" id="mpesa-form">
+						<h6 class="mb-2 fw-bold">M-Pesa Settings</h6>
+						<hr>
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label class="form-label">Consumer Key</label>
+								<input type="text" class="form-control" name="mpesaSetting[consumer_key]">
+							</div>
+							<div class="col-md-6 mb-3">
+								<label class="form-label">Consumer Secret</label>
+								<input type="text" class="form-control" name="mpesaSetting[consumer_secret]">
+							</div>
+							<div class="col-md-6 mb-3">
+								<label class="form-label">Shortcode</label>
+								<input type="text" class="form-control" name="mpesaSetting[shortcode]">
+							</div>
+							<div class="col-md-6 mb-3">
+								<label class="form-label">Passkey</label>
+								<input type="text" class="form-control" name="mpesaSetting[passkey]">
+							</div>
+							<div class="col-md-12 mb-3">
+								<label class="form-label">Confirmation Callback URL</label>
+								<input type="url" class="form-control" name="mpesaSetting[callback_url][confirmation]">
+							</div>
+							<div class="col-md-12 mb-3">
+								<label class="form-label">Validation Callback URL</label>
+								<input type="url" class="form-control" name="mpesaSetting[callback_url][validation]">
+							</div>
+						</div>
+					</div>
+
+					<!-- PayPal Form -->
+					<div class="provider-form d-none" id="paypal-form">
+						<h6 class="mb-2 fw-bold">PayPal Settings</h6>
+						<hr>
+						<div class="mb-3">
+							<label class="form-label">Client ID</label>
+							<input type="text" class="form-control" name="paypalSettings[client_id]">
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Secret</label>
+							<input type="text" class="form-control" name="paypalSettings[secret]">
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Mode</label>
+							<select class="form-select" name="paypalSettings[mode]">
+								<option value="sandbox">Sandbox</option>
+								<option value="live">Live</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Custom Generic Form -->
+					<div class="provider-form d-none" id="custom-form">
+						<h6 class="mb-2 fw-bold">Custom API Setting</h6>
+						<hr>
+						<div class="mb-3">
+							<label class="form-label">Key</label>
+							<input type="text" class="form-control" name="customSettings[key]">
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Value</label>
+							<input type="text" class="form-control" name="customSettings[value]">
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Description</label>
+							<textarea class="form-control" name="customSettings[description]"></textarea>
+						</div>
+					</div>
+
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label">
+                            <input
+                            class="form-check-input isDefault"
+                            type="checkbox"
+                            name="isDefault"
+                            id="isDefault"
+                            value="1"
+                            />
+                            Make this a default api(For the Target Application)
+                        </label>
+                    </div>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-sm btn-danger create-api-setting-submit-btn">
+						<i class="fa fa-plus-circle" aria-hidden="true"></i>
+						Save Setting
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

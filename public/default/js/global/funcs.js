@@ -1147,6 +1147,47 @@ function fixDatatableRendering() {
     });
 }
 
+function initListTransition(listSelector, contentSelector) {
+  const listItems = document.querySelectorAll(`${listSelector} .list-group-item`);
+  const contents = document.querySelectorAll(contentSelector);
+
+  listItems.forEach(item => {
+    if (!item) return;
+    item.addEventListener('click', () => { 
+      listItems.forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+
+      // hide all content
+      contents.forEach(c => {
+        c.classList.remove('show');
+        c.classList.add('d-none');
+      });
+
+      // show target
+      const targetId = item.getAttribute('data-id');
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.classList.remove('d-none');
+        setTimeout(() => target.classList.add('show'), 10);
+      }
+    });
+  });
+}
+
+function initProviderToggle(selectId, formClass) {
+  const select = document.getElementById(selectId);
+  const forms = document.querySelectorAll(`.${formClass}`);
+    if (!select) return;
+  select.addEventListener('change', () => {
+    const provider = select.value; 
+    forms.forEach(f => f.classList.add('d-none')); 
+    if (provider) {
+      const activeForm = document.getElementById(`${provider}-form`);
+      if (activeForm) activeForm.classList.remove('d-none');
+    }
+  });
+}
+
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {

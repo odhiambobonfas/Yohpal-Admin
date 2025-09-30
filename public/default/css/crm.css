@@ -8,10 +8,9 @@ body {
     height: 90vh;
     overflow: auto;
     background: var(--bs-light);
-    color: var(--bs-dark); 
-    /* position: fixed;  */
+    color: var(--bs-dark);  
     scrollbar-width: none;
-    padding-bottom: 100vh;
+    padding-bottom: 100vh; 
 }
 .sidebar::-webkit-scrollbar {  
     scrollbar-width: none;
@@ -51,3 +50,14 @@ body {
 .border-right-sidebar {
     border-right: 1px solid var(--bs-border-color);
 }
+
+/* Sidebar toggling against content visibility */
+.content {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.content.show {
+  opacity: 1;
+}
+/* /Sidebar toggling against content visibility */

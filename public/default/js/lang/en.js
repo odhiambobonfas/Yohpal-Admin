@@ -47,8 +47,30 @@ const LANG_EN = {
         role_id_required: "Role ID is required.",
         role_status_required: "Role status is required.",
         default_role_status_exception: "Default roles cannot have their status changed.",
-        admin_role_status_exception: "Admin roles cannot have their status changed."
+        admin_role_status_exception: "Admin roles cannot have their status changed.",
+
+        // Authentication
+        authentication_error_exception: "User authentication failed. Please log in again.",
+
+        // Provider / API Settings
+        provider_name_required: "Provider name is required.",
+        provider_code_required: "Provider code is required.",
+        phone_number_required: "Phone number is required.",
+        email_address_required: "Email address is required.",
+        target_application_required: "Target application is required.",
+        provider_environ_required: "Provider environment category is required.",
+        provider_settings_required: "Provider settings object is required.",
+        provider_description_limit: "Description cannot exceed 200 characters.",
+
+        create_provider_query_failed: "The API setting could not be created.",
+        provider_created_success: "API setting created successfully!",
     },   
+
+    // response errors and statements
+    res: {
+        invalid_json_exception: "Invalid JSON response",
+        default_setting_exists: "A default setting for the target application you tried to add, already exists!"
+    },
 
     // General
     success: "Operation completed successfully!",
