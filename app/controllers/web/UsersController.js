@@ -225,7 +225,7 @@ class UsersController {
         }
 
         return res.render("crm/users/create", { 
-            title: `${ config.APP.APP_NAME } || List Users`,
+            title: `${ config.APP.APP_NAME } || Create User(s)`,
             user: req.session.user
         });
     }

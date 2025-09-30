@@ -113,7 +113,7 @@ class RolesController {
         }
 
         return res.render("crm/roles/index", { 
-            title: `${ config.APP.APP_NAME } || Create Role`,
+            title: `${ config.APP.APP_NAME } || List Roles`,
             user: req.session.user
         });
     }
@@ -194,7 +194,7 @@ class RolesController {
         }
 
         return res.render("crm/roles/create", { 
-            title: `${ config.APP.APP_NAME } || Create Role`,
+            title: `${ config.APP.APP_NAME } || Create Role(s)`,
             user: req.session.user,
             permission_bindings: Object.entries(permissions)
         });
