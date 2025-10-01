@@ -6,7 +6,8 @@
  * Note: Ensure that the IP addresses are in string format and follow the standard IPv4 or IPv6 notation.
  */
 const blocklist = [
-    '213.152.176.252'
+    '213.152.176.252',
+    '66.102.9.75'
 ];
 
 export default blocklist;

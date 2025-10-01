@@ -9,7 +9,7 @@
 				<h4>Settings</h4>
 				<div class="badge-span d-flex justify-content-center align-items-center">
 					Settings Panel |
-					<span class="badge bg-danger text-light rounded-4">Dashboard</span>
+					<span class="badge bg-danger text-light rounded-4 ms-1">Dashboard</span>
 				</div>
 			</div>
 			<div class="content-body gx-0 px-0">
@@ -53,7 +53,9 @@
 							<div class="col-9">
 								<div class="card">
 									<div class="card-body">
-										<div class="content" id="general">General Settings Content</div>
+										<div class="content" id="general">
+											<%- include('settings/partials/general-settings-create') %>
+										</div>
 										<div class="content d-none" id="tax">Tax Settings Content</div>
 										<div class="content d-none" id="transactions">Transactions Content</div>
 										<div class="content d-none" id="payments">Payments Content</div>

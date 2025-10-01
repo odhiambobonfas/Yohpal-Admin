@@ -64,6 +64,16 @@ const LANG_EN = {
 
         create_provider_query_failed: "The API setting could not be created.",
         provider_created_success: "API setting created successfully!",
+
+        // settings 
+        company_name_required: "Company name is required.",
+        company_name_limit: "Company name cannot exceed 100 characters.",
+        company_email_required: "Company email address is required.",
+        company_phone_required: "Company phone number is required.",
+        company_address_required: "Company address is required.",
+        company_address_limit: "Company address cannot exceed 200 characters.",
+        company_industry_limit: "Company industry cannot exceed 50 characters.",
+        company_registration_limit: "Company registration number cannot exceed 50 characters."
     },   
 
     // response errors and statements

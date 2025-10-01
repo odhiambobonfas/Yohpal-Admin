@@ -175,15 +175,13 @@ const bindings = {
         // Settings
         settings: {
             access: 'settings.access',
-            general: 'settings.view.general',
-            app_settings_access: 'settings.view.app',
-            payment_methods: 'settings.view.payment.methods',
-            access_payment_gateways: 'settings.view.payment.access',
-            view_mpesa_payment_gateways: 'settings.view.payment.mpesa.gateways',
-            view_pesapal_payment_gateways: 'settings.view.payment.pesapal.gateways',
-            create_mpesa_payment_gateways: 'settings.create.payment.mpesa.gateways',
-            create_pesapal_payment_gateways: 'settings.create.payment.pesapal.gateways',
-            others: 'settings.view.others',
+            app_settings_access: 'settings.view',
+            view_general_settings: 'settings.general.view', 
+            update_general_settings: 'settings.general.update', 
+            create_api_settings: "settings.api.create", 
+            edit_api_settings: "settings.api.edit", 
+            delete_api_settings: "settings.api.delete", 
+            update_status_api_settings: "settings.api.statusUpdate",  
         },
 
         // Developer

@@ -10,40 +10,62 @@ import { ucwords, fbCollectionParser } from '@config/utils';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs';
 
-class ApiSettingsUtil extends Util {
+class SettingsUtil extends Util {
     constructor() {
         super();
     }
 
     async getAllAPISettings(filters={}) {
-        try {
-            let query = FirestoreDatabase.collection(Setting.collection);
+        try { 
+            filters.docId = filters.targetApp || 'yohpal';
+            let query = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
+                .collection('apisetting');
             
             const snapshot = await query.get();
 
             if (snapshot.empty) {
                 return [];
-            }
+            } 
 
             const settings = fbCollectionParser(snapshot);
 
             return settings;
         } catch (error) {
             console.error("Error fetching API settings:", error);
-            throw error;
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
         }
     }
 
     async createSettingQuery(data) {
         try { 
-            const settingsRef = FirestoreDatabase.collection(Setting.collection); 
-                  
+            const colId = data.type;
+            const targetApp = data.targetApp || 'yohpal';
+            data['addeByRefUser'] = data.addedByRefUserId ?  FirestoreDatabase.collection(User.collection).doc(data.addedByRefUserId) : null;
+            let settingsRef = FirestoreDatabase.collection(Setting.collection).doc(targetApp)
+                .collection(colId); 
+            
+            if (data.code) {
+                const codeSnap = await settingsRef
+                    .where("code", "==", data.code)
+                    .limit(1)
+                    .get();
+
+                if (!codeSnap.empty) {
+                    throw new Exception(
+                        409,
+                        "SETTING_CODE_EXISTS",
+                        `Setting with code '${data.code}' already exists`,
+                        `Duplicate code for type: ${colId}`
+                    );
+                }
+            }
+
             if (data.isDefault) {
                 const defaultSnap = await settingsRef
-                .where("targetApp", "==", data.targetApp)
-                .where("isDefault", "==", true)
-                .limit(1)
-                .get();
+                    .where("targetApp", "==", data.targetApp)
+                    .where("isDefault", "==", true)
+                    .limit(1)
+                    .get();
 
                 if (!defaultSnap.empty) {
                     throw new Exception(
@@ -55,17 +77,15 @@ class ApiSettingsUtil extends Util {
                 }
             }
 
-            const docId = data.code || settingsRef.doc().id;
-
             const payload = {
                 ...data,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             };
             
-            await settingsRef.doc(docId).set(payload);
+            await settingsRef.add(payload);
 
-            return { id: docId, ...payload };
+            return { id: colId, ...payload };
         } catch (error) {
             console.error("Error in createSettingQuery:", error);
             throw new Exception((error.status || 500), error.code, error.message, error.reason);
@@ -73,4 +93,4 @@ class ApiSettingsUtil extends Util {
     }
 }
 
-export default new ApiSettingsUtil();
+export default new SettingsUtil();

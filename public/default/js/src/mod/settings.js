@@ -1,7 +1,7 @@
 class Settings extends Master {
     constructor () {
         super();
-        this.createApiSettingBtn = document.querySelector('.create-api-setting-submit-btn');
+        this.createupdatesettingBtn = document.querySelectorAll('.setting-submit-btn');
     }
 
     initializePageSetup() {
@@ -9,59 +9,62 @@ class Settings extends Master {
         initProviderToggle('provider', 'provider-form');
     }
 
-    createApiSetting() {
-        let btn = this.createApiSettingBtn;
-        if (!documentContains(btn)) return;
-        btn = cloneNodeElement(btn); // avoid race conditions
+    createupdatesetting() {
+        let btns = this.createupdatesettingBtn;
 
-        btn.addEventListener('click', event => {
-            event.preventDefault();
-            toggleButtonContent(btn);
-            disableElement(btn);
+        btns.forEach(btn => { 
+            if (!documentContains(btn)) return;
+            btn = cloneNodeElement(btn); // avoid race conditions
 
-            let form = btn.closest('form');
-            let data = new FormData(form);
+            btn.addEventListener('click', event => {
+                event.preventDefault();
+                toggleButtonContent(btn);
+                disableElement(btn);
 
-            fetch(formRouteParser(form), {
-                method: form.method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: jsonifyFormData(data)
-            })
-            .then(async res => {
-                let response;
-                try {
-                    response = await res.json();
-                } catch (e) {
-                    throw new Error(LANG_EN.res.invalid_json_exception);
-                }
+                let form = btn.closest('form');
+                let data = new FormData(form);
+                data.append('type', form.getAttribute('id'));
 
-                console.log(response);
-                toggleButtonContent(btn, '', true);
-                enableElement(btn);
+                fetch(formRouteParser(form), {
+                    method: form.method,
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: data
+                })
+                .then(async res => {
+                    let response;
+                    try {
+                        response = await res.json();
+                    } catch (e) {
+                        throw new Error(LANG_EN.res.invalid_json_exception);
+                    }
 
-                if (response && response.status === 'success') {
-                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
-                    (new Settings()).getListApiSettings();
-                    return;
-                }
+                    console.log(response);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
 
-                if (response && response.status === 'error') {
-                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
-                    return;
-                }
+                    if (response && response.status === 'success') {
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        (new Settings()).getApiSettingsList();
+                        return;
+                    }
 
-                toast('error', 5000, LANG_EN.undefined_error);
-            })
-            .catch(error => {
-                console.error(error.message || error);
-                toggleButtonContent(btn, '', true);
-                enableElement(btn);
-                toast('error', 5000, LANG_EN.undefined_error);
-            });
-        });
+                    if (response && response.status === 'error') {
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        return;
+                    }
+
+                    toast('error', 5000, LANG_EN.undefined_error);
+                })
+                .catch(error => {
+                    console.error(error.message || error);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+                    toast('error', 5000, LANG_EN.undefined_error);
+                });
+            }); 
+        })
     }
 
     getApiSettingsList() {
@@ -121,5 +124,5 @@ document.addEventListener('DOMContentLoaded', () => {
     const inst = new Settings();
     inst.initializePageSetup();
     inst.getApiSettingsList();
-    inst.createApiSetting();
+    inst.createupdatesetting();
 });

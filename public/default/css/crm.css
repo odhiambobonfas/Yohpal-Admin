@@ -41,6 +41,7 @@ body {
 } 
 
 .content-body {  
+    padding-bottom: 100vh !important;
     scrollbar-width: none;
 }
 

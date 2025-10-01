@@ -18,7 +18,7 @@ import Binding from '@config/bindings';
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
 import Setting from '@models/Setting'
-import ApiSettingsUtil from '@utils/ApiSettingsUtil';
+import SettingsUtil from '@utils/SettingsUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from "qs";
 
@@ -115,36 +115,24 @@ class SettingsController {
         });
     }
 
-    static async createApiSetting(req, res) {
+    static async createUpdateSettings(req, res) {
         try {
+            console.log(req.body);
             req.body = qs.parse(req.body);
-            const {
-                provider,
-                code,
-                phone,
-                email,
-                targetApp,
-                environ,
-                status, 
-                isDefault,
-                description
-            } = req.body;
 
-            let settings = req.body['mpesaSetting'] || req.body['paypalSettings'] || req.body['customSettings'] || {}; 
-
-            const payload = {
-                provider,
-                code,
-                phone,
-                email,
-                targetApp,
-                environ,
-                status,
-                isDefault,
-                settings
-            };        
-
+            let payload; 
             const session = req.session.user;
+
+            const {type} = req.body;
+
+            if (!type) {
+                throw new Exception(
+                    403,
+                    "TYPE_ERROR_EXCEPTION",
+                    LANG_EN.req.request_denied,
+                    "Settings type Error"
+                );
+            }
 
             if (!session?.uid) {
                 throw new Exception(
@@ -153,89 +141,218 @@ class SettingsController {
                     LANG_EN.req.authentication_error_exception,
                     "Authentication Error"
                 );
+            } 
+            
+            if (type == 'apisetting') {
+                const {
+                    type,
+                    provider,
+                    code,
+                    phone,
+                    email,
+                    targetApp,
+                    environ,
+                    status, 
+                    isDefault,
+                    description
+                } = req.body;
+
+                let settings = req.body['mpesaSetting'] || req.body['paypalSettings'] || req.body['customSettings'] || {}; 
+
+                if (!provider) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_NAME_EXCEPTION",
+                        LANG_EN.req.provider_name_required,
+                        "Provider Error"
+                    );
+                }
+
+                if (!phone) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_NAME_EXCEPTION",
+                        LANG_EN.req.phone_number_required,
+                        "Provider Error"
+                    );
+                }
+
+                if (!email) {
+                    throw new Exception(
+                        201,
+                        "PHONE_NUMBER_EXCEPTION",
+                        LANG_EN.req.email_address_required,
+                        "Provider Error"
+                    );
+                }
+
+                if (!code) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_CODE_EXCEPTION",
+                        LANG_EN.req.provider_code_required,
+                        "Code Error"
+                    );
+                }
+
+                if (!targetApp) {
+                    throw new Exception(
+                        201,
+                        "TARGET_APPLICATION_EXCEPTION",
+                        LANG_EN.req.target_application_required,
+                        "Code Error"
+                    );
+                }
+
+                if (!environ) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_CATEGORY_EXCEPTION",
+                        LANG_EN.req.provider_environ_required,
+                        "Category Error"
+                    );
+                }
+
+                if (!settings || typeof settings !== "object") {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_SETTINGS_EXCEPTION",
+                        LANG_EN.req.provider_settings_required,
+                        "Settings Error"
+                    );
+                }
+
+                if (description && description.length > 200) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_DESCRIPTION_EXCEPTION",
+                        LANG_EN.req.provider_description_limit,
+                        "Description Error"
+                    );
+                }
+
+                payload = {
+                    type,
+                    provider,
+                    code,
+                    phone,
+                    email,
+                    targetApp,
+                    environ,
+                    status,
+                    isDefault,
+                    settings
+                };  
+                
+                payload['isDefault'] = isDefault ? true : false; 
             }
 
-            if (!provider) {
-                throw new Exception(
-                    201,
-                    "PROVIDER_NAME_EXCEPTION",
-                    LANG_EN.req.provider_name_required,
-                    "Provider Error"
-                );
-            }
+            if (type == 'generalsettings') {
+                const {
+                    company_name,
+                    company_website,
+                    company_email,
+                    company_phone,
+                    company_address,
+                    company_industry,
+                    company_registration
+                } = req.body;
 
-            if (!phone) {
-                throw new Exception(
-                    201,
-                    "PROVIDER_NAME_EXCEPTION",
-                    LANG_EN.req.phone_number_required,
-                    "Provider Error"
-                );
-            }
+                // Required checks
+                if (!company_name || company_name.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "COMPANY_NAME_EXCEPTION",
+                        LANG_EN.req.company_name_required,
+                        "Company Name Error"
+                    );
+                }
 
-            if (!email) {
-                throw new Exception(
-                    201,
-                    "PHONE_NUMBER_EXCEPTION",
-                    LANG_EN.req.email_address_required,
-                    "Provider Error"
-                );
-            }
+                if (!company_email || company_email.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "COMPANY_EMAIL_EXCEPTION",
+                        LANG_EN.req.company_email_required,
+                        "Company Email Error"
+                    );
+                }
 
-            if (!code) {
-                throw new Exception(
-                    201,
-                    "PROVIDER_CODE_EXCEPTION",
-                    LANG_EN.req.provider_code_required,
-                    "Code Error"
-                );
-            }
+                if (!company_phone || company_phone.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "COMPANY_PHONE_EXCEPTION",
+                        LANG_EN.req.company_phone_required,
+                        "Company Phone Error"
+                    );
+                }
 
-            if (!targetApp) {
-                throw new Exception(
-                    201,
-                    "TARGET_APPLICATION_EXCEPTION",
-                    LANG_EN.req.target_application_required,
-                    "Code Error"
-                );
-            }
+                if (!company_address || company_address.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "COMPANY_ADDRESS_EXCEPTION",
+                        LANG_EN.req.company_address_required,
+                        "Company Address Error"
+                    );
+                }
 
-            if (!environ) {
-                throw new Exception(
-                    201,
-                    "PROVIDER_CATEGORY_EXCEPTION",
-                    LANG_EN.req.provider_environ_required,
-                    "Category Error"
-                );
-            }
+                // Optional checks (with limits)
+                if (company_name.length > 100) {
+                    throw new Exception(
+                        201,
+                        "COMPANY_NAME_LIMIT_EXCEPTION",
+                        LANG_EN.req.company_name_limit,
+                        "Company Name Length Error"
+                    );
+                }
 
-            if (!settings || typeof settings !== "object") {
-                throw new Exception(
-                    201,
-                    "PROVIDER_SETTINGS_EXCEPTION",
-                    LANG_EN.req.provider_settings_required,
-                    "Settings Error"
-                );
-            }
+                if (company_address.length > 200) {
+                    throw new Exception(
+                        201,
+                        "COMPANY_ADDRESS_LIMIT_EXCEPTION",
+                        LANG_EN.req.company_address_limit,
+                        "Company Address Length Error"
+                    );
+                }
 
-            if (description && description.length > 200) {
-                throw new Exception(
-                    201,
-                    "PROVIDER_DESCRIPTION_EXCEPTION",
-                    LANG_EN.req.provider_description_limit,
-                    "Description Error"
-                );
+                if (company_industry && company_industry.length > 50) {
+                    throw new Exception(
+                        201,
+                        "COMPANY_INDUSTRY_LIMIT_EXCEPTION",
+                        LANG_EN.req.company_industry_limit,
+                        "Company Industry Error"
+                    );
+                }
+
+                if (company_registration && company_registration.length > 50) {
+                    throw new Exception(
+                        201,
+                        "COMPANY_REGISTRATION_LIMIT_EXCEPTION",
+                        LANG_EN.req.company_registration_limit,
+                        "Company Registration Error"
+                    );
+                }
+
+                // Build payload
+                payload = {
+                    type,
+                    companyName: company_name,
+                    companyWebsite: company_website,
+                    companyEmail: company_email,
+                    companyPhone: company_phone,
+                    companyAddress: company_address,
+                    companyIndustry: company_industry,
+                    companyRegistration: company_registration
+                };
             }
 
             // enrich
             payload["addedBy"] = session.name || session.email;
-            payload["refUserId"] = session.uid;
-            payload['isDefault'] = isDefault ? true : false;
+            payload["addedByRefUserId"] = session.uid;
 
             console.log(payload);
 
             // save using util/repo
-            const query = await ApiSettingsUtil.createSettingQuery(payload);
+            const query = await SettingsUtil.createSettingQuery(payload);
 
             if (!query) {
                 throw new Exception(
@@ -267,7 +384,7 @@ class SettingsController {
     static async getApiSettingsList(req, res) {
         try {  
             let user = req.session.user;
-            let settings = await ApiSettingsUtil.getAllAPISettings(req.query); 
+            let settings = await SettingsUtil.getAllAPISettings(req.query); 
             
             let mex = new mexDtParser(settings);
             settings = mex.addColumn('actions', (col) => {
@@ -275,31 +392,31 @@ class SettingsController {
                 let id = col['uid'] || col['id'];
                 let status = col['status'] || 'unset';  
                 
-                if (hasPermission(user?.permissions || [], 'settings.edit')) {
-                    actions += `<a class="btn btn-sm dropdown-item" href="/users/edit/${id}">
+                if (hasPermission(user?.permissions || [], 'settings.api.edit')) {
+                    actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>`
                 }
 
-                if (hasPermission(user?.permissions || [], 'settings.delete')) {
+                if (hasPermission(user?.permissions || [], 'settings.api.delete')) {
                     actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
                             <i class="fas fa-trash-alt me-1"></i> Delete
                         </a>`
                 }
 
-                if (hasPermission(user?.permissions || [], 'settings.activate') && ['inactive', 'pending', 'unset'].includes(status)) { 
+                if (hasPermission(user?.permissions || [], 'settings.api.activate') && ['inactive', 'pending', 'unset'].includes(status)) { 
                     actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
                             <i class="fas fa-check-circle me-1"></i> Activate
                         </a>` 
                 }
 
-                if (hasPermission(user?.permissions || [], 'settings.deactivate') && ['active', 'unset'].includes(status)) { 
+                if (hasPermission(user?.permissions || [], 'settings.api.deactivate') && ['active', 'unset'].includes(status)) { 
                     actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
                             <i class="fas fa-times-circle me-1"></i> Deactivate
                         </a>` 
                 }
 
-                if (hasPermission(user?.permissions || [], 'settings.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
+                if (hasPermission(user?.permissions || [], 'settings.api.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
                     actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
                             <i class="fas fa-user-slash me-1"></i> Suspend
                         </a>` 
@@ -366,8 +483,7 @@ class SettingsController {
             .make();
 
             return res.status(200).json({
-                status: 'success',
-                message: 'Settings retrieved successfully.',
+                status: 'success', 
                 data: settings
             });
         } catch (error) {
@@ -376,8 +492,7 @@ class SettingsController {
             }
             
             return res.status((error.status || 500)).json({
-                status: 'error',
-                message: error.message || 'Something went wrong. Please try again later.',
+                status: 'error', 
                 code: error.code ||  'INTERNAL_SERVER_ERROR',
                 title: error.title || 'Unexpected Error'
             });

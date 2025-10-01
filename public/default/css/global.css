@@ -1,3 +1,7 @@
+html {
+    zoom: 90%;
+}
+
 body {
     background-color: #f8f9fa;
 }
@@ -221,3 +225,11 @@ canvas {
 .z-index-3 {
     z-index: 3;
 } 
+
+.table {
+    width: 100% !important;
+}
+
+.border-dark {
+    border-color: var(--bs-dark) !important;
+}

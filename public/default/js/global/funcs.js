@@ -2,7 +2,7 @@
 
 // Variables sits in this section
 let resizeTimeout;
- 
+
 /**
  * Function gives room for cleaner approach of toastr lib usage.
  * The function accepts 3 parameters as defined/highlighted below. 
@@ -163,17 +163,17 @@ function formDataHasEmptyFields(formData) {
  */
 function toggleButtonContent(button, tempContent = 'Please wait...', revert = false) {
     if (!button) return;
-  
+
     if (!revert) {
-      // Save original content to data attribute
-      button.dataset.originalContent = button.innerHTML;
-      button.innerHTML = tempContent; 
+        // Save original content to data attribute
+        button.dataset.originalContent = button.innerHTML;
+        button.innerHTML = tempContent;
     } else {
-      // Restore original content
-      if (button.dataset.originalContent) {
-        button.innerHTML = button.dataset.originalContent;
-        delete button.dataset.originalContent;
-      } 
+        // Restore original content
+        if (button.dataset.originalContent) {
+            button.innerHTML = button.dataset.originalContent;
+            delete button.dataset.originalContent;
+        }
     }
 }
 
@@ -271,7 +271,7 @@ function __append_html(content, element, append = false, insertBeforeSelector = 
         console.warn('__append_html: Invalid target element.');
         return;
     }
-    
+
     // Prepare content as DOM nodes
     const wrapper = document.createElement('div');
     wrapper.innerHTML = content;
@@ -304,20 +304,20 @@ function stickNavbarOnScroll() {
     const banner = document.querySelector('.bg-gradient-warning-ltr-footer');
     const footer = document.querySelector('.footer-end');
 
-    window.addEventListener('scroll', function () { 
-        if (window.scrollY > 0) {  
+    window.addEventListener('scroll', function () {
+        if (window.scrollY > 0) {
             if (documentContains(nav)) nav.classList.add('fixed-top');
-            if(documentContains(banner)) banner.classList.add('fixed-bottom');
+            if (documentContains(banner)) banner.classList.add('fixed-bottom');
         } else {
-            if (documentContains(nav)) nav.classList.remove('fixed-top'); 
-            if(documentContains(banner)) banner.classList.remove('fixed-bottom');
-        } 
-        
+            if (documentContains(nav)) nav.classList.remove('fixed-top');
+            if (documentContains(banner)) banner.classList.remove('fixed-bottom');
+        }
+
         // Show footer only at the very end of page
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-            if(documentContains(footer)) footer.classList.remove('d-none');
+            if (documentContains(footer)) footer.classList.remove('d-none');
         } else {
-            if(documentContains(footer)) footer.classList.add('d-none');
+            if (documentContains(footer)) footer.classList.add('d-none');
         }
     });
 }
@@ -329,11 +329,11 @@ function stickNavbarOnScroll() {
  * @param {number} minInputLength - Minimum characters to trigger search (default: 2)
  * @param {number} delay - Debounce delay in milliseconds (default: 500)
  */
-function searchSelectInitializer(selector='.searchSelect', endpoint = '', minInputLength = 2, delay = 500) {
-    $(selector).each(function () { 
-        const currentSelect = $(this); 
-        
-        if (currentSelect.hasClass("select2-hidden-accessible")) return;  
+function searchSelectInitializer(selector = '.searchSelect', endpoint = '', minInputLength = 2, delay = 500) {
+    $(selector).each(function () {
+        const currentSelect = $(this);
+
+        if (currentSelect.hasClass("select2-hidden-accessible")) return;
 
         if (endpoint.length == 0) {
             currentSelect.select2({
@@ -343,7 +343,7 @@ function searchSelectInitializer(selector='.searchSelect', endpoint = '', minInp
 
             return;
         }
-        
+
         currentSelect.select2({
             width: '100%',
             dropdownParent: currentSelect.parent(),
@@ -419,17 +419,17 @@ function initDragAndDropFileUpload(dropZoneSelector = '.dropZone', fileInputSele
 
     if (!dropZones.length) return;
 
-    dropZones.forEach(dropZone => {  
-        dropZone.addEventListener('click', () => { 
-            const fileInput = dropZone.querySelector(fileInputSelector);  
-            let fileListDisplay = dropZone.querySelector('.zipFileDetails'); 
-    
+    dropZones.forEach(dropZone => {
+        dropZone.addEventListener('click', () => {
+            const fileInput = dropZone.querySelector(fileInputSelector);
+            let fileListDisplay = dropZone.querySelector('.zipFileDetails');
+
             const highlight = () => dropZone.classList.add('border-primary');
             const unhighlight = () => dropZone.classList.remove('border-primary');
 
             const waitAlert = document.querySelector('.wait-alert');
             let texthtml = fileInput.getAttribute('data-inner-html');
-            if(texthtml){
+            if (texthtml) {
                 __append_html('Please wait...', waitAlert);
                 console.log(texthtml);
             }
@@ -444,32 +444,34 @@ function initDragAndDropFileUpload(dropZoneSelector = '.dropZone', fileInputSele
                     });
                 }
             };
-            
+
             dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 highlight();
             });
-    
+
             dropZone.addEventListener('dragleave', unhighlight);
             dropZone.addEventListener('dragend', unhighlight);
-            
+
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 unhighlight();
-    
+
                 if (e.dataTransfer.files?.length > 0) {
                     fileInput.files = e.dataTransfer.files;
-                    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    fileInput.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
                 }
             });
 
             fileInput.addEventListener('change', updateFileList);
 
-            if(texthtml){
+            if (texthtml) {
                 __append_html(texthtml, waitAlert);
             }
-        }); 
+        });
     });
 }
 
@@ -483,11 +485,11 @@ function serializeFormToArray(form) {
     const formData = new FormData(form);
     const result = {};
 
-    for (const [name, value] of formData.entries()) { 
-        if (result.hasOwnProperty(name)) { 
+    for (const [name, value] of formData.entries()) {
+        if (result.hasOwnProperty(name)) {
             if (Array.isArray(result[name])) {
                 result[name].push(value);
-            } else { 
+            } else {
                 result[name] = [result[name], value];
             }
         } else {
@@ -609,9 +611,9 @@ function filtersParser(selector) {
  * 
  * @param {HTMLSelectElement} form 
  */
-function resetFormAndCloseModal(form) {  
+function resetFormAndCloseModal(form) {
     if (!documentContains(form)) return;
-    
+
     // Clear all input, textarea, and select fields
     form.querySelectorAll('input, textarea, select').forEach(element => {
         switch (element.type) {
@@ -631,7 +633,7 @@ function resetFormAndCloseModal(form) {
     // clear validation or dynamic inputs...
     form.querySelectorAll('.is-valid, .is-invalid').forEach(element => {
         element.classList.remove('is-valid', 'is-invalid');
-    }); 
+    });
 
     closeModal(form);
 }
@@ -650,7 +652,7 @@ function closeModal(domEl) {
         if (modalInstance) {
             modalInstance.hide();
         }
-    } 
+    }
 }
 
 /**
@@ -687,7 +689,7 @@ function __show_modal(modal) {
 
     const isBootstrap5 = typeof bootstrap !== 'undefined' && typeof bootstrap.Modal !== 'undefined';
 
-    if (isBootstrap5) { 
+    if (isBootstrap5) {
         let bsModal = bootstrap.Modal.getOrCreateInstance(modalElement);
 
         if (modalElement.classList.contains('show')) {
@@ -699,7 +701,7 @@ function __show_modal(modal) {
         } else {
             bsModal.show();
         }
-    } else if (typeof $ === 'function' && typeof $(modalElement).modal === 'function') { 
+    } else if (typeof $ === 'function' && typeof $(modalElement).modal === 'function') {
         let $modal = $(modalElement);
 
         if ($modal.hasClass('show')) {
@@ -777,9 +779,9 @@ function urlParamsParser(url = null) {
 
         if (url) {
             const parsedUrl = new URL(url);
-            
+
             const queryParams = new URLSearchParams(parsedUrl.search);
-            
+
             const pathParams = parsedUrl.pathname
                 .split('/')
                 .filter(Boolean);
@@ -790,10 +792,16 @@ function urlParamsParser(url = null) {
             };
         }
 
-        return { query: new URLSearchParams(), path: [] };
+        return {
+            query: new URLSearchParams(),
+            path: []
+        };
     } catch (error) {
         console.error('Invalid URL provided:', error.message);
-        return { query: new URLSearchParams(), path: [] };
+        return {
+            query: new URLSearchParams(),
+            path: []
+        };
     }
 }
 
@@ -856,8 +864,8 @@ function filtersParser(selector) {
         if (name) {
             filters[name] = value;
         }
-    }); 
-    
+    });
+
     return filters;
 }
 
@@ -868,24 +876,23 @@ function filtersParser(selector) {
  * @param {Array|Function} callback - The function|Array of Functions, to call when any input changes.
  */
 function watchFilterChanges(selector, callback) {
-    const container = document.querySelector(selector);  
+    const container = document.querySelector(selector);
     if (!documentContains(container)) return;
 
     const inputs = container.querySelectorAll('input, select, textarea');
-    
+
     inputs.forEach(input => {
         input = cloneNodeElement(input);
-        input.addEventListener('change', (event) => { 
+        input.addEventListener('change', (event) => {
             if (Array.isArray(callback)) {
                 callback.forEach(func => {
                     func();
                 });
-            }
-            else {
+            } else {
                 callback();
             }
-        }); 
-    }); 
+        });
+    });
 }
 
 /**
@@ -895,7 +902,7 @@ function watchFilterChanges(selector, callback) {
  */
 function ajaxCompleteFilterUtilFunc(selector, callback) {
     $(document).on('ajaxComplete', (e, jqxhr, settings) => {
-        watchFilterChanges(selector, callback) 
+        watchFilterChanges(selector, callback)
     });
 }
 
@@ -903,7 +910,7 @@ function ajaxCompleteFilterUtilFunc(selector, callback) {
  * Ajax Dt Util helper function.
  * Parses the expected server response, and passes on to the ajax dt table api
  */
-function ajaxDtParser(method, url, data={}, callbackFuncs=[]) {
+function ajaxDtParser(method, url, data = {}, callbackFuncs = []) {
     return {
         type: method,
         url: url,
@@ -912,17 +919,19 @@ function ajaxDtParser(method, url, data={}, callbackFuncs=[]) {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         },
-        dataSrc: function (response) { 
-            if (Array.isArray(callbackFuncs) && callbackFuncs.length) {   
-                callbackFuncs.forEach(item => { 
-                    if (typeof item === 'function' && item.callback) { 
+        dataSrc: function (response) {
+            if (Array.isArray(callbackFuncs) && callbackFuncs.length) {
+                callbackFuncs.forEach(item => {
+                    if (typeof item === 'function' && item.callback) {
                         item(response.data ?? []);
+                    } else if (typeof item === 'object' && item.callback) {
+                        const params = item.params ? item.params : {};
+                        item.callback({
+                            params: params,
+                            data: response.data
+                        });
                     }
-                    else if (typeof item === 'object' && item.callback) {
-                        const params = item.params ? item.params : {};  
-                        item.callback({params: params, data: response.data});
-                    }
-                }); 
+                });
             }
 
             return response.data;
@@ -977,16 +986,16 @@ function currencyFormatter(amount, symbol, decimal = 2, thousand = ',', symbol_p
 
     // Add thousand separators
     intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thousand);
-    
-    let formattedAmount = decimal > 0
-        ? intPart + dec_separator + decPart
-        : intPart;
+
+    let formattedAmount = decimal > 0 ?
+        intPart + dec_separator + decPart :
+        intPart;
 
     const spaceString = space ? ' ' : '';
 
-    return symbol_position === 'before'
-        ? symbol + spaceString + formattedAmount
-        : formattedAmount + spaceString + symbol;
+    return symbol_position === 'before' ?
+        symbol + spaceString + formattedAmount :
+        formattedAmount + spaceString + symbol;
 }
 
 /**
@@ -998,7 +1007,7 @@ function fireUpSearchSelectFuncOnModals() {
 
     modals.forEach(modal => {
         if (!modal) return;
-        modal.addEventListener('shown.bs.modal', () => { 
+        modal.addEventListener('shown.bs.modal', () => {
             searchSelectInitializer();
         })
     });
@@ -1006,7 +1015,7 @@ function fireUpSearchSelectFuncOnModals() {
 
 function addSpinnerGrowLoadingEffect(selector) {
     const elements = document.querySelectorAll(selector);
-    
+
     if (!elements) return;
 
     elements.forEach(element => {
@@ -1023,9 +1032,9 @@ function addSpinnerGrowLoadingEffect(selector) {
                 </div>
             </div>
         `;
-    
+
         __append_html(spinner, element);
-        
+
     });
 }
 
@@ -1036,37 +1045,37 @@ function setupDateRangeWithBootstrapDatePickerLib() {
         format: "dd-mm-yyyy",
         autoclose: false,
     });
-    
+
     start = end = moment();
     $('#daterange').val(start.format("DD-MM-YYYY") + " - " + end.format("DD-MM-YYYY"));
-    
+
     document.querySelectorAll(".dropdown-menu a").forEach(item => {
         item.addEventListener("click", e => {
             e.preventDefault();
             const range = e.target.dataset.range;
             let start, end;
-      
+
             switch (range) {
-                    case "today":
-                        start = end = moment();
-                        break;
-                    case "yesterday":
-                        start = end = moment().subtract(1, 'days');
-                        break;
-                    case "thismonth":
-                        start = moment().startOf('month');
-                        end   = moment().endOf('month');
-                        break;
-                    case "lastmonth":
-                        start = moment().subtract(1, 'month').startOf('month');
-                        end   = moment().subtract(1, 'month').endOf('month');
-                        break;
+                case "today":
+                    start = end = moment();
+                    break;
+                case "yesterday":
+                    start = end = moment().subtract(1, 'days');
+                    break;
+                case "thismonth":
+                    start = moment().startOf('month');
+                    end = moment().endOf('month');
+                    break;
+                case "lastmonth":
+                    start = moment().subtract(1, 'month').startOf('month');
+                    end = moment().subtract(1, 'month').endOf('month');
+                    break;
             }
 
             if (!start && !end) return;
             $('#daterange').val(start.format("DD-MM-YYYY") + " - " + end.format("DD-MM-YYYY"));
         });
-      });
+    });
 }
 
 /**
@@ -1086,11 +1095,11 @@ function enableImagePreview(inputId, previewId) {
         if (file) {
             const reader = new FileReader();
             reader.onload = e => {
-                preview.src = e.target.result; 
+                preview.src = e.target.result;
             };
             reader.readAsDataURL(file);
         } else {
-            preview.src = "/store/images/avatars/default-avatar.jpg"; 
+            preview.src = "/store/images/avatars/default-avatar.jpg";
         }
     });
 }
@@ -1098,94 +1107,105 @@ function enableImagePreview(inputId, previewId) {
 function fixDatatableRendering() {
     $('.dropdown-toggle').dropdown({
         dropdownParent: $('body')
-    }); 
+    });
 
     const tableResponsive = $('.table-responsive');
     let openDropdowns = new Set();
+
+    $(document).on('show.bs.dropdown', function (e) {
+        const dropdown = e.target;
+        const dropdownId = $(dropdown).find('.dropdown-toggle').data('id') || Math.random();
+
+        openDropdowns.add(dropdownId);
+        updateTableHeight();
+    });
+
+    $(document).on('hide.bs.dropdown', function (e) {
+        const dropdown = e.target;
+        const dropdownId = $(dropdown).find('.dropdown-toggle').data('id') || Math.random();
+
+        openDropdowns.delete(dropdownId);
+        updateTableHeight();
+    });
 
     function updateTableHeight() {
         if (openDropdowns.size > 0) {
             tableResponsive
                 .stop()
-                .animate({ height: '50vh' }, 300)
+                .animate({
+                    height: '50vh'
+                }, 300)
                 .addClass('dropdown-active');
         } else {
             tableResponsive
                 .stop()
-                .animate({ height: '' }, 300)
+                .animate({
+                    height: '-50vh'
+                }, 300)
                 .removeClass('dropdown-active');
         }
     }
-    
-    $(document).on('show.bs.dropdown', function(e) {
-        const dropdown = e.target;
-        const dropdownId = $(dropdown).find('.dropdown-toggle').data('id') || Math.random();
-        
-        openDropdowns.add(dropdownId);
-        updateTableHeight();
-    });
-
-    $(document).on('hide.bs.dropdown', function(e) {
-        const dropdown = e.target;
-        const dropdownId = $(dropdown).find('.dropdown-toggle').data('id') || Math.random();
-        
-        openDropdowns.delete(dropdownId);
-        updateTableHeight();
-    });
 
     // Close dropdowns when clicking items
-    $(document).on('click', '.dropdown-item', function(e) {
+    $(document).on('click', '.dropdown-item', function (e) {
         e.preventDefault();
         const dropdown = $(this).closest('.dropdown');
         const dropdownId = dropdown.find('.dropdown-toggle').data('id');
-        
+
         openDropdowns.delete(dropdownId);
         dropdown.removeClass('show');
         dropdown.find('.dropdown-menu').removeClass('show');
-        
-        updateTableHeight(); 
-    });
+
+        updateTableHeight();
+    }); 
 }
 
 function initListTransition(listSelector, contentSelector) {
-  const listItems = document.querySelectorAll(`${listSelector} .list-group-item`);
-  const contents = document.querySelectorAll(contentSelector);
+    let clicked = false;
+    const listItems = document.querySelectorAll(`${listSelector} .list-group-item`);
+    const contents = document.querySelectorAll(contentSelector);
 
-  listItems.forEach(item => {
-    if (!item) return;
-    item.addEventListener('click', () => { 
-      listItems.forEach(el => el.classList.remove('active'));
-      item.classList.add('active');
+    let count = 0;
+    listItems.forEach(item => {
+        if (!item) return;
+        count += 1;
+        item.addEventListener('click', () => {
+            listItems.forEach(el => el.classList.remove('active'));
+            item.classList.add('active');
 
-      // hide all content
-      contents.forEach(c => {
-        c.classList.remove('show');
-        c.classList.add('d-none');
-      });
+            // hide all content
+            contents.forEach(c => {
+                c.classList.remove('show');
+                c.classList.add('d-none');
+            });
 
-      // show target
-      const targetId = item.getAttribute('data-id');
-      const target = document.getElementById(targetId);
-      if (target) {
-        target.classList.remove('d-none');
-        setTimeout(() => target.classList.add('show'), 10);
-      }
+            // show target
+            const targetId = item.getAttribute('data-id');
+            const target = document.getElementById(targetId);
+            if (target) {
+                target.classList.remove('d-none');
+                setTimeout(() => target.classList.add('show'), 10);
+            }
+        });
+
+        if (count == 1) {
+            item.click();
+        }
     });
-  });
 }
 
 function initProviderToggle(selectId, formClass) {
-  const select = document.getElementById(selectId);
-  const forms = document.querySelectorAll(`.${formClass}`);
+    const select = document.getElementById(selectId);
+    const forms = document.querySelectorAll(`.${formClass}`);
     if (!select) return;
-  select.addEventListener('change', () => {
-    const provider = select.value; 
-    forms.forEach(f => f.classList.add('d-none')); 
-    if (provider) {
-      const activeForm = document.getElementById(`${provider}-form`);
-      if (activeForm) activeForm.classList.remove('d-none');
-    }
-  });
+    select.addEventListener('change', () => {
+        const provider = select.value;
+        forms.forEach(f => f.classList.add('d-none'));
+        if (provider) {
+            const activeForm = document.getElementById(`${provider}-form`);
+            if (activeForm) activeForm.classList.remove('d-none');
+        }
+    });
 }
 
 // Call functions Below.
@@ -1194,14 +1214,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggler.addEventListener('click', handleShowNavbarSearchBarToggler);
     });
 
-    toggleCrmSideBar(); 
+    toggleCrmSideBar();
     stickNavbarOnScroll();
     searchSelectInitializer();
-    initDragAndDropFileUpload(); 
+    initDragAndDropFileUpload();
     fireUpSearchSelectFuncOnModals();
-    const masterInstance = new Master(); 
-    masterInstance.initOverlay('.main .content-section'); 
-    masterInstance.initDonateNowFunc();  
+    const masterInstance = new Master();
+    masterInstance.initOverlay('.main .content-section');
+    masterInstance.initDonateNowFunc();
     setupDateRangeWithBootstrapDatePickerLib();
     fixDatatableRendering();
 });
