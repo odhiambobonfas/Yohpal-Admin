@@ -1,12 +1,13 @@
+import path from 'path';
 import bcrypt from 'bcryptjs';
 import config from '@config/config';
 import User from '@models/User'; 
 import Exception from '@config/exceptions';
 import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
-import { FirestoreDatabase } from '@utils/FirebaseUtil';
+import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
-import { isAjaxRequest, ucfirst, ucwords, validateEmail, jsonParser, fbCollectionParser } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil'; 
 import Binding from '@config/bindings'; 
@@ -192,6 +193,24 @@ class UsersController {
                 if (!["active", "inactive", "pending"].includes(data.status)) {
                     throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.invalid_status, "Invalid Status!");
                 }
+
+                let profilePicture = '';
+                if (req.file && req.file.fieldname == 'profile_picture') {  
+                    const uploadFilePath = handleFileUploads(req, 'images/logos'); 
+                    if (!uploadFilePath) {
+                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload error");
+                    }
+                    
+                    profilePicture = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
+                    const FBUTIL = new FirebaseUtility();
+                    const fileUploadToFb = await FBUTIL.uploadFile(profilePicture); 
+                    if (!fileUploadToFb) {
+                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
+                    } 
+                }
+
+                data.profilePictureLocalPath = profilePicture.replace('public', '');
+                data.profilePictureFbPath = fileUploadToFb;
                 
                 if (data.addedBy) {
                     data.addedBy = user.uid;
@@ -274,6 +293,26 @@ class UsersController {
                 if (!["active", "inactive", "pending"].includes(data.status)) {
                     throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.request_denied, "Invalid Status!");
                 }
+
+                let profilePicture = '';
+                let fileUploadToFb = '';
+                if (req.file && req.file.fieldname == 'profile_picture') {  
+                    const uploadFilePath = handleFileUploads(req, 'images/avatars'); 
+                    if (!uploadFilePath) {
+                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload error");
+                    }
+                    
+                    profilePicture = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
+                    const FBUTIL = new FirebaseUtility();
+                    fileUploadToFb = await FBUTIL.uploadFile(profilePicture); 
+                    if (!fileUploadToFb) {
+                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
+                    } 
+                }
+
+                data.profilePictureLocalPath = profilePicture.replace('public', '');
+                data.profilePicture = profilePicture.replace('public', '');
+                data.profilePictureFbPath = fileUploadToFb;
                 
                 if (data.updatedBy) {
                     data.updatedBy = user.uid;

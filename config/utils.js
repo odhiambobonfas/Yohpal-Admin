@@ -1,3 +1,8 @@
+import fs from 'fs';
+import path from 'path';
+import config from '@config/config';
+import Exception from '@config/exceptions';
+
 export function ucwords(str) {
     return str?.length
         ? str.split(/\s+/)
@@ -39,4 +44,76 @@ export function validateEmail(email) {
 
 export function jsonParser(data) {
     return JSON.parse(JSON.stringify(data));
+}
+
+export function jsonStringifier(data) {
+    return JSON.stringify(data, null, 2);
+}
+
+export function reduceToObj(array) {
+    const obj = array.reduce((acc, item) => {
+        if (item) {
+            const [key, value] = Object.entries(item)[0];
+            acc[key] = value;
+        }
+        return acc;
+    }, {});
+
+    return obj;
+}
+
+/**
+ * Handles single/multiple file uploads and attaches them to req.body.attachments
+ * 
+ * @param {Object} req - Express request object
+ * @param {String} uniqueDestName - File destination path you want the file to be written to.
+ */
+export function handleFileUploads(req, uniqueDestName = (req.session.user.id || '')) {
+    let attachment = [];
+    
+    let files = [];
+    if (req.file) {
+        files = [req.file];
+    } else if (req.files) {
+        files = Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
+    }
+
+    if (files.length === 0) {
+        return;
+    }
+
+    const uploadPath = path.join(config.PATHS.STORAGE, String(uniqueDestName));
+    
+    if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    files.forEach(file => { 
+        const fileDest = path.join(uploadPath, file.filename);
+        const publicPath = path.join(config.PATHS.STORAGE, String(uniqueDestName), file.filename);
+        
+        if (files.length == 1) {
+            attachment = publicPath;
+        } 
+
+        if (files.length > 1) {
+            attachment.push(publicPath);
+        }
+
+        try {
+            if (file.buffer) {
+                fs.writeFileSync(fileDest, file.buffer);
+            } else if (file.path) {
+                fs.copyFileSync(file.path, fileDest);
+            } else {
+                console.error(`Skipping file ${file.filename}: No valid data source`);
+                return null;
+            }
+        } catch (error) {
+            console.error(`Error saving file ${file.filename}:`, error);
+            return null;
+        }
+    });
+
+    return attachment;
 }

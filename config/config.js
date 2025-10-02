@@ -69,7 +69,7 @@ export default {
         SESSION_NAME: "yohpal_admin_sess", // leave empty to default to connect.sid
         SESSION_SECRET: process.env.SESSION_SECRET || '',
         LOCAL_FILE_PATH: "./public/store/sessions",
-        TTL: 3600,
+        TTL: 360000,
         RESAVE: false,
         PROXY: true,
         PREFIX: 'sess:'
@@ -95,6 +95,7 @@ export default {
         PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
         PRIVATE_KEY_ID: process.env.FIREBASE_PRIVATE_KEY_ID || '',
         PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') || '',
+        STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET || '',
         CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || '',
         CLIENT_ID: process.env.FIREBASE_CLIENT_ID || '',
         AUTH_URI: process.env.FIREBASE_AUTH_URI || '',

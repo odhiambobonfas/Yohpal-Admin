@@ -49,6 +49,20 @@
                                 <textarea class="form-control" id="bio" name="bio" rows="3"
                                     placeholder="Short bio"> <%= userData?.bio %> </textarea>
                             </div>
+                            
+                            <div class="form-check form-check-inline fa-2x ms-3 mb-3">
+                                <label class="form-check-label d-flex align-items-center gap-2">
+                                    <input class="form-check-input isEmployee" type="checkbox" name="isEmployee"
+                                        id="isEmployee" value="1" />
+                                    <h6 class="text-md mt-3">Mark User as Employee</h6>
+                                    <button type="button"
+                                        class="btn btn-light text-dark btn-link text-decoration-line-none hover-bg-none mt-2"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        title="This will be used in HRM management">
+                                        <i class="fa fa-question-circle" aria-hidden="true"></i>
+                                    </button>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -151,13 +165,14 @@
                         </div>
                     </div>
 
-                    <div class="form-check form-check-inline">
-                        <label class="form-check-label">
-                            <input class="form-check-input stayHere" type="checkbox" name="stayHere" id="stayHere"
-                                value="1" />
-                            Stay here after adding the role?.
-                        </label>
-                    </div>
+					<div class="form-check form-check-inline fa-2x ms-3 mb-3">
+						<label class="form-check-label d-flex align-items-center gap-2">
+							<input class="form-check-input stayHere" type="checkbox" name="stayHere" id="stayHere"
+								value="1" />
+							<h6 class="text-md mt-3">Stay here after adding the role.</h6> 
+						</label>
+					</div>
+
                     <!-- Submit -->
                     <div class="text-end">
                         <button type="button" class="btn btn-danger update-user-submit-btn"><i

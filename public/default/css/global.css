@@ -233,3 +233,11 @@ canvas {
 .border-dark {
     border-color: var(--bs-dark) !important;
 }
+
+.hover-bg-none {
+    background-color: transparent !important;
+}
+
+.text-md {
+    font-size: medium !important;
+}

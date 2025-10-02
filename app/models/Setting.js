@@ -7,6 +7,10 @@ class Setting extends AppModel {
 
     static collection = 'settings';
 
+    static documentSettingTypes = [
+        'generalsettings', 'apisetting', 'taxsettings'
+    ];
+
     static fields = {};
 
     static nullableFields = [];

@@ -42,6 +42,7 @@ const LANG_EN = {
         user_email_unexists: "A user with this email already exists.",
         userName_unexists: "A user with this username already exists.",
         uid_and_status_required: "User ID and status are required to update user status.",
+        invalid_avatar_exemption: "Failed to upload profile picture. Please try again.",
 
         // role errors
         role_id_required: "Role ID is required.",

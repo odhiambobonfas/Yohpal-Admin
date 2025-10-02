@@ -6,9 +6,9 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser } from '@config/utils';  
+import { ucwords, fbCollectionParser, reduceToObj, jsonStringifier, jsonParser } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
-import { parseDateRange } from '@funcs/global_funcs';
+import { parseDateRange } from '@funcs/global_funcs'; 
 
 class SettingsUtil extends Util {
     constructor() {
@@ -17,6 +17,7 @@ class SettingsUtil extends Util {
 
     async getAllAPISettings(filters={}) {
         try { 
+            console.log("Filters: ", filters);
             filters.docId = filters.targetApp || 'yohpal';
             let query = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
                 .collection('apisetting');
@@ -30,6 +31,48 @@ class SettingsUtil extends Util {
             const settings = fbCollectionParser(snapshot);
 
             return settings;
+        } catch (error) {
+            console.error("Error fetching API settings:", error);
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+        }
+    }
+
+    async getSettingByDocType(filters) {
+        const query = await FirestoreDatabase
+            .collection(Setting.collection)
+            .doc(filters.docId)
+            .collection(filters.documentType);
+        
+        const snapshot = await query.get();
+
+        if (snapshot.empty) {
+            return [];
+        } 
+        
+        const settings = fbCollectionParser(snapshot);
+
+        return settings;
+    }
+
+    async getAllSettings(filters = {}) {
+        try { 
+            filters.docId = filters.targetApp || 'yohpal'; 
+            const docs = Setting.documentSettingTypes || []; 
+            
+            const promises = docs.map(async (type) => {
+                filters.documentType = type;
+                try {
+                    const setting = await this.getSettingByDocType(filters);
+                    if (!setting) return null; 
+                    return { [type]: setting };
+                } catch (error) {
+                    return null;
+                }
+            });
+            
+            const results = await Promise.all(promises); 
+
+            return reduceToObj(results); 
         } catch (error) {
             console.error("Error fetching API settings:", error);
             throw new Exception((error.status || 500), error.code, error.message, error.reason);

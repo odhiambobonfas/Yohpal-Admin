@@ -1,3 +1,4 @@
+import path from 'path';
 import bcrypt from 'bcryptjs';
 import config from '@config/config';
 import User from '@models/User';
@@ -5,13 +6,17 @@ import Exception from '@config/exceptions';
 import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import {
+    FirebaseUtility,
     FirestoreDatabase
 } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
 import {
     isAjaxRequest,
     ucfirst,
-    ucwords
+    ucwords,
+    handleFileUploads,
+    jsonParser,
+    reduceToObj
 } from '@config/utils';
 import RolesUtil from '@utils/RolesUtil';
 import Binding from '@config/bindings';
@@ -20,13 +25,21 @@ import Util from '@utils/Util';
 import Setting from '@models/Setting'
 import SettingsUtil from '@utils/SettingsUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
-import qs from "qs";
-
+import qs from "qs"; 
 class SettingsController {
     static async index(req, res) {
+        let settings = await SettingsUtil.getAllSettings();   
+
+        let generalsettings = Object.assign({}, ...(settings?.generalsettings || [])); 
+        let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
+        let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
+ 
         return res.render("crm/settings/index", {
             title: `${ config.APP.APP_NAME } || App Settings`,
-            user: req.session.user
+            user: req.session.user,
+            generalsetting: generalsettings,
+            apisetting: apisettings,
+            taxsetting: taxsettings
         });
     }
 
@@ -330,8 +343,27 @@ class SettingsController {
                         LANG_EN.req.company_registration_limit,
                         "Company Registration Error"
                     );
+                } 
+
+                let companyLogo = '';
+                let fileUploadToFb = '';
+                if (req.file && req.file.fieldname) {  
+                    const uploadFilePath = handleFileUploads(req, 'images/avatars'); 
+                    if (!uploadFilePath) {
+                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload error");
+                    }
+                    
+                    companyLogo = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
+                    const FBUTIL = new FirebaseUtility();
+                    fileUploadToFb = await FBUTIL.uploadFile(companyLogo); 
+                    if (!fileUploadToFb) {
+                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
+                    } 
                 }
 
+                let companyLogoLocalPath = companyLogo.replace('public', '');
+                let companyLogoFbPath = fileUploadToFb;
+                
                 // Build payload
                 payload = {
                     type,
@@ -341,7 +373,9 @@ class SettingsController {
                     companyPhone: company_phone,
                     companyAddress: company_address,
                     companyIndustry: company_industry,
-                    companyRegistration: company_registration
+                    companyRegistration: company_registration,
+                    companyLogo: companyLogoLocalPath,
+                    companyLogoFbPath: companyLogoFbPath
                 };
             }
 

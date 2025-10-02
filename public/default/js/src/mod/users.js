@@ -98,8 +98,7 @@ class User extends Master {
                 const response = await res.json();
                 console.log(response);
 
-                if (response?.status === 'success') {
-                    resetFormAndCloseModal(form);
+                if (response?.status === 'success') { 
                     toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                     setTimeout(() => {
                         if (response.route) route(response.route);

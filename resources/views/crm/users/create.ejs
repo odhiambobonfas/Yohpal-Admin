@@ -49,6 +49,20 @@
 									placeholder="Short bio"></textarea>
 							</div>
 						</div>
+
+						<div class="form-check form-check-inline fa-2x ms-3 mb-3">
+							<label class="form-check-label d-flex align-items-center gap-2">
+								<input class="form-check-input isEmployee" type="checkbox" name="isEmployee"
+									id="isEmployee" value="1" />
+								<h6 class="text-md mt-3">Mark User as Employee</h6>
+								<button type="button"
+									class="btn btn-light text-dark btn-link text-decoration-line-none hover-bg-none mt-2"
+									data-bs-toggle="tooltip" data-bs-placement="top"
+									title="This will be used in HRM management">
+									<i class="fa fa-question-circle" aria-hidden="true"></i>
+								</button>
+							</label>
+						</div>
 					</div>
 
 					<!-- Contact Details -->
@@ -75,29 +89,31 @@
 						</div>
 					</div>
 
-					<!-- Profile --> 
-                    <div class="card mb-3 shadow-sm">
-                        <div class="card-header bg-danger text-white">
-                            Profile
-                        </div>
-                        <div class="card-body">
-                            <div class="col-12 row justify-content-between align-items-center">
-                                <div class="col-8 mb-3">
-                                    <label for="profile_picture" class="form-label">Profile Picture</label>
-                                    <input type="file" class="form-control" id="profile_picture" name="profile_picture"
-                                        accept="image/*"> 
-                                </div>
-                                <div class="col-4 mb-3">
-                                    <label for="profile_preview" class="form-label text-center">Profile Picture Preview:</label> 
-                                    <!-- Preview Section -->
-                                    <div class="mt-3"> 
-                                        <img id="profile_preview" src="/store/images/avatars/default-avatar.jpg" alt="Profile Preview" class="img-thumbnail rounded-circle"
-                                            style="max-width: 200px;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+					<!-- Profile -->
+					<div class="card mb-3 shadow-sm">
+						<div class="card-header bg-danger text-white">
+							Profile
+						</div>
+						<div class="card-body">
+							<div class="col-12 row justify-content-between align-items-center">
+								<div class="col-8 mb-3">
+									<label for="profile_picture" class="form-label">Profile Picture</label>
+									<input type="file" class="form-control" id="profile_picture" name="profile_picture"
+										accept="image/*">
+								</div>
+								<div class="col-4 mb-3">
+									<label for="profile_preview" class="form-label text-center">Profile Picture
+										Preview:</label>
+									<!-- Preview Section -->
+									<div class="mt-3">
+										<img id="profile_preview" src="/store/images/avatars/default-avatar.jpg"
+											alt="Profile Preview" class="img-thumbnail rounded-circle"
+											style="max-width: 200px;">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 
 					<!-- Role & Status -->
 					<div class="card mb-3 shadow-sm">
@@ -144,11 +160,11 @@
 						</div>
 					</div>
 
-					<div class="form-check form-check-inline">
-						<label class="form-check-label">
+					<div class="form-check form-check-inline fa-2x ms-3 mb-3">
+						<label class="form-check-label d-flex align-items-center gap-2">
 							<input class="form-check-input stayHere" type="checkbox" name="stayHere" id="stayHere"
 								value="1" />
-							Stay here after adding the role.
+							<h6 class="text-md mt-3">Stay here after adding the role.</h6> 
 						</label>
 					</div>
 					<!-- Submit -->
