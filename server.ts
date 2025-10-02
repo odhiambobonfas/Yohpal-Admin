@@ -46,6 +46,7 @@ import RedisStoreFactory from "connect-redis";
 import RedisCache from "@config/redisCache";
 import blocklist from "@config/ipsConfig/blocklist";
 import whitelist from "@config/ipsConfig/whitelist";
+import sessionFileStore from "session-file-store";
 
 const app = express();
 
@@ -71,7 +72,9 @@ if (config.APP.APP_DEBUG) {
     app.use(morgan('combined'));
 }
 
-const RedisStore = RedisStoreFactory(session);  
+const RedisStore = RedisStoreFactory(session); 
+const FileStore = sessionFileStore(session);
+
 
 // Session Middleware with Redis Store 
 const InitializeServer = async () => {
@@ -83,6 +86,18 @@ const InitializeServer = async () => {
             const client = await rd.initRedisCaching();
 
             store = new RedisStore({ client });
+        }
+
+        if (config.SESSION.SESSION_STORAGE == 'file') {
+            const sessionDir = path.join(process.cwd(), config.SESSION.LOCAL_FILE_PATH);
+            if (!fs.existsSync(sessionDir)) {
+                fs.mkdirSync(sessionDir, { recursive: true });
+            }
+
+            store = new FileStore({
+                path: config.SESSION.LOCAL_FILE_PATH,
+                ttl: config.SESSION.TTL
+            });
         }
     } catch (err) {
         console.error("[Redis] Failed to initialize store, falling back to memory store:", err.message);

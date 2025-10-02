@@ -68,6 +68,8 @@ export default {
         SESSION_STORAGE: process.env.SESSION_STORAGE || 'memory',
         SESSION_NAME: "yohpal_admin_sess", // leave empty to default to connect.sid
         SESSION_SECRET: process.env.SESSION_SECRET || '',
+        LOCAL_FILE_PATH: "./public/store/sessions",
+        TTL: 3600,
         RESAVE: false,
         PROXY: true,
         PREFIX: 'sess:'

@@ -118,6 +118,7 @@
         "redis": "^5.8.2",
         "select2": "^4.1.0-rc.0",
         "sequelize": "^6.37.6",
+        "session-file-store": "^1.0.0",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-dist": "^5.20.8",
         "swagger-ui-express": "^5.0.1",
