@@ -7,3 +7,4 @@ public/assets
 myexpress-framework
 public/logs/*.txt
 tests/none
+public/store/sessions/*.json
