@@ -355,7 +355,9 @@ class SettingsController {
                     
                     companyLogo = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
                     const FBUTIL = new FirebaseUtility();
-                    fileUploadToFb = await FBUTIL.uploadFile(companyLogo); 
+                    fileUploadToFb = await FBUTIL.uploadFile(companyLogo, "company/yohpal/logos", {
+                        linkType: "firebase", makePublic: true
+                    }); 
                     if (!fileUploadToFb) {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
                     } 
@@ -380,8 +382,8 @@ class SettingsController {
             }
 
             // enrich
-            payload["addedBy"] = session.name || session.email;
-            payload["addedByRefUserId"] = session.uid;
+            payload["userLoggedInUserName"] = session.name || session.email;
+            payload["userLoggedInUid"] = session.uid;
 
             console.log(payload);
 

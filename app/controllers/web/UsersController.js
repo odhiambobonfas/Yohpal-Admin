@@ -195,26 +195,26 @@ class UsersController {
                 }
 
                 let profilePicture = '';
+                let fileUploadToFb = '';
                 if (req.file && req.file.fieldname == 'profile_picture') {  
-                    const uploadFilePath = handleFileUploads(req, 'images/logos'); 
+                    const uploadFilePath = handleFileUploads(req, 'images/avatars'); 
                     if (!uploadFilePath) {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload error");
                     }
                     
                     profilePicture = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
                     const FBUTIL = new FirebaseUtility();
-                    const fileUploadToFb = await FBUTIL.uploadFile(profilePicture); 
+                    fileUploadToFb = await FBUTIL.uploadFile(profilePicture); 
                     if (!fileUploadToFb) {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
                     } 
                 }
 
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
-                data.profilePictureFbPath = fileUploadToFb;
-                
-                if (data.addedBy) {
-                    data.addedBy = user.uid;
-                }
+                data.profilePicture = profilePicture.replace('public', '');
+                data.profilePictureFbPath = fileUploadToFb; 
+                data.userLoggedInUserName = user.name;
+                data.userLoggedInUid = user.uid;
 
                 let create = await UsersUtil.createUser(data);
                 
@@ -313,11 +313,9 @@ class UsersController {
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb;
-                
-                if (data.updatedBy) {
-                    data.updatedBy = user.uid;
-                }
-                
+                data.userLoggedInUserName = user.name;
+                data.userLoggedInUid = user.uid;
+
                 let create = await UsersUtil.updateUser(uid, data);
                 
                 let route;
@@ -379,9 +377,8 @@ class UsersController {
                 throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.request_denied, "Invalid Status!");
             }
             
-            if (data.updatedBy) {
-                data.updatedBy = user.uid;
-            }
+            data.userLoggedInUserName = user.name;
+            data.userLoggedInUid = user.uid;
             
             let create = await UsersUtil.updateUserStatus(data); 
 

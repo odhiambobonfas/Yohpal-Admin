@@ -133,9 +133,9 @@ class RolesController {
                     stayHere
                 } = req.body;
                 
-                let cookie = req.session.user; 
+                let user = req.session.user; 
                 
-                if (!cookie['uid']) {
+                if (!user['uid']) {
                     throw new Exception(403, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.authentication_error_exception, "Role Error!");
                 }
                 
@@ -159,8 +159,8 @@ class RolesController {
                     throw new Exception(201, "ROLE_DESCRIPTION_EXCEPTION", LANG_EN.role_description_limit, "Role Description Error!");
                 }                
 
-                req.body['addedBy'] = cookie['name'] || cookie['email'];  
-                req.body['refUserId'] = cookie['uid']; 
+                req.body['userLoggedInUserName'] = user['name'] || user['email'];  
+                req.body['userLoggedInUid'] = user['uid']; 
 
                 const query = await RolesUtil.createRoleQuery(req.body);
 
@@ -221,9 +221,9 @@ class RolesController {
                     stayHere
                 } = req.body;
                 
-                let cookie = req.session.user; 
+                let user = req.session.user; 
                 
-                if (!cookie['uid']) {
+                if (!user['uid']) {
                     throw new Exception(403, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.authentication_error_exception, "Role Error!");
                 }
                 
@@ -247,8 +247,8 @@ class RolesController {
                     throw new Exception(201, "ROLE_DESCRIPTION_EXCEPTION", LANG_EN.role_description_limit, "Role Description Error!");
                 }                
 
-                req.body['addedBy'] = cookie['name'] || cookie['email'];  
-                req.body['refUserId'] = cookie['uid']; 
+                req.body['userLoggedInUserName'] = user['name'] || user['email'];  
+                req.body['userLoggedInUid'] = user['uid']; 
                 req.body['roleId'] = roleId; 
 
                 const query = await RolesUtil.updateRoleQuery(req.body);
@@ -295,7 +295,17 @@ class RolesController {
         try {
             const roleId = req.params.id;
             const { status } = req.body;
+            const session = req.session.user; 
             
+            if (!session?.uid) {
+                throw new Exception(
+                    403,
+                    "AUTHENTICATION_ERROR_EXCEPTION",
+                    LANG_EN.req.authentication_error_exception,
+                    "Authentication Error"
+                );
+            } 
+
             if (!roleId) {
                 throw new Exception(201, "ROLE_ID_EXCEPTION", LANG_EN.role_id_required, "Role ID Error!");
             } 
@@ -314,7 +324,13 @@ class RolesController {
                 throw new Exception(201, "ADMIN_ROLE_STATUS_EXCEPTION", LANG_EN.admin_role_status_exception, "Admin Role Status Error!");
             }
 
-            const query = await RolesUtil.updateRoleStatusQuery(roleId, status);
+            let input = {
+                roleId: roleId,
+                userLoggedInUserName: session.name,
+                userLoggedInUid: session.uid
+            };
+
+            const query = await RolesUtil.updateRoleStatusQuery(input, status);
 
             if (!query) {
                 throw new Exception(201, "UPDATE_ROLE_STATUS_QUERY_EXCEPTION", "Role status could not be updated!", "Role status update error!");

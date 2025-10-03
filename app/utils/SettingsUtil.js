@@ -120,8 +120,23 @@ class SettingsUtil extends Util {
                 }
             }
 
+            let input = {
+                companyAddress: data.companyAddress,
+                companyEmail: data.companyEmail,
+                companyIndustry: data.companyIndustry,
+                companyLogo: data.companyLogo,
+                companyLogoFbPath: data.companyLogoFbPath,
+                companyName: data.companyName,
+                companyPhone: data.companyPhone,
+                companyRegistration: data.companyRegistration,
+                companyWebsite: data.companyWebsite,
+                type: data.type,
+                updatedBy: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null,
+                updatedByRefUser: data.userLoggedInUserName
+            };
+
             const payload = {
-                ...data,
+                ...input,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             };

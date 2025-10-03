@@ -62,8 +62,7 @@ class RolesUtil extends Util {
     }
 
     async createRoleQuery(input) { 
-        try {
-            let addedBy = ucwords((input.addedBy || 'Unknown'));
+        try { 
             let inputCode = input.code.toUpperCase();
             const snapshot = await this.getRoleByCodeId(input.code);
 
@@ -81,8 +80,11 @@ class RolesUtil extends Util {
                 isAdmin: (input.isAdmin ? true : false) || false,
                 description: input.description ?? '',
                 target: input.targets,
-                addedBy: addedBy,
-                refUser: FirestoreDatabase.collection(User.collection).doc(input.refUserId),
+                addedBy: input.userLoggedInUserName,
+                addedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
+                updatedBy: input.userLoggedInUserName,
+                updatedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
+                refUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null,
                 refPermissions: FirestoreDatabase.collection(Permissions.collection).doc(inputCode),
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -103,8 +105,7 @@ class RolesUtil extends Util {
     } 
 
     async updateRoleQuery(input) { 
-        try {
-            let addedBy = ucwords((input.addedBy || 'Unknown'));
+        try { 
             let inputCode = input.code.toUpperCase();
             const snapshot = await this.getRoleByCodeId(input.code);
 
@@ -127,10 +128,11 @@ class RolesUtil extends Util {
                 isSuperAdmin: !!input.isSuperAdmin,
                 isAdmin: !!input.isAdmin,
                 description: input.description ?? '',
-                target: input.targets,
-                addedBy: addedBy,
-                refUser: FirestoreDatabase.collection(User.collection).doc(input.refUserId),
-                refPermissions: FirestoreDatabase.collection(Permissions.collection).doc(inputCode),
+                target: input.targets,  
+                updatedBy: input.userLoggedInUserName,
+                updatedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
+                refUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null,
+                refPermissions: input.userLoggedInUserName ? FirestoreDatabase.collection(Permissions.collection).doc(inputCode) : null,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
             
@@ -139,6 +141,8 @@ class RolesUtil extends Util {
             await permissionsRef.set({
                 code: inputCode,
                 permissions: input.permissions ?? [],
+                updatedBy: input.userLoggedInUserName,
+                updatedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
             
@@ -149,14 +153,14 @@ class RolesUtil extends Util {
         } 
     } 
 
-    async updateRoleStatusQuery(roleId, status) {
+    async updateRoleStatusQuery(input, status) {
         try {
-            if (!roleId) { 
+            if (!input.roleId) { 
                 throw new Exception(201, 'GENERIC_EXCEPTION' `${LANG_EN.undefined_error}`, 'Role ID Not Found Error!');
             } 
             
             let rolesRef = FirestoreDatabase.collection(Role.collection);
-            let roleDocRef = rolesRef.doc(roleId);
+            let roleDocRef = rolesRef.doc(input.roleId);
             const roleSnapshot = await roleDocRef.get();
 
             if (!roleSnapshot.exists) {
@@ -164,7 +168,9 @@ class RolesUtil extends Util {
             }
 
             await roleDocRef.update({
-                status: status || 'inactive',
+                status: status || 'inactive',  
+                updatedBy: input.userLoggedInUserName,
+                updatedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
             

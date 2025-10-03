@@ -9,3 +9,4 @@ public/logs/*.txt
 tests/none
 public/store/sessions/*.json
 public/store/images/avatars/*
+public/store/images/logos/*

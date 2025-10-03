@@ -172,27 +172,24 @@ canvas {
 .select2-selection__arrow {
     height: 2.6em !important;
 }
-
-/* Default border to match Bootstrap form controls */
+ 
 .select2-container .select2-selection--single {
     border: 1px solid #ced4da !important;
-    border-radius: 0.25rem; /* Rounded corners to match Bootstrap */
-    padding: 0rem 0rem; /* Bootstrap form control padding */
+    border-radius: 0.25rem;
+    padding: 0rem 0rem;
 }
 
-/* Outline and shadow on focus to match Bootstrap */
 .select2-container--default .select2-selection--single:focus,
 .select2-container--default .select2-selection--single .select2-selection__rendered:focus {
     border-color: #80bdff !important;
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Bootstrap primary shadow */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-/* Adjust arrow position */
 .select2-selection__arrow {
     height: 100% !important;
     top: 0;
-    right: 0; /* Align arrow with padding */
+    right: 0;
 }
 /* /Select2 CSS fixes */
 
@@ -241,3 +238,8 @@ canvas {
 .text-md {
     font-size: medium !important;
 }
+
+.modal-backdrop { 
+  width: 100% !important;
+  height: 100% !important; 
+} 

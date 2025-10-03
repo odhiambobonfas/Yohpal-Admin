@@ -1,4 +1,5 @@
 import Util from '@utils/Util';
+import qs from 'qs';
 import config from '@config/config';
 import User from '@models/User';
 import RedisCache from '@config/redisCache';
@@ -214,20 +215,21 @@ class UserUtil extends Util {
                 throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username: ${ucwords(data.userName)}, exists!`);
             }
 
-            const userRecord = await admin.auth().createUser({
+            let userRecord = await admin.auth().createUser({
                 email: data.email,
                 password: data.password,
                 displayName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
             });
 
-            if (!userRecord || !userRecord.uid) {
-                throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
+            userRecord = qs.parse(userRecord); 
+
+            if (!userRecord && !userRecord.uid) {
+                throw new Exception(200, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
             }
             
-            let addedBy = data.addedBy || null;
+            let addedBy = data.userLoggedInUid || null;
 
-            let newUser = {
-                authUid: userRecord.uid,
+            let newUser = { 
                 uid: userRecord.uid,
                 firstName: ucwords(data.firstName) || "", 
                 lastName: ucwords(data.lastName) || "", 
@@ -244,20 +246,20 @@ class UserUtil extends Util {
                 address: data.address || "",
                 bio: data.bio || "",
                 status: data.status || "active", 
-                createdBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null,
-                updatedBy: addedBy ? FirestoreDatabase.collection(User.collection).doc(addedBy) : null, 
+                addedBy: data.userLoggedInUserName,
+                addedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null, 
+                updatedBy: data.userLoggedInUserName,
+                updatedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null, 
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             };
 
-            const userRef = await FirestoreDatabase.collection(User.collection).add(newUser);
-
-            if (!userRef.id) {
+            const userRef = await FirestoreDatabase.collection(User.collection).doc(userRecord.uid).set(newUser);
+            console.log("USER REF: ", userRef);
+            if (!userRef) {
                 throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
             }
-
-            newUser.id = userRef.id;
-
+            
             return newUser;
         } catch (error) {
             console.error('Error creating user:', error); 
@@ -321,9 +323,11 @@ class UserUtil extends Util {
             if (data.permissionId) {
                 updatedData.refPermissions = FirestoreDatabase.collection('permissions').doc(data.permissionId);
             }
-            if (data.profilePicture) {
-                updatedData.profile_picture = data.profilePicture;
-            }
+            if (data.profilePicture) { 
+                updatedData.profile_picture = data.profilePicture || '/store/images/avatars/default-avatar.jpg';
+                updatedData.profilePictureLocalPath = data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg';
+                updatedData.profilePictureFbPath = data.profilePictureFbPath;
+            } 
             if (data.address) {
                 updatedData.address = data.address;
             }
@@ -333,8 +337,9 @@ class UserUtil extends Util {
             if (data.status) {
                 updatedData.status = data.status;
             }
-            if (data.updatedBy) {
-                updatedData.updatedBy = FirestoreDatabase.collection(User.collection).doc(data.updatedBy);
+            if (data.userLoggedInUid) {
+                updatedData.updatedBy = data.userLoggedInUserName.toLowerCase();
+                updatedData.updatedByRefUser = data.userLoggedInUid ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null; 
             }
 
             updatedData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
@@ -349,7 +354,7 @@ class UserUtil extends Util {
     }
 
     async updateUserStatus(data) {
-        let { uid, status, updatedBy } = data; 
+        let { uid, status, userLoggedInUserName, userLoggedInUid } = data; 
         
         try {
             if (!uid || !status) {
@@ -358,16 +363,17 @@ class UserUtil extends Util {
 
             const usersRef = FirestoreDatabase.collection(User.collection);
             const userSnapshot = await usersRef.where('uid', '==', uid).get();
-            console.log(userSnapshot);
+            
             if (userSnapshot.empty) {
                 throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.operation_failed, `User with UID: ${ucwords(uid)} does not exist!`);
             }
 
             const userDoc = userSnapshot.docs[0];
-
+            console.log(data);
             await usersRef.doc(userDoc.id).update({
-                status: status,
-                updatedBy: updatedBy ? FirestoreDatabase.collection(User.collection).doc(updatedBy) : null,
+                status: status, 
+                updatedBy: userLoggedInUserName,
+                updatedByRefUser: userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(userLoggedInUid) : null,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             });
 
