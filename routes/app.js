@@ -61,7 +61,8 @@ router.route('/roles/edit/:id')
 router.delete('/roles/delete/:id', authMiddleware, RolesController.deleteRole); 
 
 // Dashboard routes
-router.get('/dashboard/stats', authMiddleware, DashboardController.index);
+router.get('/dashboard/card/stats', authMiddleware, DashboardController.index);
+router.get('/dashboard/graphical/stats', authMiddleware, DashboardController.graphicalStats);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);

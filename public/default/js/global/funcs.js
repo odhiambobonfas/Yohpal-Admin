@@ -1158,6 +1158,31 @@ function initProviderToggle(selectId, formClass) {
     });
 }
 
+/**
+ * Returns flexed spinners
+ * 
+ * @returns {String} 3 flexed html growing bootstrap spinners 
+ */
+function growing3FlexedSpinners() {
+    return `<div class="d-flex justify-content-center align-items-center gap-3">
+            <div class="d-flex justify-content-center align-items-center fa-2x">
+                <div class="spinner-grow text-danger spinner-large" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center align-items-center fa-2x">
+                <div class="spinner-grow text-warning spinner-large" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center align-items-center fa-2x">
+                <div class="spinner-grow text-success spinner-large" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>`;
+}
+
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {

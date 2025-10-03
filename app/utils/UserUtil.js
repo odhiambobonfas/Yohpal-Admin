@@ -17,7 +17,7 @@ class UserUtil extends Util {
 
     async getAllUsers(filters={}) {    
         try {
-            filters.limit = parseInt(filters.limit) || 250; 
+            filters.limit = parseInt(filters.limit) || 200000000; 
             filters.order = filters.order || "asc";
             filters.orderBy = filters.orderBy || "createdAt";
 

@@ -243,3 +243,8 @@ table .dropdown-toggle .dropdown-menu {
     position: absolute !important;
     z-index: 1000 !important;
 }
+
+.spinner-large {
+    width: 5rem !important;
+    height: 5rem !important;
+}

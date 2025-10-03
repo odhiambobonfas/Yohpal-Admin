@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import config from '@config/config';
 import User from '@models/User';
-import UserUtil from '@utils/UserUtil';
+import UsersUtil from '@utils/UserUtil';
+import StatsUtil from '@utils/StatsUtil';
 import mexDtParser from '@config/mexDtParser'; 
 import Exception from '@config/exceptions';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
@@ -9,7 +10,7 @@ import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 class DashboardController {
     static async index(req, res) {  
         if (isAjaxRequest(req)) {
-            let totalYpUsers = await UserUtil.getAllUsersCount();
+            let totalYpUsers = await UsersUtil.getAllUsersCount();
             let totalPromotedAccounts = null;
             let totalApplications = null;
             let totalDepositedAmount = null;
@@ -54,30 +55,35 @@ class DashboardController {
         return res.render("crm/dashboard", { title: "Dashboard Page", user: req.session.user });
     } 
 
-    static async getUsers(req, res) {
+    static async graphicalStats(req, res) {
         try {
-            const users = await UserUtil.getAllUsers();
-            const usersObj = new mexDtParser(users)
-                .addColumn('action', (row) => { 
-                    return `<button type="button" class="btn btn-primary btn-sm" data-id='${row.id}'>Edit</button>
-                        <button type="button" class="btn btn-primary btn-sm" data-id='${row.id}'>Delete</button>`;
-                })
-                .editColumn('username', (username) => { 
-                    return ucwords(username);  
-                })
-                .deleteColumn('id')
-                .make();
+            let users = await UsersUtil.getAllUsers();  
+            let marketSizeGrowth = await StatsUtil.computeMarketSizeGrowth(users);
+            let ageDemographics = await StatsUtil.computeAgeDemographics(users);
+            console.log(marketSizeGrowth);
+            const stats = {
+                ageDemographics: ageDemographics,
+                marketSizeGrowth: marketSizeGrowth
+            };
 
-            return res.status(200).json({ status: 'success', data: usersObj });
+            return res.status(200).json({
+                status: 'success',
+                message: 'Graphical stats fetched successfully.',
+                data: stats
+            });
         } catch (error) {
-            if (error instanceof Exception) {  
-                if (config.APP.APP_DEBUG) error.mexLogger();
-                return res.status(error.status).json({ status: 'error', message: error.message, code: error.code, data: [] });
-            } else {   
-                return res.status(500).json({ status: 'error', message: 'Something went wrong. Please try again later.' });
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
             }
+            
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
         }
-    }
+    } 
 }
 
 export default DashboardController;

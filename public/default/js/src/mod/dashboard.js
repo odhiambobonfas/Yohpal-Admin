@@ -3,6 +3,9 @@ class Dashboard extends Master {
         super();
         // ANY constructor Logic applicable
         this.statCounts = document.querySelectorAll('.stat-count');
+        this.loadingSpinners = document.querySelectorAll('.loading-spinner');
+        this.graphicalElems = document.querySelectorAll('.stat-charts');
+        this.chartContainers = document.querySelectorAll('.chart-container');
         this.ageCanvas = document.querySelector(".ageChart");
         this.growthCanvas = document.querySelector(".growthChart");
     }
@@ -28,8 +31,36 @@ class Dashboard extends Master {
         });
     }
 
+    addlOadingStateToGraphicalElements(isLoading = true) {
+        let spinners = this.loadingSpinners;
+        let chartContainers = this.chartContainers;
+        this.graphicalElems?.forEach((el, index) => {
+            if (!el) return;
+            spinners?.forEach((spinner) => {
+                if (!spinner) return;
+                __append_html(
+                    growing3FlexedSpinners(),
+                    spinner
+                )
+            }); 
+
+            let spinner = spinners?.[index];
+            let chart = chartContainers?.[index];
+
+            if (isLoading) {
+                // show spinner, hide chart
+                spinner?.classList.remove("d-none");
+                chart?.classList.add("d-none");
+            } else {
+                // hide spinner, show chart
+                spinner?.classList.add("d-none");
+                chart?.classList.remove("d-none");
+            }
+        });
+    }
+
     async getCardStats() {
-        const res = await fetch('/dashboard/stats', {
+        const res = await fetch('/dashboard/card/stats', {
             credentials: 'include',
             method: 'GET',
             headers: {
@@ -57,7 +88,35 @@ class Dashboard extends Master {
         });
     }
 
-    async drawAgeDemographics() { 
+    async getDemographicStats() {
+        this.addlOadingStateToGraphicalElements(true);
+        const res = await fetch('/dashboard/graphical/stats', {
+            credentials: 'include',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (res.ok) {
+            this.addlOadingStateToGraphicalElements(false);
+        }
+
+        let stats = await res.json();
+
+        stats = stats?.data || [];  
+        
+        if (stats.ageDemographics) {
+            this.drawAgeDemographics(stats.ageDemographics);
+        }
+
+        if (stats.marketSizeGrowth) {
+            this.drawGrowthChart(stats.marketSizeGrowth);
+        }
+    }
+
+    drawAgeDemographics(stats) { 
         if (typeof Chart === "undefined") {
             console.warn("Chart.js is not available");
             return;
@@ -82,22 +141,10 @@ class Dashboard extends Master {
             this.ageChartInstance = new Chart(ctx, {
                 type: "pie",
                 data: {
-                    labels: [
-                        "18-24 years (25%)",
-                        "25-34 years (35%)", 
-                        "35-44 years (20%)",
-                        "45-50 years (12%)",
-                        "51+ years (8%)"
-                    ],
+                    labels: stats.labels,
                     datasets: [{
-                        data: [25, 35, 20, 12, 8],
-                        backgroundColor: [
-                            "#ff6b6b",
-                            "#ff4c4c",
-                            "#b33c3c",
-                            "#ff8e8e",
-                            "#4d1a1a"
-                        ],
+                        data: stats.data,
+                        backgroundColor: stats.backgroundColor,
                         borderColor: "#ffffff",
                         borderWidth: 2,
                         hoverBorderWidth: 3,
@@ -154,7 +201,7 @@ class Dashboard extends Master {
         }
     }
 
-    async drawGrowthChart() { 
+    drawGrowthChart(stats) { 
         if (typeof Chart === "undefined") {
             console.warn("Chart.js is not available");
             return;
@@ -179,12 +226,12 @@ class Dashboard extends Master {
             this.growthChartInstance = new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                    labels: stats.labels,
                     datasets: [{
-                        label: "Market Size",
-                        data: [100, 150, 140, 160, 190, 220, 250],
+                        label: stats.headerLabel || "Market Size",
+                        data: stats.data,
                         borderColor: "#ff4c4c",
-                        backgroundColor: "rgba(255, 76, 76, 0.3)",
+                        backgroundColor: stats.backgroundColor,
                         tension: 0.3,
                         fill: true,
                         pointStyle: "circle",
@@ -290,12 +337,11 @@ class Dashboard extends Master {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const inst = new Dashboard();
     inst.setUpDashboardUI();
-    inst.getCardStats();
-    inst.drawAgeDemographics();
-    inst.drawGrowthChart();
+    await inst.getCardStats();
+    await inst.getDemographicStats();
     inst.getListOfTopOfFollowedUsers();
     inst.getListOfPromotedUsersAccounts();
 });
