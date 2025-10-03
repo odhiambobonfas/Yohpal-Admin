@@ -157,8 +157,7 @@ class User extends Master {
         btns.forEach(btn => {
             if (!documentContains(btn)) return;
             btn = cloneNodeElement(btn);
-            btn.addEventListener('click', (event) => {
-                event.preventDefault();
+            btn.addEventListener('click', (event) => { 
                 toggleLoadingOverlay(true);
                 let clickedBtn = event.target;
                 let clickedId = clickedBtn.getAttribute('data-id');

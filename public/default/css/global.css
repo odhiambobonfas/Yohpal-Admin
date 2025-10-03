@@ -110,11 +110,6 @@ body>.global-overlay {
     width: 200px;
 }
 
-.table-responsive .dropdown-menu {
-    position: absolute !important;
-    z-index: 1000 !important;
-}
-
 .table-responsive {
     scrollbar-width: none;
 }
@@ -243,3 +238,8 @@ canvas {
   width: 100% !important;
   height: 100% !important; 
 } 
+
+table .dropdown-toggle .dropdown-menu { 
+    position: absolute !important;
+    z-index: 1000 !important;
+}

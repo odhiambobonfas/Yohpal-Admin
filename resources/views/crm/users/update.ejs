@@ -49,11 +49,11 @@
                                 <textarea class="form-control" id="bio" name="bio" rows="3"
                                     placeholder="Short bio"> <%= userData?.bio %> </textarea>
                             </div>
-                            
-                            <div class="form-check form-check-inline fa-2x ms-3 mb-3">
+
+                            <div class="form-check form-check-inline fa-2x mb-3">
                                 <label class="form-check-label d-flex align-items-center gap-2">
                                     <input class="form-check-input isEmployee" type="checkbox" name="isEmployee"
-                                        id="isEmployee" value="1" />
+                                        id="isEmployee" value="1" <%= userData?.isEmployee ? 'checked' : '' %> />
                                     <h6 class="text-md mt-3">Mark User as Employee</h6>
                                     <button type="button"
                                         class="btn btn-light text-dark btn-link text-decoration-line-none hover-bg-none mt-2"
@@ -125,23 +125,27 @@
                             Role & Status
                         </div>
                         <div class="card-body row">
-                            <div class="col-md-6 mb-3">
-                                <label for="roleId" class="form-label">Role</label>
-                                <select class="form-select searchSelect" id="roleId" name="roleId">
-                                    <option value="">Select Role</option>
-                                    <% allRoles.forEach(role => { %>
-                                    <option <%= role?.code == roleData?.code %> value="<%= role?.id %>"><%= role?.name %>
-                                    </option>
-                                    <% }) %>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <select class="form-select searchSelect" id="status" name="status">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="pending">Pending</option>
-                                </select>
+                            <div class="card-body row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="roleId" class="form-label">Role</label>  
+                                    <select class="form-select searchSelect" id="roleId" name="roleId">
+                                        <option value="">Select Role</option>
+                                        <% allRoles.forEach(role => { %>
+                                            <option value="<%= role?.code %>" <%= roleData?.code == role?.code ? 'selected' : '' %>>
+                                                <%= role?.name %>
+                                            </option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select searchSelect" id="status" name="status">
+                                        <option value="active" <%= userData?.status === 'active' ? 'selected' : '' %>>Active</option>
+                                        <option value="inactive" <%= userData?.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                        <option value="pending" <%= userData?.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

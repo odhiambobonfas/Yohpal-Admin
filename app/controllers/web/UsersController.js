@@ -320,7 +320,7 @@ class UsersController {
                 
                 let route;
                 if (!data.stayHere) {
-                    route = '/roles';
+                    route = '/users';
                 }
 
                 return res.status(200).json({

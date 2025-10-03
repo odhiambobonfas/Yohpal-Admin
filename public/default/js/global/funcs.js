@@ -1107,56 +1107,6 @@ function enableImagePreview(inputId, previewId) {
 function fixDatatableRendering() {
     $('.dropdown-toggle').dropdown({
         dropdownParent: $('body')
-    });
-
-    const tableResponsive = $('.table-responsive');
-    let openDropdowns = new Set();
-
-    $(document).on('show.bs.dropdown', function (e) {
-        const dropdown = e.target;
-        const dropdownId = $(dropdown).find('.dropdown-toggle').data('id') || Math.random();
-
-        openDropdowns.add(dropdownId);
-        updateTableHeight();
-    });
-
-    $(document).on('hide.bs.dropdown', function (e) {
-        const dropdown = e.target;
-        const dropdownId = $(dropdown).find('.dropdown-toggle').data('id') || Math.random();
-
-        openDropdowns.delete(dropdownId);
-        updateTableHeight();
-    });
-
-    function updateTableHeight() {
-        if (openDropdowns.size > 0) {
-            tableResponsive
-                .stop()
-                .animate({
-                    height: '50vh'
-                }, 300)
-                .addClass('dropdown-active');
-        } else {
-            tableResponsive
-                .stop()
-                .animate({
-                    height: '-50vh'
-                }, 300)
-                .removeClass('dropdown-active');
-        }
-    }
-
-    // Close dropdowns when clicking items
-    $(document).on('click', '.dropdown-item', function (e) {
-        e.preventDefault();
-        const dropdown = $(this).closest('.dropdown');
-        const dropdownId = dropdown.find('.dropdown-toggle').data('id');
-
-        openDropdowns.delete(dropdownId);
-        dropdown.removeClass('show');
-        dropdown.find('.dropdown-menu').removeClass('show');
-
-        updateTableHeight();
     }); 
 }
 
