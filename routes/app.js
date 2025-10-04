@@ -66,7 +66,7 @@ router.get('/dashboard/graphical/stats', authMiddleware, DashboardController.gra
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
-router.post('/api/setting/create', authMiddleware, upload.single('companyLogo'), SettingsController.createUpdateSettings);
+router.post('/api/setting/create', authMiddleware, upload.single('generalSetting[otherSettings][companyLogo]'), SettingsController.createUpdateSettings);
 router.get('/api-settings', authMiddleware, SettingsController.getApiSettingsList);
 router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);

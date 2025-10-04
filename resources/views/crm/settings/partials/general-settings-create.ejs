@@ -2,19 +2,23 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
 	<h5 class="mb-0">General Settings - Yohpal Company</h5>
 </div>
+
 <div class="container-fluid">
 	<form id="generalsettings" action="/api/setting/create" enctype="multipart/form-data" method="POST">
+		
 		<!-- Section: Company Info --> 
 		<h6 class="mb-3 border-bottom pb-2 fw-bold">Company Information</h6>
 		<div class="row mb-3">
 			<div class="col-md-6">
 				<label for="company_name" class="form-label">Company Name</label>
-				<input type="text" class="form-control" id="company_name" name="company_name" 
+				<input type="text" class="form-control" id="company_name" 
+					name="generalSetting[companyInformation][company_name]"
 					value="<%= generalsetting?.companyName || '' %>" placeholder="Enter company name">
 			</div>
 			<div class="col-md-6">
 				<label for="company_website" class="form-label">Website</label>
-				<input type="url" class="form-control" id="company_website" name="company_website"
+				<input type="url" class="form-control" id="company_website" 
+					name="generalSetting[companyInformation][company_website]"
 					value="<%= generalsetting?.companyWebsite || '' %>" placeholder="https://yohpal.com">
 			</div>
 		</div>
@@ -24,19 +28,22 @@
 		<div class="row mb-3">
 			<div class="col-md-6">
 				<label for="company_email" class="form-label">Email</label>
-				<input type="email" class="form-control" id="company_email" name="company_email"
+				<input type="email" class="form-control" id="company_email" 
+					name="generalSetting[contactInformation][company_email]"
 					value="<%= generalsetting?.companyEmail || '' %>" placeholder="example@company.com">
 			</div>
 			<div class="col-md-6">
 				<label for="company_phone" class="form-label">Phone</label>
-				<input type="tel" class="form-control" id="company_phone" name="company_phone"
+				<input type="tel" class="form-control" id="company_phone" 
+					name="generalSetting[contactInformation][company_phone]"
 					value="<%= generalsetting?.companyPhone || '' %>" placeholder="+254 700 000 000">
 			</div>
 		</div>
 		<div class="row mb-3">
 			<div class="col-md-12">
 				<label for="company_address" class="form-label">Address</label>
-				<textarea class="form-control" id="company_address" name="company_address" rows="2"
+				<textarea class="form-control" id="company_address" 
+					name="generalSetting[contactInformation][company_address]" rows="2"
 					placeholder="Enter company address"><%= generalsetting?.companyAddress || '' %></textarea>
 			</div>
 		</div>
@@ -46,12 +53,14 @@
 		<div class="row mb-3">
 			<div class="col-md-6">
 				<label for="company_industry" class="form-label">Industry</label>
-				<input type="text" class="form-control" id="company_industry" name="company_industry"
+				<input type="text" class="form-control" id="company_industry" 
+					name="generalSetting[otherSettings][company_industry]"
 					value="<%= generalsetting?.companyIndustry || '' %>" placeholder="e.g. Tech, Retail">
 			</div>
 			<div class="col-md-6">
 				<label for="company_registration" class="form-label">Registration No.</label>
-				<input type="text" class="form-control" id="company_registration" name="company_registration"
+				<input type="text" class="form-control" id="company_registration" 
+					name="generalSetting[otherSettings][company_registration]"
 					value="<%= generalsetting?.companyRegistration || '' %>" placeholder="123456">
 			</div>
 		</div>
@@ -64,14 +73,17 @@
 
 				<div class="d-flex flex-column justify-content-center align-items-center h-100">
 					<div class="preview-on-edit"> 
-						<img src="<%= generalsetting?.companyLogo %>" alt="Company Logo" class="img-fluid preview-img-fluid" style="max-height: 80px;"> 
+						<img src="<%= generalsetting?.companyLogoLocalPath || generalsetting?.companyLogoFbPath %>" alt="Company Logo" 
+							class="img-fluid preview-img-fluid" style="max-height: 80px;"> 
 					</div>  
 					<i class="bi bi-file-earmark-arrow-up fs-1 text-muted"></i>
 					<span class="text-muted mt-2">Click to upload file</span>
 				</div>
 
 				<!-- Hidden File Input -->
-				<input type="file" id="companyLogo" name="companyLogo" class="companyLogo d-none" accept="image/*">
+				<input type="file" id="companyLogo" 
+					name="generalSetting[otherSettings][companyLogo]" 
+					class="companyLogo d-none" accept="image/*">
 			</div>
 		</div>
 

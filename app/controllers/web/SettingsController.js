@@ -257,21 +257,34 @@ class SettingsController {
                     settings
                 };  
                 
-                payload['isDefault'] = isDefault ? true : false; 
+                payload['isDefault'] = isDefault ? true : false;  
             }
 
             if (type == 'generalsettings') {
+                const { generalSetting } = req.body;
+                
+                const {
+                    companyInformation = {},
+                    contactInformation = {},
+                    otherSettings = {}
+                } = generalSetting || {};
+
                 const {
                     company_name,
-                    company_website,
+                    company_website
+                } = companyInformation;
+
+                const {
                     company_email,
                     company_phone,
-                    company_address,
+                    company_address
+                } = contactInformation;
+
+                const {
                     company_industry,
                     company_registration
-                } = req.body;
-
-                // Required checks
+                } = otherSettings;
+                
                 if (!company_name || company_name.trim() === "") {
                     throw new Exception(
                         201,
@@ -307,8 +320,7 @@ class SettingsController {
                         "Company Address Error"
                     );
                 }
-
-                // Optional checks (with limits)
+                
                 if (company_name.length > 100) {
                     throw new Exception(
                         201,
@@ -343,51 +355,61 @@ class SettingsController {
                         LANG_EN.req.company_registration_limit,
                         "Company Registration Error"
                     );
-                } 
-
+                }
+                
                 let companyLogo = '';
-                let fileUploadToFb = '';
-                if (req.file && req.file.fieldname) {  
-                    const uploadFilePath = handleFileUploads(req, 'images/avatars'); 
+                let fileUploadToFb = ''; 
+                if (req.file && req.file?.fieldname?.length) {
+                    const uploadFilePath = handleFileUploads(req, 'images/logos');
+
                     if (!uploadFilePath) {
-                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload error");
+                        throw new Exception(
+                            201,
+                            "PROFILE_PICTURE_UPLOAD_FAILED",
+                            LANG_EN.req.invalid_avatar_exemption,
+                            "Avatar upload error"
+                        );
                     }
-                    
-                    companyLogo = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
+
+                    companyLogo = path
+                        .relative(process.cwd(), Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)
+                        .replace(/\\/g, "/");
+
                     const FBUTIL = new FirebaseUtility();
                     fileUploadToFb = await FBUTIL.uploadFile(companyLogo, "company/yohpal/logos", {
-                        linkType: "firebase", makePublic: true
-                    }); 
+                        linkType: "firebase",
+                        makePublic: true
+                    });
+
                     if (!fileUploadToFb) {
-                        throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
-                    } 
+                        throw new Exception(
+                            201,
+                            "PROFILE_PICTURE_UPLOAD_FAILED",
+                            LANG_EN.req.invalid_avatar_exemption,
+                            "Avatar upload to FB error"
+                        );
+                    }
                 }
 
-                let companyLogoLocalPath = companyLogo.replace('public', '');
-                let companyLogoFbPath = fileUploadToFb;
+                const companyLogoLocalPath = companyLogo.replace('public', '');
+                const companyLogoFbPath = fileUploadToFb;
+
+                // Attach logo paths
+                generalSetting.otherSettings = {
+                    ...generalSetting.otherSettings,
+                    companyLogoLocalPath,
+                    companyLogoFbPath
+                };
                 
-                // Build payload
-                payload = {
+                payload = { 
                     type,
-                    companyName: company_name,
-                    companyWebsite: company_website,
-                    companyEmail: company_email,
-                    companyPhone: company_phone,
-                    companyAddress: company_address,
-                    companyIndustry: company_industry,
-                    companyRegistration: company_registration,
-                    companyLogo: companyLogoLocalPath,
-                    companyLogoFbPath: companyLogoFbPath
+                    generalSetting
                 };
             }
 
-            // enrich
             payload["userLoggedInUserName"] = session.name || session.email;
             payload["userLoggedInUid"] = session.uid;
-
-            console.log(payload);
-
-            // save using util/repo
+            
             const query = await SettingsUtil.createSettingQuery(payload);
 
             if (!query) {

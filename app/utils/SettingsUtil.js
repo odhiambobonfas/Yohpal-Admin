@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser, reduceToObj, jsonStringifier, jsonParser } from '@config/utils';  
+import { ucwords, fbCollectionParser, reduceToObj, convertToCamelCaseKeys, jsonStringifier, jsonParser } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs'; 
 
@@ -83,71 +83,118 @@ class SettingsUtil extends Util {
         try { 
             const colId = data.type;
             const targetApp = data.targetApp || 'yohpal';
-            data['addeByRefUser'] = data.addedByRefUserId ?  FirestoreDatabase.collection(User.collection).doc(data.addedByRefUserId) : null;
-            let settingsRef = FirestoreDatabase.collection(Setting.collection).doc(targetApp)
-                .collection(colId); 
             
-            if (data.code) {
-                const codeSnap = await settingsRef
-                    .where("code", "==", data.code)
-                    .limit(1)
-                    .get();
+            let input;
+            let payload = {};
 
-                if (!codeSnap.empty) {
-                    throw new Exception(
-                        409,
-                        "SETTING_CODE_EXISTS",
-                        `Setting with code '${data.code}' already exists`,
-                        `Duplicate code for type: ${colId}`
-                    );
+            if (['apisetting'].includes(data.type)) {  
+                let settingsRef = FirestoreDatabase.collection(Setting.collection).doc(targetApp)
+                    .collection(colId); 
+                
+                if (data.code) {
+                    
+                    const codeSnap = await settingsRef
+                        .where("code", "==", data.code)
+                        .limit(1)
+                        .get();
+
+                    if (!codeSnap.empty) {
+                        throw new Exception(
+                            409,
+                            "SETTING_CODE_EXISTS",
+                            `Setting with code '${data.code}' already exists`,
+                            `Duplicate code for type: ${colId}`
+                        );
+                    }
                 }
+
+                if (data.isDefault) {
+                    const defaultSnap = await settingsRef
+                        .where("targetApp", "==", data.targetApp)
+                        .where("isDefault", "==", true)
+                        .limit(1)
+                        .get();
+
+                    if (!defaultSnap.empty) {
+                        throw new Exception(
+                            409,
+                            "DEFAULT_SETTING_EXISTS",
+                            `${LANG_EN.res.default_setting_exists}`,
+                            `Default setting already exists for targetApp: ${ucwords(data.targetApp)}`
+                        );
+                    }
+                }
+
+                data['addeByRefUser'] = data.addedByRefUserId 
+                    ?   FirestoreDatabase.collection(User.collection).doc(data.addedByRefUserId) 
+                    :   null;
+
+                input = data;
+                
+                payload = {
+                    ...input,
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                };
+                
+                await settingsRef.add(payload);
             }
 
-            if (data.isDefault) {
-                const defaultSnap = await settingsRef
-                    .where("targetApp", "==", data.targetApp)
-                    .where("isDefault", "==", true)
-                    .limit(1)
-                    .get();
+            if (['generalsettings'].includes(data.type)) { 
+                const obj = data.generalSetting || '';
+                const settingsArray = Object.entries(obj).map(([key, value]) => ({
+                    key,
+                    ...value,
+                })); 
 
-                if (!defaultSnap.empty) {
-                    throw new Exception(
-                        409,
-                        "DEFAULT_SETTING_EXISTS",
-                        `${LANG_EN.res.default_setting_exists}`,
-                        `Default setting already exists for targetApp: ${ucwords(data.targetApp)}`
-                    );
-                }
-            }
+                const allInsertPromises = await Promise.all(
+                    settingsArray.map(async (setting) => { 
+                        setting = convertToCamelCaseKeys(setting);
+                        const input = {
+                            ...setting,
+                            createdBy: data.userLoggedInUserName,
+                            createdByRefUser: data.userLoggedInUid
+                                ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid)
+                                : null,
+                            updatedBy: data.userLoggedInUserName,
+                            updatedByRefUser: data.userLoggedInUid
+                                ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid)
+                                : null
+                        };
 
-            let input = {
-                companyAddress: data.companyAddress,
-                companyEmail: data.companyEmail,
-                companyIndustry: data.companyIndustry,
-                companyLogo: data.companyLogo,
-                companyLogoFbPath: data.companyLogoFbPath,
-                companyName: data.companyName,
-                companyPhone: data.companyPhone,
-                companyRegistration: data.companyRegistration,
-                companyWebsite: data.companyWebsite,
-                type: data.type,
-                updatedBy: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null,
-                updatedByRefUser: data.userLoggedInUserName
-            };
-
-            const payload = {
-                ...input,
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            };
-            
-            await settingsRef.add(payload);
+                        return await this.multiInsertSetingsDocs(targetApp, colId, setting.key, input);
+                    })
+                );
+                
+                allInsertPromises.forEach(res => {
+                    Object.assign(payload, res);
+                });
+            } 
 
             return { id: colId, ...payload };
         } catch (error) {
             console.error("Error in createSettingQuery:", error);
             throw new Exception((error.status || 500), error.code, error.message, error.reason);
         }
+    }
+
+    async multiInsertSetingsDocs(topLevelDocName, colId, categoryName, input) {
+        const payload = {
+            ...input,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+        
+        let settingsRef = FirestoreDatabase.collection(Setting.collection) // settings
+            .doc(topLevelDocName) //yohpal
+            .collection(colId) //generalsettings
+            .doc(categoryName) // categoryName - companyInformation 
+                
+        const setData = await settingsRef.set(payload);
+
+        if (setData) await settingsRef.update({ key: settingsRef.id });
+
+        return { ...payload };
     }
 }
 

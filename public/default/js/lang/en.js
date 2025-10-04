@@ -80,7 +80,8 @@ const LANG_EN = {
     // response errors and statements
     res: {
         invalid_json_exception: "Invalid JSON response",
-        default_setting_exists: "A default setting for the target application you tried to add, already exists!"
+        default_setting_exists: "A default setting for the target application you tried to add, already exists!",
+        general_setting_conflict: " A conflict occurred while processing the general settings.",
     },
 
     // General

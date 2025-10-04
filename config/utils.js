@@ -117,3 +117,22 @@ export function handleFileUploads(req, uniqueDestName = (req.session.user.id || 
 
     return attachment;
 }
+
+/**
+ * Recursively converts object keys to camelCase
+ * 
+ * @returns {Object} parsed object - already in camel case
+ */
+export function convertToCamelCaseKeys(obj) {
+    if (Array.isArray(obj)) {
+        return obj.map(convertToCamelCaseKeys);
+    } else if (obj && typeof obj === 'object') {
+        return Object.entries(obj).reduce((acc, [key, value]) => {
+            const camelKey = key.replace(/([-_][a-z])/gi, (s) => s.toUpperCase().replace('-', '').replace('_', ''));
+            acc[camelKey] = convertToCamelCaseKeys(value);
+            return acc;
+        }, {});
+    }
+
+    return obj;
+}
