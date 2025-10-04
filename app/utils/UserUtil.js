@@ -355,6 +355,10 @@ class UserUtil extends Util {
                 updatedData.phoneNumber = data.phoneNumber;
             }
 
+            if (data.isEmployee) {
+                updatedData.isEmployee = data.isEmployee ? true : false;
+            }
+
             if (data.roleId) {
                 updatedData.roleRef = FirestoreDatabase.collection('roles').doc(data.roleId);
             }
