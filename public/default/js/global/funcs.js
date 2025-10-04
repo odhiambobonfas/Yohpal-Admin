@@ -1081,25 +1081,28 @@ function setupDateRangeWithBootstrapDatePickerLib() {
 /**
  * Enable preview for any file input
  * 
- * @param {string} inputId - ID of the file input element
- * @param {string} previewId - ID of the img element for preview
+ * @param {string} inputSelector - selector of the file input element
+ * @param {string} previewElemSelector - selector of the img element for preview
+ * @param {boolean} [showOnSelect=false] - If true, removes 'd-none' on preview when file is selected
+ * @param {string} [defaultSrc="/store/images/avatars/default-avatar.jpg"] - Fallback image path
  */
-function enableImagePreview(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-
+function enableImagePreview(inputSelector, previewElemSelector, showOnSelect = false, defaultSrc = "/store/images/avatars/default-avatar.jpg") {
+    const input = document.querySelector(inputSelector);
+    const preview = document.querySelector(previewElemSelector);
     if (!input || !preview) return;
 
     input.addEventListener('change', function () {
-        const file = this.files[0];
+        const file = this.files[0]; 
         if (file) {
             const reader = new FileReader();
+            if (showOnSelect) preview.classList.remove('d-none');
             reader.onload = e => {
                 preview.src = e.target.result;
             };
             reader.readAsDataURL(file);
         } else {
-            preview.src = "/store/images/avatars/default-avatar.jpg";
+			preview.src = defaultSrc;
+			if (showOnSelect) preview.classList.add('d-none');
         }
     });
 }

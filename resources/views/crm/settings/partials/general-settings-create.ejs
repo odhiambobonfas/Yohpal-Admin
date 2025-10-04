@@ -63,16 +63,15 @@
 				onclick="document.getElementById('companyLogo').click()">
 
 				<div class="d-flex flex-column justify-content-center align-items-center h-100">
-					<% if (generalsetting?.companyLogo) { %>
-						<img src="<%= generalsetting.companyLogo %>" alt="Company Logo" class="img-fluid" style="max-height: 80px;">
-					<% } else { %>
-						<i class="bi bi-file-earmark-arrow-up fs-1 text-muted"></i>
-						<span class="text-muted mt-2">Click to upload file</span>
-					<% } %>
+					<div class="preview-on-edit"> 
+						<img src="<%= generalsetting?.companyLogo %>" alt="Company Logo" class="img-fluid preview-img-fluid" style="max-height: 80px;"> 
+					</div>  
+					<i class="bi bi-file-earmark-arrow-up fs-1 text-muted"></i>
+					<span class="text-muted mt-2">Click to upload file</span>
 				</div>
 
 				<!-- Hidden File Input -->
-				<input type="file" id="companyLogo" name="companyLogo" class="d-none" accept="image/*">
+				<input type="file" id="companyLogo" name="companyLogo" class="companyLogo d-none" accept="image/*">
 			</div>
 		</div>
 

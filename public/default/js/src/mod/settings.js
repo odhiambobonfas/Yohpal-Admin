@@ -7,6 +7,7 @@ class Settings extends Master {
     initializePageSetup() {
         initListTransition('.ulg', '.content');
         initProviderToggle('provider', 'provider-form');
+        enableImagePreview('.companyLogo', '.preview-on-edit img', true);
     }
 
     createupdatesetting() {
