@@ -365,9 +365,9 @@ class SettingsController {
                     if (!uploadFilePath) {
                         throw new Exception(
                             201,
-                            "PROFILE_PICTURE_UPLOAD_FAILED",
-                            LANG_EN.req.invalid_avatar_exemption,
-                            "Avatar upload error"
+                            "COMPANY_LOGO_UPLOAD_FAILED",
+                            LANG_EN.req.company_logo_upload_exemption,
+                            "Company logo upload to FB error"
                         );
                     }
 
