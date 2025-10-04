@@ -79,12 +79,11 @@ const FileStore = sessionFileStore(session);
 // Session Middleware with Redis Store 
 const InitializeServer = async () => {
     let store: any = undefined; // default memory store
-
+    
+    const client = RedisCache?.client;
+    
     try {
         if (config.SESSION.SESSION_STORAGE == 'redis'){
-            const rd = new RedisCache();
-            const client = await rd.initRedisCaching();
-
             store = new RedisStore({ client });
         }
 

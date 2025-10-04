@@ -3,7 +3,8 @@ import { createClient } from 'redis';
 
 class RedisCache {
     constructor() {
-        this.client = undefined;  
+        this.client = undefined;
+        this.initRedisCaching();
     }
 
     /**
@@ -70,8 +71,6 @@ class RedisCache {
         } catch (error) {
             console.log("[Redis] client.connect() failed to coomplete!", error);
         }
-
-        return this.client;
     }
 
     /**
@@ -139,4 +138,4 @@ class RedisCache {
     }
 }
 
-export default RedisCache;
+export default new RedisCache();

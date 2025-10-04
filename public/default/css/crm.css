@@ -3,9 +3,11 @@ body {
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    position: fixed;
+    width: 100% !important;
 }
 .sidebar { 
-    height: 90vh;
+    /* height: 100vh; */
     overflow: auto;
     background: var(--bs-light);
     color: var(--bs-dark);  
@@ -41,8 +43,9 @@ body {
 } 
 
 .content-body {  
-    padding-bottom: 100vh !important;
+    height: 90vh !important;
     scrollbar-width: none;
+    overflow-y: auto !important; 
 }
 
 .content-body::-webkit-scrollbar {  

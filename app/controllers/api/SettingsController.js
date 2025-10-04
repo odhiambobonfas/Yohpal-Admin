@@ -24,12 +24,10 @@ class SettingsController {
             if (!id) {
                 throw new Exception(400, 'MISSING_AUTH_ID', 'Authentication Denied!', 'Invalid User Session ID');
             }
-            const rd = new RedisCache();
-            await rd.initRedisCaching();
 
             const cacheKey = `frontend:settings:user:${id}`;
             
-            const settingsData = await rd.cacheParser(
+            const settingsData = await RedisCache.cacheParser(
                 cacheKey,
                 async () => {
                     const settingsRef = FirestoreDatabase.collection(User.collection)
@@ -94,10 +92,7 @@ class SettingsController {
             if (!id || !type) { 
                 throw new Exception(400, 'MISSING_FIELDS', 'All fields are required!', 'Validation Error');
             }
-
-            const rd = new RedisCache();
-            await rd.initRedisCaching(); 
-
+            
             const allowed_settings_type = ['profile', 'appearance', 'security', 'font'];
 
             if (!allowed_settings_type.includes(type)) {
@@ -176,7 +171,7 @@ class SettingsController {
             } 
 
             const cacheKey = `frontend:settings:user:${id}`;
-            await rd.deleteFunc(cacheKey);
+            await RedisCache.deleteFunc(cacheKey);
 
             return res.status(200).json({
                 status: 'success',

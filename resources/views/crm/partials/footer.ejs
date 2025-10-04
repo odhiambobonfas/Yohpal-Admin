@@ -1,6 +1,22 @@
 
-    <footer class="fixed-bottom crm-footer p-2 z-index-2 bg-light">
-        <p class="text-center pt-2">Yohpal Admin. &copy;<%= (new Date()).getFullYear(); %>. All rights reserved.</p>
+    <footer class="fixed-bottom d-flex align-items-center crm-footer z-index-3 bg-light gap-0">
+        <div class="col-3 action-btns d-flex justify-content-around align-items-center text-dark bg-secondary mb-0 p-2">
+            <a href="/settings" class="btn btn-link text-dark">
+                <i class="fa fa-gear fa-1x" title="settings"></i>
+            </a>
+            <a href="javascript:void(0)" class="btn btn-link text-dark">
+                <i class="fa fa-user fa-1x" aria-hidden="true" title="User"></i>
+            </a>
+            <a href="javascript:void(0)" class="btn btn-link text-dark">
+                <i class="fa fa-question-circle fa-1x" title="Help"></i>
+            </a>
+            <a href="/logout" class="btn btn-link text-dark">
+                <i class="fa fa-power-off fa-1x"></i>
+            </a>
+        </div>
+        <div class="col-9">
+            <p class="text-center pt-2">Yohpal Admin. &copy;<%= (new Date()).getFullYear(); %>. All rights reserved.</p>
+        </div>
     </footer>
 
     <!-- include jquery -->
