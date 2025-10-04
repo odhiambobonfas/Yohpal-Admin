@@ -350,6 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.updateInHouseUser();
     
     // Enable image preview for profile picture input
-    enableImagePreview('profile_picture', 'profile_preview');
+    enableImagePreview('.profile_picture', '.profile_preview_div img', false);
  
 });
