@@ -67,8 +67,7 @@ class rbac extends Master {
         let btn = document.querySelector('.update-roles-submit-btn');
         if (!documentContains(btn)) return; 
         btn = cloneNodeElement(btn);
-        btn.addEventListener('click', event => {
-            event.preventDefault();
+        btn.addEventListener('click', event => { 
             toggleButtonContent(btn);
             disableElement(btn);
             let form = btn.closest('form'); 
