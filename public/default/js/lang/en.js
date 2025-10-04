@@ -43,6 +43,7 @@ const LANG_EN = {
         userName_unexists: "A user with this username already exists.",
         uid_and_status_required: "User ID and status are required to update user status.",
         invalid_avatar_exemption: "Failed to upload profile picture. Please try again.",
+        company_logo_upload_exemption: "Failed to upload company logo. Please try again.",
 
         // role errors
         role_id_required: "Role ID is required.",
