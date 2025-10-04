@@ -31,6 +31,8 @@ class SettingsController {
         let settings = await SettingsUtil.getAllSettings();   
 
         let generalsettings = Object.assign({}, ...(settings?.generalsettings || [])); 
+
+        console.log(generalsettings.companyLogoLocalPath);
         let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
         let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
  
