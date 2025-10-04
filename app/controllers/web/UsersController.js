@@ -299,7 +299,7 @@ class UsersController {
 
                 let profilePicture = '';
                 let fileUploadToFb = '';
-                if (req.file && req.file.fieldname == 'profile_picture') {  
+                if (req.file && req.file?.fieldname == 'profile_picture') {  
                     const uploadFilePath = handleFileUploads(req, 'images/avatars'); 
                     if (!uploadFilePath) {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload error");
@@ -307,7 +307,7 @@ class UsersController {
                     
                     profilePicture = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
                     const FBUTIL = new FirebaseUtility();
-                    fileUploadToFb = await FBUTIL.uploadFile(profilePicture, {
+                    fileUploadToFb = await FBUTIL.uploadFile(profilePicture, "company/yohpal/avatars", {
                         linkType: "firebase",
                         makePublic: true
                     }); 
