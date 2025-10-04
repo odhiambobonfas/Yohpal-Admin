@@ -150,7 +150,7 @@ class AuthController {
             
             let {user, role, permissions} = await UserUtil.getUserByDocid(v.uid);
 
-            permissions = permissions.permissions ?? []; 
+            permissions = permissions?.permissions ?? []; 
 
             if (!permissions.includes('auth.access')) {
                 throw new Exception(201, 'AUTHORIZATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
