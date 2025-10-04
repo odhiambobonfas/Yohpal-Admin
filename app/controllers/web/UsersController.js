@@ -204,7 +204,10 @@ class UsersController {
                     
                     profilePicture = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
                     const FBUTIL = new FirebaseUtility();
-                    fileUploadToFb = await FBUTIL.uploadFile(profilePicture); 
+                    fileUploadToFb = await FBUTIL.uploadFile(profilePicture, {
+                        linkType: "firebase",
+                        makePublic: true
+                    }); 
                     if (!fileUploadToFb) {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
                     } 
