@@ -1104,12 +1104,6 @@ function enableImagePreview(inputId, previewId) {
     });
 }
 
-function fixDatatableRendering() {
-    $('.dropdown-toggle').dropdown({
-        dropdownParent: $('body')
-    }); 
-}
-
 function initListTransition(listSelector, contentSelector) {
     let clicked = false;
     const listItems = document.querySelectorAll(`${listSelector} .list-group-item`);
@@ -1197,6 +1191,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     const masterInstance = new Master();
     masterInstance.initOverlay('.main .content-section');
     masterInstance.initDonateNowFunc();
-    setupDateRangeWithBootstrapDatePickerLib();
-    fixDatatableRendering();
+    setupDateRangeWithBootstrapDatePickerLib(); 
 });
