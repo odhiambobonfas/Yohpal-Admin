@@ -20,6 +20,7 @@ import DashboardController from "@app/controllers/web/DashboardController";
 import RolesController from "@app/controllers/web/RolesController";
 import SettingsController from "@app/controllers/web/SettingsController";
 import UsersController from "@app/controllers/web/UsersController";
+import HRMController from "@app/controllers/web/HRMController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
 
@@ -63,6 +64,9 @@ router.delete('/roles/delete/:id', authMiddleware, RolesController.deleteRole);
 // Dashboard routes
 router.get('/dashboard/card/stats', authMiddleware, DashboardController.index);
 router.get('/dashboard/graphical/stats', authMiddleware, DashboardController.graphicalStats);
+
+// HRM routes
+router.get('/hrm/index', authMiddleware, HRMController.index);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);

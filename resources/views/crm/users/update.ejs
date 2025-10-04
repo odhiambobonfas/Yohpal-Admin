@@ -149,6 +149,70 @@
                             </div>
                         </div>
                     </div>
+                    
+					<!-- HRM Information -->
+					<% if (isAdmin() || isSuperAdmin()) { %>
+					<div class="card mb-3 shadow-sm">
+						<div class="card-header bg-danger text-white">
+							HRM Information
+						</div>
+						<div class="card-body">  
+							<div class="row">
+								<!-- Department Name -->
+								<div class="col-md-6 mb-3">
+									<label for="departmentId">Departments:</label> 
+									<select class="form-select searchSelect" name="departmentId" id="departmentId">
+										<option value="">Select department</option>  
+									</select>
+								</div> 
+
+								<!-- Designation -->
+								<div class="col-md-6 mb-3">
+									<label for="designationId">Designation</label>
+									
+									<select class="form-select searchSelect" name="designationId" id="designationId">
+										<option value="">Select designation</option>  
+									</select>
+								</div> 
+							</div>
+
+							<h4 class="pt-3">Payroll Information</h4>
+							<hr>
+							<div class="row"> 
+								<!-- Basic Salary -->
+								<div class="col-md-6 mb-3">
+									<label for="basicSalary">Basic Salary:</label> 
+									<div class="input-group mb-2"> 
+										<input type="text" class="form-select" name="basicSalary" id="basicSalary" placeholder="Enter basic salary...">
+										<div class="input-group-prepend">
+											<select class="form-select searchSelect" name="basicSalaryDuration" id="basicSalaryDuration">
+												<option value="">Pay Duration</option>
+												<option value="1">Per Day</option>
+												<option value="2">Per Week</option>
+												<option value="3">Per Month</option>
+												<option value="4">Per Year</option>
+											</select> 
+										</div>
+									</div>
+								</div> 
+								<!-- Token Amount -->
+								<div class="col-md-6 mb-3">
+									<label for="tokenAmount">Token Amount:</label> 
+									<div class="input-group mb-2"> 
+										<input type="text" class="form-select" name="tokenAmount" id="tokenAmount" placeholder="Enter salary token...">  
+									</div>
+								</div> 
+								<!-- Payment Components, In respect to Kenyan Payroll Requirements -->
+								<div class="col-md-12 mb-3">
+									<label for="payComponents">Pay Components:</label> 
+									<select class="form-select searchSelect" multiple name="paymentComponents" id="paymentComponents">
+										<option value="">Select pay components</option>  
+									</select>
+								</div> 
+							</div>
+						</div>
+					</div> 
+					<% } %>
 
                     <!-- Security -->
                     <div class="card mb-3 shadow-sm">
@@ -167,7 +231,7 @@
                                     placeholder="Confirm password" required>
                             </div>
                         </div>
-                    </div>
+                    </div> 
 
 					<div class="form-check form-check-inline fa-2x ms-3 mb-3">
 						<label class="form-check-label d-flex align-items-center gap-2">

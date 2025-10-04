@@ -109,7 +109,7 @@
                             href="#paymentAccountsSubMenu" role="button" aria-expanded="false"
                             aria-controls="paymentAccountsSubMenu">
                             <span>
-                                <i class="fa fa-credit-card me-2"></i> Payment Accounts
+                                <i class="fa fa-credit-card me-2"></i> Accounts
                             </span>
                             <i class="fa fa-angle-down"></i>
                         </a>
@@ -185,17 +185,31 @@
                         </a>
                         <div class="collapse ps-4" id="hrmSubMenu">
                             <ul class="nav flex-column">
-                                <% if (hasPermission('hrm.employees.access')) { %>
+                                <% if (hasPermission('hrm.dashboard.access')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#employees">
-                                        <i class="fa fa-user-tie me-2"></i> Employees
+                                    <a class="nav-link" href="/hrm/index">
+                                        <i class="fa fa-chart-line me-2"></i> Dashboard
                                     </a>
                                 </li>
                                 <% } %>
-                                <% if (hasPermission('hrm.payroll.access')) { %>
+                                <% if (hasPermission('hrm.employees.access')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#payroll">
-                                        <i class="fa fa-money-check-alt me-2"></i> Payroll
+                                    <a class="nav-link" href="#employees">
+                                        <i class="fa fa-users me-2"></i> Employees
+                                    </a>
+                                </li>
+                                <% } %>
+                                <% if (hasPermission('hrm.departments.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/institution/departments">
+                                        <i class="fa fa-sitemap me-2"></i> Departments
+                                    </a>
+                                </li>
+                                <% } %>
+                                <% if (hasPermission('hrm.designation.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/employees/designations">
+                                        <i class="fa fa-id-badge me-2"></i> Designations
                                     </a>
                                 </li>
                                 <% } %>
@@ -203,6 +217,13 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="#attendance">
                                         <i class="fa fa-calendar-check me-2"></i> Attendance
+                                    </a>
+                                </li>
+                                <% } %>
+                                <% if (hasPermission('hrm.payroll.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#payroll">
+                                        <i class="fa fa-money-bill-wave me-2"></i> Payroll
                                     </a>
                                 </li>
                                 <% } %>

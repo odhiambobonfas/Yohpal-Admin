@@ -111,7 +111,10 @@ const bindings = {
         },
         
         hrm: {
+            dashboard_access: 'hrm.dashboard.access',
             employees_access: 'hrm.employees.access',
+            departments_access: 'hrm.departments.access',
+            designation_access: 'hrm.designation.access',
             payroll_access: 'hrm.payroll.access',
             attendance_access: 'hrm.attendance.access',
         },

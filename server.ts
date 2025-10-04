@@ -35,7 +35,7 @@ import corsconfig from "@config/cors";
 import { hasPermission, hasAnyPermission } from "@funcs/permissions";
 import authentHelperFuncs from "@funcs/authentication";
 import globalFuncs from "@funcs/global_funcs";
-import { getAllRoles } from "@funcs/roles";
+import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
 
 import routes from "@routes/app";
 
@@ -157,9 +157,11 @@ const InitializeServer = async () => {
             res.locals[key] = globalFuncs[key];
         });
 
-        // permission helpers
+        // permission helpers 
         res.locals.hasPermission = (key) => hasPermission(user['permissions'] || [], key);
         res.locals.hasAnyPermission = (keys) => hasAnyPermission(user['permissions'] || [], keys);
+        res.locals.isAdmin = () => isAdmin(user['role']);
+        res.locals.isSuperAdmin = () => isSuperAdmin(user['role']);
         res.locals.allRoles = await getAllRoles();
 
         next();

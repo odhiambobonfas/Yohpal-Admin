@@ -27,30 +27,30 @@
 							<div class="row mb-3">
 								<div class="col-md-6">
 									<label for="firstName" class="form-label">First Name</label>
-									<input type="text" class="form-control" id="firstName" name="firstName"
+									<input type="text" class="form-select" id="firstName" name="firstName"
 										placeholder="Enter first name" required>
 								</div>
 								<div class="col-md-6">
 									<label for="lastName" class="form-label">Last Name</label>
-									<input type="text" class="form-control" id="lastName" name="lastName"
+									<input type="text" class="form-select" id="lastName" name="lastName"
 										placeholder="Enter last name" required>
 								</div>
 							</div>
 
 							<div class="mb-3">
 								<label for="userName" class="form-label">Username</label>
-								<input type="text" class="form-control" id="userName" name="userName"
+								<input type="text" class="form-select" id="userName" name="userName"
 									placeholder="Enter username">
 							</div>
 
 							<div class="mb-3">
 								<label for="bio" class="form-label">Bio</label>
-								<textarea class="form-control" id="bio" name="bio" rows="3"
+								<textarea class="form-select" id="bio" name="bio" rows="3"
 									placeholder="Short bio"></textarea>
 							</div>
 						</div>
 
-						<div class="form-check form-check-inline fa-2x mb-3">
+						<div class="form-check form-check-inline fa-2x ms-3 mb-3">
 							<label class="form-check-label d-flex align-items-center gap-2">
 								<input class="form-check-input isEmployee" type="checkbox" name="isEmployee"
 									id="isEmployee" value="1" />
@@ -73,17 +73,17 @@
 						<div class="card-body">
 							<div class="mb-3">
 								<label for="email" class="form-label">Email</label>
-								<input type="email" class="form-control" id="email" name="email"
+								<input type="email" class="form-select" id="email" name="email"
 									placeholder="Enter email" required>
 							</div>
 							<div class="mb-3">
 								<label for="phoneNumber" class="form-label">Phone Number</label>
-								<input type="text" class="form-control" id="phoneNumber" name="phoneNumber"
+								<input type="text" class="form-select" id="phoneNumber" name="phoneNumber"
 									placeholder="e.g. 254712345678">
 							</div>
 							<div class="mb-3">
 								<label for="country" class="form-label">Country</label>
-								<input type="text" class="form-control" id="country" name="country"
+								<input type="text" class="form-select" id="country" name="country"
 									placeholder="Enter country">
 							</div>
 						</div>
@@ -98,7 +98,7 @@
 							<div class="col-12 row justify-content-between align-items-center">
 								<div class="col-8 mb-3">
 									<label for="profile_picture" class="form-label">Profile Picture</label>
-									<input type="file" class="form-control" id="profile_picture" name="profile_picture"
+									<input type="file" class="form-select" id="profile_picture" name="profile_picture"
 										accept="image/*">
 								</div>
 								<div class="col-4 mb-3">
@@ -141,6 +141,70 @@
 						</div>
 					</div>
 
+					<!-- HRM Information -->
+					<% if (isAdmin() || isSuperAdmin()) { %>
+					<div class="card mb-3 shadow-sm">
+						<div class="card-header bg-danger text-white">
+							HRM Information
+						</div>
+						<div class="card-body">  
+							<div class="d-block">
+								<!-- Department Name -->
+								<div class="col-md-6 mb-3">
+									<label for="departmentId">Departments:</label> 
+									<select class="form-select searchSelec" name="departmentId" id="departmentId">
+										<option value="">Select department</option>  
+									</select>
+								</div> 
+
+								<!-- Designation -->
+								<div class="col-md-6 mb-3">
+									<label for="designationId">Designation</label>
+									
+									<select class="form-select searchSelect" name="designationId" id="designationId">
+										<option value="">Select designation</option>  
+									</select>
+								</div> 
+							</div>
+
+							<h4 class="pt-3">Payroll Information</h4>
+							<hr>
+							<div class="row"> 
+								<!-- Basic Salary -->
+								<div class="col-md-6 mb-3">
+									<label for="basicSalary">Basic Salary:</label> 
+									<div class="input-group mb-2"> 
+										<input type="text" class="form-select" name="basicSalary" id="basicSalary" placeholder="Enter basic salary...">
+										<div class="input-group-prepend">
+											<select class="form-select searchSelect" name="basicSalaryDuration" id="basicSalaryDuration">
+												<option value="">Pay Duration</option>
+												<option value="1">Per Day</option>
+												<option value="2">Per Week</option>
+												<option value="3">Per Month</option>
+												<option value="4">Per Year</option>
+											</select> 
+										</div>
+									</div>
+								</div> 
+								<!-- Token Amount -->
+								<div class="col-md-6 mb-3">
+									<label for="tokenAmount">Token Amount:</label> 
+									<div class="input-group mb-2"> 
+										<input type="text" class="form-select" name="tokenAmount" id="tokenAmount" placeholder="Enter salary token...">  
+									</div>
+								</div> 
+								<!-- Payment Components, In respect to Kenyan Payroll Requirements -->
+								<div class="col-md-12 mb-3">
+									<label for="payComponents">Pay Components:</label> 
+									<select class="form-select searchSelect" multiple name="paymentComponents" id="paymentComponents">
+										<option value="">Select pay components</option>  
+									</select>
+								</div> 
+							</div>
+						</div>
+					</div> 
+					<% } %>
+
 					<!-- Security -->
 					<div class="card mb-3 shadow-sm">
 						<div class="card-header bg-danger text-white">
@@ -149,18 +213,18 @@
 						<div class="card-body">
 							<div class="mb-3">
 								<label for="password" class="form-label">Password</label>
-								<input type="password" class="form-control" id="password" name="password"
+								<input type="password" class="form-select" id="password" name="password"
 									placeholder="Enter password" required>
 							</div>
 							<div class="mb-3">
 								<label for="confirmPassword" class="form-label">Confirm Password</label>
-								<input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+								<input type="password" class="form-select" id="confirmPassword" name="confirmPassword"
 									placeholder="Confirm password" required>
 							</div>
 						</div>
 					</div>
-
-					<div class="form-check form-check-inline fa-2x ms-3 mb-3">
+					
+					<div class="form-check form-check-inline fa-2x ms-2 mb-3">
 						<label class="form-check-label d-flex align-items-center gap-2">
 							<input class="form-check-input stayHere" type="checkbox" name="stayHere" id="stayHere"
 								value="1" />

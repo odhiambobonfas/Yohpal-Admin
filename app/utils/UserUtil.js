@@ -9,6 +9,10 @@ import LANG_EN from '@lang/en';
 import { ucwords, fbCollectionParser } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs';
+import Role from '@models/Role';
+import Permission from '@models/Permissions';
+import PaymentComponent from '@models/PaymentComponent';
+import EmployeeDesignation from '@models/EmployeeDesignation';
 
 class UserUtil extends Util {
     constructor() {
@@ -223,9 +227,15 @@ class UserUtil extends Util {
             if (!userRecord && !userRecord.uid) {
                 throw new Exception(200, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
             }
-            
-            let addedBy = data.userLoggedInUid || null;
 
+            let paymentComponentRefs = [];
+            if (data?.paymentComponents?.length) {
+                data.paymentComponents.map(componentId => {
+                    const ref = FirestoreDatabase.collection(PaymentComponent.collection).doc(componentId);
+                    paymentComponentRefs.push(ref);
+                });
+            }
+            
             let newUser = { 
                 uid: userRecord.uid,
                 firstName: ucwords(data.firstName) || "", 
@@ -235,14 +245,29 @@ class UserUtil extends Util {
                 email: data.email.toLowerCase() || "", 
                 Country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
-                roleRef: data.roleId ? FirestoreDatabase.collection('roles').doc(data.roleId) : null,
-                refPermissions: data.permissionId ? FirestoreDatabase.collection('permissions').doc(data.permissionId) : null,
+                roleRef: data.roleId ? FirestoreDatabase.collection(Role.collection).doc(data.roleId) : null,
+                refPermissions: data.permissionId ? FirestoreDatabase.collection(Permission.collection).doc(data.permissionId) : null,
                 profile_picture: data.profilePicture || '/store/images/avatars/default-avatar.jpg', 
                 profilePictureLocalPath: data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg',
                 profilePictureFbPath: data.profilePictureFbPath,
                 address: data.address || "",
                 bio: data.bio || "",
                 status: data.status || "active", 
+
+                // HRM information 
+                departmentName: data?.departmentName || '',
+                departmentRef: data?.departmentId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.departmentId) :  '',
+                
+                designationName: data?.designationName || '',
+                designationRef: data?.designationId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.designationId) :  '',
+                
+                paymentComponentRefs: paymentComponentRefs,
+                
+                basicSalary: data?.basicSalary || 0,
+                basicSalaryDuration: data?.basicSalaryDuration || '',
+                tokenAmount: data?.tokenAmount || 0,
+                // End of HRM information
+
                 addedBy: data.userLoggedInUserName,
                 addedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null, 
                 updatedBy: data.userLoggedInUserName,
@@ -280,12 +305,24 @@ class UserUtil extends Util {
             const userDoc = userSnapshot.docs[0];
             let updatedData = {};
 
+            if (data.password) { 
+                let updateReq = await admin.auth().updateUser(uid, { 
+                    password: data.password, 
+                }); 
+
+                if (!updateReq) {
+                    throw new Exception(200, "USER_UPDATE_FAILED", LANG_EN.req.request_denied, "User password update Error");
+                }
+            }
+
             if (data.firstName) {
                 updatedData.firstName = ucwords(data.firstName);
             }
+
             if (data.lastName) {
                 updatedData.lastName = ucwords(data.lastName);
             }
+
             if (data.userName) {
                 // Check if username already exists (excluding current user)
                 const usernameSnapshot = await usersRef
@@ -305,43 +342,77 @@ class UserUtil extends Util {
                 }
                 updatedData.userName = data.userName.toLowerCase();
             }
+
             if (data.country) {
                 updatedData.country = data.country; // fixed casing (was Country)
             }
+
             if (data.email) {
                 updatedData.email = data.email; // fixed casing (was Country)
             }
+
             if (data.phoneNumber) {
                 updatedData.phoneNumber = data.phoneNumber;
             }
+
             if (data.roleId) {
                 updatedData.roleRef = FirestoreDatabase.collection('roles').doc(data.roleId);
             }
+
             if (data.permissionId) {
                 updatedData.refPermissions = FirestoreDatabase.collection('permissions').doc(data.permissionId);
             }
+
             if (data.profilePicture) { 
                 updatedData.profile_picture = data.profilePicture || '/store/images/avatars/default-avatar.jpg';
                 updatedData.profilePictureLocalPath = data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg';
                 updatedData.profilePictureFbPath = data.profilePictureFbPath;
             } 
+
             if (data.address) {
                 updatedData.address = data.address;
             }
+
             if (data.bio) {
                 updatedData.bio = data.bio;
             }
+
             if (data.status) {
                 updatedData.status = data.status;
             }
+            
             if (data.userLoggedInUid) {
                 updatedData.updatedBy = data.userLoggedInUserName.toLowerCase();
                 updatedData.updatedByRefUser = data.userLoggedInUid ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null; 
             }
+            
+            let paymentComponentRefs = [];
+            if (data?.paymentComponents?.length) {
+                data.paymentComponents.map(componentId => {
+                    const ref = FirestoreDatabase.collection(PaymentComponent.collection).doc(componentId);
+                    paymentComponentRefs.push(ref);
+                });
+            }
+
+            let hrmInformation = {
+                // HRM information 
+                departmentName: data?.departmentName || '',
+                departmentRef: data?.departmentId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.departmentId) :  '',
+                
+                designationName: data?.designationName || '',
+                designationRef: data?.designationId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.designationId) :  '',
+                
+                paymentComponentRefs: paymentComponentRefs,
+                
+                basicSalary: data?.basicSalary || 0,
+                basicSalaryDuration: data?.basicSalaryDuration || '',
+                tokenAmount: data?.tokenAmount || 0,
+                // End of HRM information
+            }
 
             updatedData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
 
-            await usersRef.doc(userDoc.id).update(updatedData); // fixed doc reference
+            await usersRef.doc(userDoc.id).update({...updatedData, ...hrmInformation}); // fixed doc reference
 
             return true;
         } catch (error) {
