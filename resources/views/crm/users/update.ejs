@@ -47,7 +47,7 @@
                             <div class="mb-3">
                                 <label for="bio" class="form-label">Bio</label>
                                 <textarea class="form-control" id="bio" name="bio" rows="3"
-                                    placeholder="Short bio"> <%= userData?.bio %> </textarea>
+                                    placeholder="Short bio"> <%= userData?.bio?.trim() %> </textarea>
                             </div>
 
                             <div class="form-check form-check-inline fa-2x mb-3">
