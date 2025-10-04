@@ -101,17 +101,17 @@
                             <div class="col-12 row justify-content-between align-items-center">
                                 <div class="col-8 mb-3">
                                     <label for="profile_picture" class="form-label">Profile Picture</label>
-                                    <input type="file" class="form-control" id="profile_picture" name="profile_picture"
+                                    <input type="file" class="form-control profile_picture" id="profile_picture" name="profile_picture"
                                         accept="image/*">
                                 </div>
                                 <div class="col-4 mb-3">
                                     <label for="profile_preview" class="form-label text-center">Profile Picture
                                         Preview:</label>
                                     <!-- Preview Section -->
-                                    <div class="mt-3">
+                                    <div class="mt-3 profile_preview_div">
                                         <img id="profile_preview"
                                             src="<%= userData?.profile_picture ? userData?.profile_picture : '/store/images/avatars/default-avatar.jpg' %>"
-                                            alt="Profile Preview" class="img-thumbnail rounded-circle"
+                                            alt="Profile Preview" class="img-thumbnail rounded-circle profile_preview"
                                             style="max-width: 200px;">
                                     </div>
                                 </div>
