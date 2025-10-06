@@ -42,6 +42,20 @@ class HRMController {
             taxsetting: taxsettings
         });
     }
+
+    static async departments(req, res) {
+        return res.render("crm/hrm/departments", {
+            title: `${ config.APP.APP_NAME } || HRM`,
+            user: req.session.user, 
+        });
+    }
+
+    static async designations(req, res) { 
+        return res.render("crm/hrm/designations", {
+            title: `${ config.APP.APP_NAME } || HRM`,
+            user: req.session.user
+        });
+    }
 }
 
 export default HRMController;

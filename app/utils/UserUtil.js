@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser } from '@config/utils';  
+import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs';
 import Role from '@models/Role';
@@ -19,76 +19,98 @@ class UserUtil extends Util {
         super();
     }
 
-    async getAllUsers(filters={}) {    
+    async getAllUsers(redis, filters={}) {    
         try {
-            filters.limit = parseInt(filters.limit) || 200000000; 
-            filters.order = filters.order || "asc";
-            filters.orderBy = filters.orderBy || "createdAt";
+            const filtersKey = 'yp:users:filters';
+            const cacheKey = 'yp:users:filtered';
 
-            let query = FirestoreDatabase.collection(User.collection);
-    
-            if (filters?.userName?.length) {
-                query = query.where("username", "==", filters.userName);
-            }
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
+            // If filters changed, have to invalidate the cache
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
 
-            if (filters?.email?.length) {
-                query = query.where("email", "==", filters.email);
-            } 
-
-            if (filters?.country?.length) {
-                query = query.where("country", "==", filters.country);
-            }
-
-            if (filters?.phoneNumber?.length) {
-                query = query.where("phoneNumber", "==", filters.phoneNumber);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
             }
             
-            if (filters?.adminType?.length) {
-                query = query.where("adminType", "==", filters.adminType);
-            }
+            let users = await redis?.cacheParser(
+                cacheKey,
+                async () => { 
+                    filters.order = filters.order || "asc";
+                    filters.orderBy = filters.orderBy || "createdAt";
 
-            if (filters?.Status?.length) {
-                query = query.where("status", "==", filters.Status);
-            }
-
-            if (filters?.roleId?.length) {
-                query = query.where("roleId", "==", filters.roleId);
-            } 
-
-            if (filters?.createdAt?.length) {
-                let createdAt = parseDateRange(filters.createdAt, true); 
-                if (createdAt.start && createdAt.end) { 
-                    query = query.where("createdAt", ">=", createdAt.start);
-                    query = query.where("createdAt", "<=", createdAt.end);
-                }
-            }
-
-            query = query.orderBy(filters.orderBy, filters.order || "asc"); 
-
-            if (filters.limit) {
-                query = query.limit(filters.limit);
-            }
-
-            const snapshot = await query.get(); 
-
-            if (snapshot.empty) {
-                return [];
-            }
-
-            let users =  fbCollectionParser(snapshot);
-
-            users = await Promise.all(users.map( async (user) => {
-                let role = {};      
-                // if user has a role reference
-                if (user.roleRef && user.roleRef.get) {
-                    const roleSnap = await user.roleRef.get();
-                    if (roleSnap.exists) {
-                        role = roleSnap.data(); 
+                    let query = FirestoreDatabase.collection(User.collection);
+            
+                    if (filters?.userName?.length) {
+                        query = query.where("username", "==", filters.userName);
                     }
-                }
-                user.role = role; 
-                return user;
-            })); 
+
+                    if (filters?.email?.length) {
+                        query = query.where("email", "==", filters.email);
+                    } 
+
+                    if (filters?.country?.length) {
+                        query = query.where("country", "==", filters.country);
+                    }
+
+                    if (filters?.phoneNumber?.length) {
+                        query = query.where("phoneNumber", "==", filters.phoneNumber);
+                    }
+                    
+                    if (filters?.adminType?.length) {
+                        query = query.where("adminType", "==", filters.adminType);
+                    }
+
+                    if (filters?.Status?.length) {
+                        query = query.where("status", "==", filters.Status);
+                    }
+
+                    if (filters?.roleId?.length) {
+                        query = query.where("roleId", "==", filters.roleId);
+                    } 
+
+                    if (filters?.createdAt?.length) {
+                        let createdAt = parseDateRange(filters.createdAt, true); 
+                        if (createdAt.start && createdAt.end) { 
+                            query = query.where("createdAt", ">=", createdAt.start);
+                            query = query.where("createdAt", "<=", createdAt.end);
+                        }
+                    }
+
+                    query = query.orderBy(filters.orderBy, filters.order || "asc"); 
+
+                    if (filters.limit) {
+                        query = query.limit(filters.limit);
+                    }
+
+                    const snapshot = await query.get(); 
+
+                    if (snapshot.empty) {
+                        return [];
+                    }
+
+                    let fetched =  fbCollectionParser(snapshot);
+
+                    fetched = await Promise.all(fetched.map( async (user) => {
+                        let role = {};      
+                        // if user has a role reference
+                        if (user.roleRef && user.roleRef.get) {
+                            const roleSnap = await user.roleRef.get();
+                            if (roleSnap.exists) {
+                                role = roleSnap.data(); 
+                            }
+                        }
+                        user.role = role; 
+                        return user;
+                    }));  
+
+                    return fetched;
+                },
+                300
+            );
 
             return users;
         } catch (error) {
@@ -174,11 +196,11 @@ class UserUtil extends Util {
         };
     }
     
-    async getAllUsersCount() {
+    async getAllUsersCount(redis) { 
         try {
-            const cacheKey = `yp:users:count`;
+            const cacheKey = 'yp:users:count'; 
     
-            const count = await RedisCache.cacheParser(
+            const count = await redis.cacheParser(
                 cacheKey,
                 async () => {
                     const usersRef = FirestoreDatabase.collection(User.collection);
@@ -186,7 +208,7 @@ class UserUtil extends Util {
     
                     return snapshot.data().count;
                 },
-                300 
+                300
             );
     
             return count;
