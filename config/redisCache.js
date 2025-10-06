@@ -39,7 +39,7 @@ class RedisCache {
 				port: config.CACHE.REDIS.REDIS_PORT,
 				username: config.CACHE.REDIS.REDIS_USERNAME,
 				password: config.CACHE.REDIS.REDIS_PASSWORD,
-				tls: {},
+				tls: config.CACHE.REDIS.REDIS_CONNECTION || {},
 				connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT,
 				retryStrategy: (times) => {
 					return Math.min(times * 100, config.CACHE.REDIS.CONNECTION_TIMEOUT);
@@ -132,8 +132,7 @@ class RedisCache {
      * @param {number} expiryTimeInSeconds - Time the cache should take before expiry
      */
 	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600) {
-		const cached = await this.getFunc(key);
-        console.log("CACHED: ", cached);
+		const cached = await this.getFunc(key); 
 		if (cached) return cached;
 		const new_cache = await fetchCallback();
 		if (new_cache) {
