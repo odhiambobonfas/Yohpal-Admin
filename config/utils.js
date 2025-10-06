@@ -136,3 +136,15 @@ export function convertToCamelCaseKeys(obj) {
 
     return obj;
 }
+
+/**
+ * Parse the filters and remove transient keys and values.
+ * 
+ * @param {Object} filters filters from the users frontend
+ * @returns 
+ */
+export function normalizeFilters(filters = {}) {
+    const clone = { ...filters };
+    delete clone._;
+    return clone;
+}

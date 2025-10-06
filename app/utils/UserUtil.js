@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser } from '@config/utils';  
+import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs';
 import Role from '@models/Role';
@@ -21,7 +21,21 @@ class UserUtil extends Util {
 
     async getAllUsers(redis, filters={}) {    
         try {
-            const cacheKey = 'yp:users:filtered'; 
+            const filtersKey = 'yp:users:filters';
+            const cacheKey = 'yp:users:filtered';
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
+            // If filters changed, have to invalidate the cache
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+            
             let users = await redis?.cacheParser(
                 cacheKey,
                 async () => { 

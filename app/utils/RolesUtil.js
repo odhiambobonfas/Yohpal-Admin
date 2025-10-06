@@ -8,7 +8,7 @@ import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import Role from '@models/Role';
 import Permissions from '@models/Permissions';
 import Exception from '@config/exceptions';
-import { ucwords, fbCollectionParser } from '@config/utils';
+import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';
 import LANG_EN from '@lang/en';
 import admin from 'firebase-admin';
 
@@ -22,10 +22,23 @@ class RolesUtil extends Util {
      * 
      * @returns collection
      */
-    async getAllRoles(redis) {
-        try {
-            const cacheKey = 'yp:roles:filtered'; 
-    
+    async getAllRoles(redis, filters={}) {
+        try { 
+            const filtersKey = 'yp:roles:filters';
+            const cacheKey = 'yp:roles:filtered';
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;  
+            
+            // If filters changed, have to invalidate the cache
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+
             let data = await redis.cacheParser(
                 cacheKey,
                 async () => {
