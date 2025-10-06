@@ -10,7 +10,7 @@ import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 class DashboardController {
     static async index(req, res) {  
         if (isAjaxRequest(req)) {
-            let totalYpUsers = await UsersUtil.getAllUsersCount();
+            let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis);
             let totalPromotedAccounts = null;
             let totalApplications = null;
             let totalDepositedAmount = null;
@@ -57,10 +57,10 @@ class DashboardController {
 
     static async graphicalStats(req, res) {
         try {
-            let users = await UsersUtil.getAllUsers();  
+            let users = await UsersUtil.getAllUsers(req?.redis);  
             let marketSizeGrowth = await StatsUtil.computeMarketSizeGrowth(users);
             let ageDemographics = await StatsUtil.computeAgeDemographics(users);
-            console.log(marketSizeGrowth);
+            
             const stats = {
                 ageDemographics: ageDemographics,
                 marketSizeGrowth: marketSizeGrowth

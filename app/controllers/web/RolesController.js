@@ -19,7 +19,7 @@ class RolesController {
             let roles = [];
             let user = req.session.user;
             try {
-                roles = await RolesUtil.getAllRoles(); 
+                roles = await RolesUtil.getAllRoles(req?.redis); 
 
                 let mex = new mexDtParser(roles);
                 roles = mex.addColumn('actions', (col) => {

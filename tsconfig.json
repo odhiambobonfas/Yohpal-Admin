@@ -10,6 +10,7 @@
         "skipLibCheck": true,
         "esModuleInterop": true,
         "baseUrl": "./",
+        "typeRoots": ["public/default/types", "node_modules/@types"],
         "paths": {
             "@mex/*": ["mex/*"],
             "@app/*": ["app/*"],

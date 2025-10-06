@@ -109,7 +109,7 @@ export default {
             USE_REDIS_LOCAL: process.env.USE_REDIS_LOCAL || false,
             REDIS_USERNAME: process.env.REDIS_USERNAME || '',
             REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
-            REDIS_URL: process.env.REDIS_URL || 'redis://127.0.0.1',
+            REDIS_URL: process.env.REDIS_URL || '127.0.0.1',
             REDIS_PORT: process.env.REDIS_PORT || 14000,
             CONNECTION_TIMEOUT: process.env.CONNECTION_TIMEOUT || 10000
         }

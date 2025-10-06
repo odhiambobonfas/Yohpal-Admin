@@ -72,16 +72,21 @@ if (config.APP.APP_DEBUG) {
     app.use(morgan('combined'));
 }
 
+const rdCache = new RedisCache();
 const RedisStore = RedisStoreFactory(session); 
 const FileStore = sessionFileStore(session);
 
-
 // Session Middleware with Redis Store 
 const InitializeServer = async () => {
-    let store: any = undefined; // default memory store
+    let store: any = undefined; // default memory store 
+    const client = await rdCache.initRedisCaching();
     
-    const client = RedisCache?.client;
-    
+    //  include the redis middleware
+    app.use(async (req, res, next) => {
+        req.redis = rdCache;
+        next();
+    });
+
     try {
         if (config.SESSION.SESSION_STORAGE == 'redis'){
             store = new RedisStore({ client });

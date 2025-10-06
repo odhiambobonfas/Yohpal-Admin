@@ -36,19 +36,35 @@ class StatsUtil extends Util {
     }
 
     async computeMarketSizeGrowth(users, filters = {}) {
-        const monthlyCounts = new Array(12).fill(0);
-
+        filters.year = filters?.year || (new Date()).getFullYear();
+        const monthlyCounts = new Array(13).fill(0); 
+        
         users?.forEach(user => {
-            if (!user.createdAt?._seconds) return; 
-            const createdDate = new Date(user.createdAt._seconds * 1000);  
-            const month = createdDate.getMonth(); 
+            if (!user.createdAt) return;
+            let createdDate;
+
+            if (typeof user?.createdAt?.toDate === "function") {
+                createdDate = user.createdAt.toDate();
+            } 
+            else if (user?.createdAt?._seconds) { 
+                createdDate = new Date(user.createdAt._seconds * 1000);
+            } 
+            else {
+                return;
+            }
+            
+            const year = createdDate.getUTCFullYear();
+            const month = createdDate.getUTCMonth();
+
+            if (filters?.year && year !== filters.year) return;
+
             monthlyCounts[month] += 1;
         });
         
         return {
-            headerLabel: `Market Size As At ${filters.year || (new Date()).getFullYear()}`,
+            headerLabel: `Market Size As At ${filters?.year}`,
             labels: [
-                "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
             ],
             data: monthlyCounts,

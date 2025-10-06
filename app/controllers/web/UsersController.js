@@ -19,8 +19,8 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let users = [];
             let user = req.session.user; 
-            try { 
-                users = await UsersUtil.getAllUsers(req.query); 
+            try {  
+                users = await UsersUtil.getAllUsers(req?.redis, req.query); 
                 
                 let mex = new mexDtParser(users);
                 users = mex.addColumn('actions', (col) => {

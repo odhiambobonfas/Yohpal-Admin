@@ -22,12 +22,22 @@ class RolesUtil extends Util {
      * 
      * @returns collection
      */
-    async getAllRoles() {
+    async getAllRoles(redis) {
         try {
-            let ref = FirestoreDatabase.collection(Role.collection);
-            let collection = await ref.get();
-            
-            let data = fbCollectionParser(collection);
+            const cacheKey = 'yp:roles:filtered'; 
+    
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    let ref = FirestoreDatabase.collection(Role.collection);
+                    let collection = await ref.get();
+                    
+                    let data = fbCollectionParser(collection);
+
+                    return data;
+                },
+                3600
+            );
             
             return data;
         } catch (error) { 
