@@ -38,13 +38,16 @@ class RedisCache {
 				host: config.CACHE.REDIS.REDIS_URL,
 				port: config.CACHE.REDIS.REDIS_PORT,
 				username: config.CACHE.REDIS.REDIS_USERNAME,
-				password: config.CACHE.REDIS.REDIS_PASSWORD,
-				tls: config.CACHE.REDIS.REDIS_CONNECTION || {},
+				password: config.CACHE.REDIS.REDIS_PASSWORD, 
 				connectTimeout: config.CACHE.REDIS.CONNECTION_TIMEOUT,
 				retryStrategy: (times) => {
 					return Math.min(times * 100, config.CACHE.REDIS.CONNECTION_TIMEOUT);
-				},
+				}
 			};
+            
+            if (config.CACHE.REDIS.REDIS_CONNECTION == 'tls' || config.CACHE.REDIS.REDIS_CONNECTION == 'ssl') {
+                redisOptions.tls = config.CACHE.REDIS.REDIS_CONNECTION;
+            }
 		}
 
 		this.client = new Redis(redisOptions);
