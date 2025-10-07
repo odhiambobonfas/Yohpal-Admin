@@ -68,8 +68,9 @@ router.get('/dashboard/graphical/stats', authMiddleware, DashboardController.gra
 // HRM routes
 router.get('/hrm/index', authMiddleware, HRMController.index);
 router.get('/institution/departments', authMiddleware, HRMController.departments);
+router.post('/department/create', authMiddleware, HRMController.departments);
 router.get('/institution/designations', authMiddleware, HRMController.designations);
-
+router.post('/designation/create', authMiddleware, HRMController.designations);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);

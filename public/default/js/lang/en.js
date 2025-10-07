@@ -75,8 +75,19 @@ const LANG_EN = {
         company_address_required: "Company address is required.",
         company_address_limit: "Company address cannot exceed 200 characters.",
         company_industry_limit: "Company industry cannot exceed 50 characters.",
-        company_registration_limit: "Company registration number cannot exceed 50 characters."
-    },   
+        company_registration_limit: "Company registration number cannot exceed 50 characters.",
+
+        // department
+        department_name_required: "Department name is required.",
+        department_code_required: "Department code is required.",
+        department_exists: "A department with the same name or code already exists.",
+
+        // designation
+        designation_name_required: "Designation name is required.",
+        designation_code_required: "Designation code is required.",
+        designation_exists: "A designation with the same name or code already exists.",
+        provider_code_required: "Provider code is required.",
+    },
 
     // response errors and statements
     res: {
@@ -84,17 +95,33 @@ const LANG_EN = {
         default_setting_exists: "A default setting for the target application you tried to add, already exists!",
         general_setting_conflict: " A conflict occurred while processing the general settings.",
     },
+    
+    success: {
+        department_created: "Department created successfully.",
+        designation_created: "Designation created successfully.",
+    },
 
-    // General
-    success: "Operation completed successfully!",
-    error: "An error occurred. Please try again.",
-    undefined_error: "An error occurred. Please try again or seek help!",
-    nav_route_error: "Invalid route: must be a non-empty string.",
-    delete_res_warning: "Delete not applicable at this time!",
-    invalid_img_warning: "Please select a valid image file (JPEG, PNG, GIF)",
-    invalid_img_size_warning: "Image must be less than 2MB",
-    generic_auth_error: "An authentication error occurred!",
-    invalid_username_password_warning: "Check your Username and Password, & try again!",
+    error: {
+        invalid_request: "Invalid request.",
+        department_creation_failed: "Failed to create record.",
+        designation_creation_failed: "Failed to create record.",
+        server_error: "An internal server error occurred.",
+        department_name_exists: "A department with this name already exists.",
+        department_code_exists: "A department with this code already exists.",
+        designation_name_exists: "A designation with this name already exists.",
+        designation_code_exists: "A designation with this code already exists.",
+
+        // General
+        success: "Operation completed successfully!",
+        error: "An error occurred. Please try again.",
+        undefined_error: "An error occurred. Please try again or seek help!",
+        nav_route_error: "Invalid route: must be a non-empty string.",
+        delete_res_warning: "Delete not applicable at this time!",
+        invalid_img_warning: "Please select a valid image file (JPEG, PNG, GIF)",
+        invalid_img_size_warning: "Image must be less than 2MB",
+        generic_auth_error: "An authentication error occurred!",
+        invalid_username_password_warning: "Check your Username and Password, & try again!",
+    },
 
     // New role/authentication errors
     authentication_error_exception: "Authentication denied. Please contact the administrator for assistance",

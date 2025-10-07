@@ -2,6 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import config from '@config/config';
 import Exception from '@config/exceptions';
+import User from '@models/User';
+import admin from 'firebase-admin';
+import {
+    FirebaseUtility,
+    FirestoreDatabase
+} from '@utils/FirebaseUtil';
 
 export function ucwords(str) {
     return str?.length ?
@@ -72,6 +78,30 @@ export function fbCollectionParser(snapshot = {}) {
 
 export function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+export function payloadExtras(input, update=false) {
+    let payload = { 
+        // Added by
+        addedBy: input.userLoggedInUserName,
+        addedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
+        
+        // Created by
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }
+
+    if (update) {
+        payload = {
+            ...payload,
+
+            // Updated by
+            updatedBy: input.userLoggedInUserName,
+            updatedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
+        }
+    }
+
+    return payload;
 }
 
 export function jsonParser(data) {

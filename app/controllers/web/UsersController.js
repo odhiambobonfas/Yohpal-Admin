@@ -148,9 +148,7 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {  
-                console.log(data);
-                console.log(data.userName);  
+            try {   
                 let user = req.session.user; 
 
                 if (!user || !user.uid) {

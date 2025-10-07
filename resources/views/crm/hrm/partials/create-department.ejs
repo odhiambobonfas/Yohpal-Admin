@@ -1,0 +1,44 @@
+<!-- Modal -->
+<div class="modal fade createDeptModal" id="createDeptModal" tabindex="-1" aria-labelledby="createDeptModalLabel" aria-hidden="true">
+    <form action="/department/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createDeptModalLabel">Add Department</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="departmentName" class="form-label">Department Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="departmentName" name="departmentName" placeholder="Enter department name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="departmentCode" class="form-label">Department Code</label>
+                        <input type="text" class="form-control" id="departmentCode" name="departmentCode" placeholder="e.g. HR, FIN, ENG">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="departmentHead" class="form-label">Department Head</label>
+                        <select class="form-select searchSelect" id="departmentHead" name="departmentHead">
+                            <option value="">-- Select Department Head --</option> 
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="departmentDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="departmentDescription" name="departmentDescription" rows="6" placeholder="Describe the department"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger btn-sm create-department-submit-btn">
+                        <i class="fa fa-plus-square" aria-hidden="true"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
