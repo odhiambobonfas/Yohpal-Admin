@@ -63,6 +63,7 @@ class Dashboard extends Master {
         const res = await fetch('/dashboard/card/stats', {
             credentials: 'include',
             method: 'GET',
+            data: filtersParser('.dashboardFilters'),
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -90,9 +91,12 @@ class Dashboard extends Master {
 
     async getDemographicStats() {
         this.addlOadingStateToGraphicalElements(true);
+        const filters = filtersParser('.dashboardFilters');
+        console.log(filters);
         const res = await fetch('/dashboard/graphical/stats', {
             credentials: 'include',
             method: 'GET',
+            data: filters,
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -113,7 +117,7 @@ class Dashboard extends Master {
 
         if (stats.marketSizeGrowth) {
             this.drawGrowthChart(stats.marketSizeGrowth);
-        }
+        } 
     }
 
     drawAgeDemographics(stats) { 
@@ -344,4 +348,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await inst.getDemographicStats();
     inst.getListOfTopOfFollowedUsers();
     inst.getListOfPromotedUsersAccounts();
+    watchFilterChanges('.dashboardFilters', inst.getCardStats.bind(inst));
+    watchFilterChanges('.dashboardFilters', inst.getDemographicStats.bind(inst));
 });
