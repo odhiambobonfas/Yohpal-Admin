@@ -4,11 +4,11 @@ import config from '@config/config';
 import Exception from '@config/exceptions';
 
 export function ucwords(str) {
-    return str?.length
-        ? str.split(/\s+/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
-        : null;
+    return str?.length ?
+        str.split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ') :
+        null;
 }
 
 export function ucfirst(str) {
@@ -31,11 +31,43 @@ export function isAjaxRequest(req) {
     return req.get('X-Requested-With') === 'XMLHttpRequest';
 }
 
+export function parseFirestoreDate(value) {
+    if (!value) return null;
+    if (typeof value.toDate === "function") return value.toDate();
+    if (value._seconds) return new Date(value._seconds * 1000);
+    const parsed = new Date(value);
+    return isNaN(parsed) ? null : parsed;
+}
+
 export function fbCollectionParser(snapshot = {}) {
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    }));
+    if (!snapshot || snapshot.empty) return [];
+
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+
+        const createdAt = data?.createdAt ?
+            dateToISO8601Formatter(
+                typeof data.createdAt.toDate === "function" ?
+                data.createdAt.toDate() :
+                new Date(data.createdAt)
+            ) :
+            dateToISO8601Formatter(doc.createTime?.toDate());
+
+        const updatedAt = data?.updatedAt ?
+            dateToISO8601Formatter(
+                typeof data.updatedAt.toDate === "function" ?
+                data.updatedAt.toDate() :
+                new Date(data.updatedAt)
+            ) :
+            dateToISO8601Formatter(doc.updateTime?.toDate());
+
+        return {
+            id: doc.id,
+            ...data,
+            createdAt,
+            updatedAt,
+        };
+    });
 }
 
 export function validateEmail(email) {
@@ -70,7 +102,7 @@ export function reduceToObj(array) {
  */
 export function handleFileUploads(req, uniqueDestName = (req.session.user.id || '')) {
     let attachment = [];
-    
+
     let files = [];
     if (req.file) {
         files = [req.file];
@@ -83,18 +115,20 @@ export function handleFileUploads(req, uniqueDestName = (req.session.user.id || 
     }
 
     const uploadPath = path.join(config.PATHS.STORAGE, String(uniqueDestName));
-    
+
     if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
+        fs.mkdirSync(uploadPath, {
+            recursive: true
+        });
     }
 
-    files.forEach(file => { 
+    files.forEach(file => {
         const fileDest = path.join(uploadPath, file.filename);
         const publicPath = path.join(config.PATHS.STORAGE, String(uniqueDestName), file.filename);
-        
+
         if (files.length == 1) {
             attachment = publicPath;
-        } 
+        }
 
         if (files.length > 1) {
             attachment.push(publicPath);
@@ -144,7 +178,9 @@ export function convertToCamelCaseKeys(obj) {
  * @returns 
  */
 export function normalizeFilters(filters = {}) {
-    const clone = { ...filters };
+    const clone = {
+        ...filters
+    };
     delete clone._;
     return clone;
 }

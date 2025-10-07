@@ -20,7 +20,7 @@ class UserUtil extends Util {
     }
 
     async getAllUsers(redis, filters={}) {    
-        try {
+        try { 
             const filtersKey = 'yp:users:filters';
             const cacheKey = 'yp:users:filtered';
 
@@ -38,12 +38,9 @@ class UserUtil extends Util {
             
             let users = await redis?.cacheParser(
                 cacheKey,
-                async () => { 
-                    filters.order = filters.order || "asc";
-                    filters.orderBy = filters.orderBy || "createdAt";
-
+                async () => {  
                     let query = FirestoreDatabase.collection(User.collection);
-            
+
                     if (filters?.userName?.length) {
                         query = query.where("username", "==", filters.userName);
                     }
@@ -79,8 +76,10 @@ class UserUtil extends Util {
                             query = query.where("createdAt", "<=", createdAt.end);
                         }
                     }
-
-                    query = query.orderBy(filters.orderBy, filters.order || "asc"); 
+                    
+                    if (filters.orderBy) {
+                        query = query.orderBy(filters.orderBy, filters.orderBy); 
+                    }
 
                     if (filters.limit) {
                         query = query.limit(filters.limit);
@@ -92,7 +91,7 @@ class UserUtil extends Util {
                         return [];
                     }
 
-                    let fetched =  fbCollectionParser(snapshot);
+                    let fetched =  fbCollectionParser(snapshot); 
 
                     fetched = await Promise.all(fetched.map( async (user) => {
                         let role = {};      

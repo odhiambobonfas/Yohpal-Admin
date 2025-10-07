@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser } from '@config/utils';  
+import { ucwords, parseFirestoreDate, fbCollectionParser } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs';
 
@@ -38,20 +38,10 @@ class StatsUtil extends Util {
     async computeMarketSizeGrowth(users, filters = {}) {
         filters.year = filters?.year || (new Date()).getFullYear();
         const monthlyCounts = new Array(13).fill(0); 
-        
+        let createdDate;
         users?.forEach(user => {
             if (!user.createdAt) return;
-            let createdDate;
-
-            if (typeof user?.createdAt?.toDate === "function") {
-                createdDate = user.createdAt.toDate();
-            } 
-            else if (user?.createdAt?._seconds) { 
-                createdDate = new Date(user.createdAt._seconds * 1000);
-            } 
-            else {
-                return;
-            }
+            createdDate = parseFirestoreDate(user.createdAt); 
             
             const year = createdDate.getUTCFullYear();
             const month = createdDate.getUTCMonth();
