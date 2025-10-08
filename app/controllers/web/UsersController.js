@@ -20,6 +20,7 @@ class UsersController {
             let users = [];
             let user = req.session.user; 
             try {  
+                req.query.roleExists = true;
                 users = await UsersUtil.getAllUsers(req?.redis, req.query); 
                 
                 let mex = new mexDtParser(users);
@@ -347,7 +348,7 @@ class UsersController {
             }
         } 
 
-        let {user, role} = await UsersUtil.getUserByUid(uid);  
+        let {user, role, departmentData, designationData} = await UsersUtil.getUserByUid(uid);  
         
         if (!user || !user.uid) { 
             return res.redirect('/users');
@@ -357,6 +358,8 @@ class UsersController {
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
             roleData: role,
+            departmentData: {},
+            designationData: {},
             user: req.session.user
         });
     }
