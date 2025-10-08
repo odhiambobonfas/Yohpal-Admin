@@ -10,7 +10,8 @@
                 <div class="badge-span d-flex justify-content-center align-items-center gap-2">
                     <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
                     <span>|</span>
-                    <a href="/designations/create" class="text-decoration-line-none">
+                    <a href="javascript:void(0)" class="text-decoration-line-none" data-bs-toggle="modal" 
+                        data-bs-target="#createDesignationModal">
                         <span class="badge bg-danger text-light rounded-4">Create Designations</span>
                     </a>
                 </div>
@@ -31,19 +32,19 @@
                 <div class="container-fluid col-12 collapse mb-3 designationsFilters shadow-sm designations-filters" id="designationFilters">
                     <div class="col-12 mt-3 row g-3">
                         <div class="col-md-4 mb-2">
-                            <label for="designationName">Designation Name</label>
+                            <label class="mb-2" for="designationName">Designation Name</label>
                             <input type="text" name="designationName" class="form-control designationName"
                                 placeholder="Search by designationname...">
                         </div>
 
                         <div class="col-md-4 mb-2">
-                            <label for="designationCode">Designation Code</label>
+                            <label class="mb-2" for="designationCode">Designation Code</label>
                             <input type="text" name="designationCode" class="form-control designationCode"
                                 placeholder="Search by Code...">
                         </div>   
 
                         <div class="col-md-4 mb-2">
-                            <label for="createdAt">Create Range</label>
+                            <label class="mb-2" for="createdAt">Create Range</label>
                             <input type="text" name="createdAt" id="daterange" class="form-control daterange createdAt">
                         </div> 
                     </div>
@@ -57,10 +58,11 @@
                         <table class="table designations-table" id="designations-table">
                             <thead>
                                 <tr>
+                                    <th>Action</th>
                                     <th>Name</th>
                                     <th>Code</th>
+                                    <th>Basic Salary</th>
                                     <th>Description</th>    
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -74,6 +76,10 @@
     </div>
 </div>
 
+<!-- modals -->
+<%- include('hrm/partials/create-designation') %>
+<!-- /modals -->
+
 <%- include('crm/partials/footer') %>
-<script type="text/javascript" src="/default/js/src/mod/designations.js"></script>
+<script type="text/javascript" src="/default/js/src/mod/designation.js"></script>
 <%- include('crm/partials/closure') %>

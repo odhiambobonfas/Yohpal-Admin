@@ -62,7 +62,116 @@ class HRMUtil extends Util {
     }
 
     async createDesignationQuery(data) {
-        // ...
+        const db = FirestoreDatabase.collection(EmployeeDesignation.collection)
+
+        const nameSnap = await db.where("designationName", "==", data.designationName).get(); 
+        if (!nameSnap.empty) {
+            throw new Exception(
+                201,
+                "DESIGNATION_NAME_DUPLICATE",
+                LANG_EN.error.designation_name_exists,
+                "Duplicate Error"
+            );
+        }
+
+        const codeSnap = await db.where("designationCode", "==", data.designationCode).get();
+        if (!codeSnap.empty) {
+            throw new Exception(
+                201,
+                "DESIGNATION_CODE_DUPLICATE",
+                LANG_EN.error.designation_code_exists,
+                "Duplicate Error"
+            );
+        }
+
+        let _payloadExtras = {
+            userLoggedInUid: data?.userLoggedInUid,
+            userLoggedInUserName: data?.userLoggedInUserName
+        };
+
+        const extras = payloadExtras(_payloadExtras);
+
+        const payload = {
+            designationName: data.designationName,
+            designationCode: data.designationCode,
+            basicSalary: data.basicSalary || "",
+            designationDescription: data.designationDescription || "",
+            ...extras
+        }; 
+
+        const result = await db.add(payload); 
+
+        return result; 
+    }
+
+    async getAllDepartments(redis, filters = {}) {
+        try { 
+            const filtersKey = 'yp:departments:filters';
+            const cacheKey = 'yp:departments:filtered';
+            let ref = FirestoreDatabase.collection(Department.collection);
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;  
+            
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => { 
+                    let collection = await ref.get();
+                    
+                    let data = fbCollectionParser(collection);
+
+                    return data;
+                },
+                3600
+            );
+            
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    async getAllDesignations(redis, filters = {}) {
+        try { 
+            const filtersKey = 'yp:designations:filters';
+            const cacheKey = 'yp:designations:filtered';
+            let ref = FirestoreDatabase.collection(EmployeeDesignation.collection);
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;  
+            
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => { 
+                    let collection = await ref.get();
+                    
+                    let data = fbCollectionParser(collection);
+
+                    return data;
+                },
+                3600
+            );
+            
+            return data;
+        } catch (error) {
+            return [];
+        }
     }
 }
 

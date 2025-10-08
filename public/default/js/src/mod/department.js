@@ -61,9 +61,46 @@ class Department extends Master {
             }); 
         });
     }
+
+    getDepartmentListing() { 
+        $('.departments-table').DataTable({
+            destroy: true,
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+            ajax: ajaxDtParser(
+                'GET', 
+                '/institution/departments', 
+                filtersParser('.departmentsFilters')
+            ), 
+            columns: [
+                { 
+                    data: 'actions', 
+                    orderable: false, 
+                    searchable: false 
+                },
+                { data: 'Name',},
+                { data: 'Code' },  
+                { data: 'Description' }, 
+            ],
+            fnDrawCallback: () => {
+                const inst = new Department();
+                inst.actionOnDepartmentsRes(); 
+                watchFilterChanges('.departmentsFilters', inst.getDepartmentListing.bind(inst));
+            },
+            language: getDataTableLanguage(),
+        });
+    }
+
+    actionOnDepartmentsRes() {
+        // ...
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async() => {
     const inst = new Department();
     inst.createDepartment();
+    inst.getDepartmentListing();
 });

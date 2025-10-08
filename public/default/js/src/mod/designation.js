@@ -1,11 +1,11 @@
 class Designation extends Master {
     constructor() {
         super();
-        this.createDeptBtns = document.querySelectorAll('.create-designation-submit-btn');
+        this.createDesignationBtns = document.querySelectorAll('.create-designation-submit-btn');
     }
 
     createDesignation() {
-        const btns = this.createDeptBtns;
+        const btns = this.createDesignationBtns;
 
         btns.forEach(btn => {
             if (!documentContains(btn)) return;  
@@ -61,9 +61,47 @@ class Designation extends Master {
             }); 
         });
     }
+
+    getDesignationListing() { 
+        $('.designations-table').DataTable({
+            destroy: true,
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+            ajax: ajaxDtParser(
+                'GET', 
+                '/institution/designations', 
+                filtersParser('.designationsFilters')
+            ), 
+            columns: [
+                { 
+                    data: 'actions', 
+                    orderable: false, 
+                    searchable: false 
+                },
+                { data: 'Name' },
+                { data: 'Code' },
+                { data: 'BasicSalary' },
+                { data: 'Description' },
+            ],
+            fnDrawCallback: () => {
+                const inst = new Designation();
+                inst.actionOnDesignationsRes(); 
+                watchFilterChanges('.designationsFilters', inst.getDesignationListing.bind(inst));
+            },
+            language: getDataTableLanguage(),
+        });
+    }
+
+    actionOnDesignationsRes() {
+        // ...
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async() => {
     const inst = new Designation();
     inst.createDesignation();
+    inst.getDesignationListing();
 });

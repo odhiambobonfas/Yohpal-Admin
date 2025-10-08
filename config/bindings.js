@@ -117,6 +117,10 @@ const bindings = {
             designation_access: 'hrm.designation.access',
             payroll_access: 'hrm.payroll.access',
             attendance_access: 'hrm.attendance.access',
+            departments_edit: 'hrm.departments.edit',
+            departments_delete: 'hrm.departments.delete',
+            designations_edit: 'hrm.designations.edit',
+            designations_delete: 'hrm.designations.delete',
         },
 
         // Wallet

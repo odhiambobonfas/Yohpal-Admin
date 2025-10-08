@@ -14,6 +14,7 @@ import {
     isAjaxRequest,
     ucfirst,
     ucwords,
+    dateToISO8601Formatter,
     handleFileUploads,
     jsonParser,
     reduceToObj
@@ -45,6 +46,94 @@ class HRMController {
     }
 
     static async departments(req, res) {
+        let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                let departments = await HRMUtil.getAllDepartments(req?.redis, req.query);
+            
+                let mex = new mexDtParser(departments);
+            
+                departments = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        let id = col['id'] || col['uid'];
+                        
+                        if (hasPermission(user?.permissions || [], 'hrm.departments.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        }
+            
+                        if (hasPermission(user?.permissions || [], 'hrm.departments.delete')) {
+                            actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+            
+                        let actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                    ${actions}
+                                </div>
+                            </div>
+                        `;
+
+                        return actionDropdown;
+                    }) 
+                    .addColumn('Name', (col) => {
+                        return ucwords(col.departmentName || 'N/A');
+                    }) 
+                    .addColumn('Code', (col) => {
+                        return (col.departmentCode || 'N/A').toUpperCase();
+                    }) 
+                    .addColumn('Description', (col) => {
+                        return ucfirst(col.departmentDescription || 'N/A');
+                    }) 
+                    .addColumn('Head', (col) => {
+                        return ucwords(col.departmentHead || 'N/A');
+                    }) 
+                    .addColumn('AddedBy', (col) => {
+                        return ucwords(col.addedBy || 'N/A');
+                    }) 
+                    .addColumn('createdAt', (col) => {
+                        return dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '');
+                    })
+                    .addColumn('updatedAt', (col) => {
+                        return dateToISO8601Formatter(col.updatedAt?.toDate?.() || col.updatedAt || '');
+                    })
+            
+                    .make();
+            
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Departments retrieved successfully.',
+                    data: departments
+                });
+            } catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            }
+        }
+
+        return res.render("crm/hrm/departments", {
+            title: `${ config.APP.APP_NAME } || HRM`,
+            user: req.session.user, 
+        });
+    }
+
+    static async createDepartment(req, res) {
         try {
             if (isAjaxRequest(req)) {
                 const post = req.body;
@@ -121,15 +210,101 @@ class HRMController {
                 code: error.code ||  'INTERNAL_SERVER_ERROR',
                 title: error.title || 'Unexpected Error'
             });
-        }
-
-        return res.render("crm/hrm/departments", {
-            title: `${ config.APP.APP_NAME } || HRM`,
-            user: req.session.user, 
-        });
+        } 
     }
 
     static async designations(req, res) { 
+        let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                let designations = await HRMUtil.getAllDesignations(req?.redis, req.query);
+
+                let mex = new mexDtParser(designations);
+
+                designations = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        let id = col['id'] || col['uid'];
+
+                        if (hasPermission(user?.permissions || [], 'designations.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'designations.delete')) {
+                            actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+
+                        let actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                    ${actions}
+                                </div>
+                            </div>
+                        `;
+                        
+                        return actionDropdown;
+                    }) 
+                    .addColumn('Name', (col) => {
+                        return ucwords(col.designationName || 'N/A');
+                    }) 
+                    .addColumn('Code', (col) => {
+                        return (col.designationCode || 'N/A').toUpperCase();
+                    }) 
+                    .addColumn('BasicSalary', (col) => {
+                        let salary = col.basicSalary || '0';
+                        return `KES ${Number(salary).toLocaleString()}`;
+                    }) 
+                    .addColumn('Description', (col) => {
+                        return ucfirst(col.designationDescription || 'N/A');
+                    }) 
+                    .addColumn('AddedBy', (col) => {
+                        return ucwords(col.addedBy || 'N/A');
+                    }) 
+                    .addColumn('createdAt', (col) => {
+                        return dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '');
+                    })
+                    .addColumn('updatedAt', (col) => {
+                        return dateToISO8601Formatter(col.updatedAt?.toDate?.() || col.updatedAt || '');
+                    }) 
+                    .make();
+
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Designations retrieved successfully.',
+                    data: designations
+                });
+
+            } catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }
+
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            }
+
+        } 
+
+        return res.render("crm/hrm/designations", {
+            title: `${ config.APP.APP_NAME } || HRM`,
+            user: req.session.user
+        });
+    }
+
+    static async createDesignation(req, res) { 
         try {
             if (isAjaxRequest(req)) {
                 const post = req.body;
@@ -151,16 +326,7 @@ class HRMController {
                         LANG_EN.req.designation_code_too_long,
                         "Designation code too long"
                     );
-                }
-
-                if (!post.departmentId || isNaN(post.departmentId)) {
-                    throw new Exception(
-                        201,
-                        "DEPARTMENT_ID_REQUIRED",
-                        LANG_EN.req.department_id_required,
-                        "Missing or invalid department ID"
-                    );
-                }
+                } 
 
                 if (post.basicSalary && (isNaN(post.basicSalary) || post.basicSalary < 0)) {
                     throw new Exception(
@@ -180,10 +346,9 @@ class HRMController {
                     );
                 }
 
-
                 const finalPayload = {
                     userLoggedInUserName: user.name,
-                    userLoggedInUserName: user.uid,
+                    userLoggedInUid: user.uid,
                     ...post
                 }
 
@@ -216,12 +381,7 @@ class HRMController {
                 code: error.code ||  'INTERNAL_SERVER_ERROR',
                 title: error.title || 'Unexpected Error'
             });
-        }
-
-        return res.render("crm/hrm/designations", {
-            title: `${ config.APP.APP_NAME } || HRM`,
-            user: req.session.user
-        });
+        } 
     }
 }
 
