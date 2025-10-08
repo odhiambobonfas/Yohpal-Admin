@@ -37,7 +37,7 @@ class StatsUtil extends Util {
 
     async computeMarketSizeGrowth(users, filters = {}) {
         filters.year = filters?.year || (new Date()).getFullYear();
-        const monthlyCounts = new Array(13).fill(0); 
+        const monthlyCounts = new Array(12).fill(0); 
         let createdDate;
         users?.forEach(user => {
             if (!user.createdAt) return;
@@ -54,7 +54,7 @@ class StatsUtil extends Util {
         return {
             headerLabel: `Market Size As At ${filters?.year}`,
             labels: [
-                "", "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
             ],
             data: monthlyCounts,

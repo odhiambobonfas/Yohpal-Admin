@@ -1,0 +1,42 @@
+<!-- Modal -->
+<div class="modal fade createDesignationModal" id="createDesignationModal" tabindex="-1" aria-labelledby="createDesignationModalLabel" aria-hidden="true">
+    <form action="/designation/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createDesignationModalLabel">Add Designation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="designationName" class="form-label">Designation Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="designationName" name="designationName" placeholder="Enter designation name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="designationCode" class="form-label">Designation Code</label>
+                        <input type="text" class="form-control" id="designationCode" name="designationCode" placeholder="e.g. MGR, ACC, HRASST">
+                    </div> 
+                    
+                    <div class="mb-3">
+                        <label for="basicSalary" class="form-label">Basic Salary</label>
+                        <input type="number" class="form-control" id="basicSalary" name="basicSalary" placeholder="Enter basic salary">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="designationDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="designationDescription" name="designationDescription" rows="6" placeholder="Describe the designation"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger btn-sm create-designation-submit-btn">
+                        <i class="fa fa-plus-square" aria-hidden="true"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

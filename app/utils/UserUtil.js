@@ -63,7 +63,7 @@ class UserUtil extends Util {
 
                     if (filters?.Status?.length) {
                         query = query.where("status", "==", filters.Status);
-                    }
+                    } 
 
                     if (filters?.roleId?.length) {
                         query = query.where("roleId", "==", filters.roleId);
@@ -102,9 +102,14 @@ class UserUtil extends Util {
                                 role = roleSnap.data(); 
                             }
                         }
+                        
                         user.role = role; 
                         return user;
                     }));  
+
+                    if (filters?.roleExists && filters.roleExists) {
+                        fetched = fetched.filter(user => user.roleRef !== null && user.roleRef !== undefined && user.roleRef !== '');
+                    }
 
                     return fetched;
                 },
@@ -152,10 +157,15 @@ class UserUtil extends Util {
             }
         }
 
+        const departmentData = {};
+        const designationData = {};
+
         return {
             user,
             role,
-            permissions
+            permissions,
+            departmentData,
+            designationData
         };
     }
 

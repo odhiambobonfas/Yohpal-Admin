@@ -1,7 +1,7 @@
 import RolesUtil from '@utils/RolesUtil'; 
 
-export async function getAllRoles() {
-    return await RolesUtil.getAllRoles();
+export async function getAllRoles(redis) {
+    return await RolesUtil.getAllRoles(redis);
 } 
 
 /**

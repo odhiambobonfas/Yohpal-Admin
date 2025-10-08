@@ -162,7 +162,12 @@
 								<div class="col-md-6 mb-3">
 									<label for="departmentId">Departments:</label> 
 									<select class="form-select searchSelect" name="departmentId" id="departmentId">
-										<option value="">Select department</option>  
+										<option value="">Select department</option> 
+                                        <% departments?.forEach(department => { %>
+                                            <option value="<%= department?.code %>" <%= departmentData?.code == department?.code ? 'selected' : '' %>>
+                                                <%= department?.departmentName %>
+                                            </option>
+                                        <% }) %> 
 									</select>
 								</div> 
 
@@ -172,6 +177,11 @@
 									
 									<select class="form-select searchSelect" name="designationId" id="designationId">
 										<option value="">Select designation</option>  
+                                        <% designations?.forEach(designation => { %>
+                                            <option value="<%= designation?.code %>" <%= designationData?.code == designation?.code ? 'selected' : '' %>>
+                                                <%= designation?.designationName %>
+                                            </option>
+                                        <% }) %> 
 									</select>
 								</div> 
 							</div>

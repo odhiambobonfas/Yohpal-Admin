@@ -1,7 +1,6 @@
 import "dotenv/config"; // Load environment variables from .env file
 import dayjs from 'dayjs';
 import admin from 'firebase-admin';
-
 /**
  * Getter function that helps to retrieve an environment 
  * variable once specified.

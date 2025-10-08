@@ -11,7 +11,8 @@
                 <div class="badge-span d-flex justify-content-center align-items-center gap-2">
                     <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
                     <span>|</span>
-                    <a href="/departments/create" class="text-decoration-line-none">
+                    <a href="/departments/create" class="text-decoration-line-none" data-bs-toggle="modal" 
+                        data-bs-target="#createDeptModal">
                         <span class="badge bg-danger text-light rounded-4">Create Departments</span>
                     </a>
                 </div>
@@ -32,19 +33,19 @@
                 <div class="container-fluid col-12 collapse mb-3 departmentsFilters shadow-sm departments-filters" id="departmentFilters">
                     <div class="col-12 mt-3 row g-3">
                         <div class="col-md-4 mb-2">
-                            <label for="departmentName">Department Name</label>
+                            <label class="mb-2" for="departmentName">Department Name</label>
                             <input type="text" name="departmentName" class="form-control departmentName"
-                                placeholder="Search by departmentname...">
+                                placeholder="Search by department name...">
                         </div>
 
                         <div class="col-md-4 mb-2">
-                            <label for="departmentCode">Department Code</label>
+                            <label class="mb-2" for="departmentCode">Department Code</label>
                             <input type="text" name="departmentCode" class="form-control departmentCode"
                                 placeholder="Search by Code...">
                         </div>   
 
                         <div class="col-md-4 mb-2">
-                            <label for="createdAt">Create Range</label>
+                            <label class="mb-2" for="createdAt">Create Range</label>
                             <input type="text" name="createdAt" id="daterange" class="form-control daterange createdAt">
                         </div> 
                     </div>
@@ -58,10 +59,10 @@
                         <table class="table departments-table" id="departments-table">
                             <thead>
                                 <tr>
+                                    <th>Action</th>
                                     <th>Name</th>
                                     <th>Code</th>
                                     <th>Description</th>    
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -75,6 +76,10 @@
     </div>
 </div>
 
+<!-- modals -->
+<%- include('hrm/partials/create-department') %>
+<!-- /modals -->
+
 <%- include('crm/partials/footer') %>
-<script type="text/javascript" src="/default/js/src/mod/departments.js"></script>
+<script type="text/javascript" src="/default/js/src/mod/department.js"></script>
 <%- include('crm/partials/closure') %>

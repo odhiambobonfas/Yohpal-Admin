@@ -26,6 +26,7 @@ class RolesUtil extends Util {
         try { 
             const filtersKey = 'yp:roles:filters';
             const cacheKey = 'yp:roles:filtered';
+            let ref = FirestoreDatabase.collection(Role.collection);
 
             const cachedFilters = await redis.getFunc(filtersKey);
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
@@ -42,7 +43,6 @@ class RolesUtil extends Util {
             let data = await redis.cacheParser(
                 cacheKey,
                 async () => {
-                    let ref = FirestoreDatabase.collection(Role.collection);
                     let collection = await ref.get();
                     
                     let data = fbCollectionParser(collection);

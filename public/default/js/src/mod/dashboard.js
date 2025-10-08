@@ -59,7 +59,8 @@ class Dashboard extends Master {
         });
     }
 
-    async getCardStats() {
+    async getCardStats() { 
+        this.addlOadingStateToGraphicalElements(true);
         const res = await fetch('/dashboard/card/stats', {
             credentials: 'include',
             method: 'GET',
@@ -71,7 +72,7 @@ class Dashboard extends Master {
         });
 
         if (!res.ok) {
-            this.applyNullToStatElements();
+            this.applyNullToStatElements(); 
         }
 
         let stats = await res.json();
@@ -240,7 +241,8 @@ class Dashboard extends Master {
                         fill: true,
                         pointStyle: "circle",
                         pointRadius: 6,
-                        pointHoverRadius: 8,
+                        pointHoverRadius: 6,
+                        pointHitRadius: 10, 
                         pointBackgroundColor: "#ff4c4c",
                         borderWidth: 2
                     }]
@@ -274,8 +276,8 @@ class Dashboard extends Master {
                     },
                     interaction: {
                         intersect: false,
-                        mode: 'nearest'
-                    }
+                        mode: 'index'
+                    }, 
                 }
             });
     

@@ -35,6 +35,7 @@ import corsconfig from "@config/cors";
 import { hasPermission, hasAnyPermission } from "@funcs/permissions";
 import authentHelperFuncs from "@funcs/authentication";
 import globalFuncs from "@funcs/global_funcs";
+import { departments, designations } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
 
 import routes from "@routes/app";
@@ -139,6 +140,7 @@ const InitializeServer = async () => {
             return res.status(403).send(LANG_EN.req.request_denied);
         }
 
+        const redis = req?.redis;
         res.locals.message = null;
         res.locals.status = null;
         res.locals.permissionBindings = Object.values(bindings.permissions); 
@@ -157,9 +159,9 @@ const InitializeServer = async () => {
         // expose user to views
         res.locals.user = user;
 
-        // global function helpers
-        Object.keys(globalFuncs).forEach((key) => {
-            res.locals[key] = globalFuncs[key];
+        // global function helpers 
+        Object.keys(globalFuncs).forEach( async (key) => {
+            res.locals[key] = await globalFuncs[key];
         });
 
         // permission helpers 
@@ -167,8 +169,10 @@ const InitializeServer = async () => {
         res.locals.hasAnyPermission = (keys) => hasAnyPermission(user['permissions'] || [], keys);
         res.locals.isAdmin = () => isAdmin(user['role']);
         res.locals.isSuperAdmin = () => isSuperAdmin(user['role']);
-        res.locals.allRoles = await getAllRoles();
-
+        res.locals.allRoles = await getAllRoles(redis);
+        res.locals.departments = await departments(redis);
+        res.locals.designations = await designations(redis);
+        
         next();
     });
 
