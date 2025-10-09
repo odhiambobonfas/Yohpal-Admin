@@ -126,7 +126,7 @@
 								<select class="form-select searchSelect" id="roleId" name="roleId">
 									<option value="">Select Role</option>
 									<% allRoles.forEach(role => { %>
-									<option value="<%= role.id %>"><%= role.name %></option>
+										<option value="<%= role.id %>"><%= role.name %></option>
 									<% }) %>
 								</select>
 							</div>
@@ -148,23 +148,29 @@
 							HRM Information
 						</div>
 						<div class="card-body">  
-							<div class="d-block">
-								<!-- Department Name -->
-								<div class="col-md-6 mb-3">
-									<label for="departmentId">Departments:</label> 
-									<select class="form-select searchSelec" name="departmentId" id="departmentId">
-										<option value="">Select department</option>  
-									</select>
-								</div> 
+							<div class="clonable-section">
+								<div class="row mb-3">
+									<!-- Department Name -->
+									<div class="col-md-6 mb-3">
+										<label for="departmentId">Departments:</label> 
+										<select class="form-select searchSelec" name="departmentId" id="departmentId">
+											<option value="">Select department</option>  
+										</select>
+									</div> 
 
-								<!-- Designation -->
-								<div class="col-md-6 mb-3">
-									<label for="designationId">Designation</label>
-									
-									<select class="form-select searchSelect" name="designationId" id="designationId">
-										<option value="">Select designation</option>  
-									</select>
-								</div> 
+									<!-- Designation -->
+									<div class="col-md-6 mb-3">
+										<label for="designationId">Designation</label>
+										
+										<select class="form-select searchSelect" name="designationId" id="designationId">
+											<option value="">Select designation</option>  
+										</select>
+									</div> 
+								</div>
+
+								<div class="mb-3">
+									butt
+								</div>
 							</div>
 
 							<h4 class="pt-3">Payroll Information</h4>
