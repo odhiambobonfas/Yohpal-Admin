@@ -49,7 +49,7 @@ class RolesUtil extends Util {
 
                     return data;
                 },
-                3600
+                600
             );
             
             return data;
