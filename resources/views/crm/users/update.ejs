@@ -159,29 +159,48 @@
 						<div class="card-body">  
 							<div id="deptxdesignWrapper" class="deptxdesignWrapper">
                                 <div class="deptxdesign">
+                                    <% (departmentDesignationData || {}).forEach(([pairId, pair]) => { %>
                                     <div class="row mb-3 shadow-sm">
                                         <!-- Department -->
                                         <div class="col-md-6 mb-3">
-                                            <label for="department">Department</label>
-                                            <select class="form-select" name="departmentDesignationPair[department][]" id="department">
+                                            <label for="department_<%= pairId %>">Department</label>
+                                            <select 
+                                                class="form-select" 
+                                                name="departmentDesignationPair[department][]" 
+                                                id="department_<%= pairId %>"
+                                            >
                                                 <option value="">Select department</option>
                                                 <% departments?.forEach(department => { %>
-                                                    <option value="<%= department?.id %>"><%= department?.departmentName %></option>
+                                                <option 
+                                                    value="<%= department.id %>" 
+                                                    <%= department.departmentName === pair.departmentData.departmentName ? 'selected' : '' %>>
+                                                    <%= department.departmentName %>
+                                                </option>
                                                 <% }) %>
                                             </select>
                                         </div>
-                                
+
                                         <!-- Designation -->
                                         <div class="col-md-6 mb-3">
-                                            <label for="designation">Designation</label>
-                                            <select class="form-select" name="departmentDesignationPair[designation][]" id="designation">
+                                            <label for="designation_<%= pairId %>">Designation</label>
+                                            <select 
+                                                class="form-select" 
+                                                name="departmentDesignationPair[designation][]" 
+                                                id="designation_<%= pairId %>"
+                                            >
                                                 <option value="">Select designation</option>
                                                 <% designations?.forEach(designation => { %>
-                                                    <option value="<%= designation?.id %>"><%= designation?.designationName %></option>
+                                                <option 
+                                                    value="<%= designation.id %>" 
+                                                    <%= designation.designationName === pair.designationData.designationName ? 'selected' : '' %>>
+                                                    <%= designation.designationName %>
+                                                </option>
                                                 <% }) %>
                                             </select>
                                         </div>
                                     </div>
+                                    <% }) %>
+
                                 </div>
                                 
                                 <!-- Add button -->

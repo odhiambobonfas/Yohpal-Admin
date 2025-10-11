@@ -7,7 +7,7 @@ import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
-import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, jsonParser, fbCollectionParser } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, reduceToObj, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil'; 
 import Binding from '@config/bindings'; 
@@ -350,8 +350,8 @@ class UsersController {
             }
         } 
 
-        let {user, role, departmentData, designationData} = await UsersUtil.getUserByUid(uid);  
-        
+        let {user, role, departmentDesignationData} = await UsersUtil.getUserByUid(uid);   
+
         if (!user || !user.uid) { 
             return res.redirect('/users');
         }
@@ -360,8 +360,7 @@ class UsersController {
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
             roleData: role,
-            departmentData: {},
-            designationData: {},
+            departmentDesignationData: departmentDesignationData || {}, 
             user: req.session.user
         });
     }

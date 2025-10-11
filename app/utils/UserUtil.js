@@ -13,6 +13,7 @@ import Role from '@models/Role';
 import Permission from '@models/Permissions';
 import PaymentComponent from '@models/PaymentComponent';
 import EmployeeDesignation from '@models/EmployeeDesignation';
+import Department from '@models/Department';
 
 class UserUtil extends Util {
     constructor() {
@@ -156,16 +157,44 @@ class UserUtil extends Util {
                 }
             }
         }
+        
+        
 
-        const departmentData = {};
-        const designationData = {};
+        let departmentDesignationData = {}; 
 
+        // Fetch department and designation details if user is an employee
+        if (user.isEmployee) {
+            if (user?.departmentDesignationPairs?.length) { 
+                for (let pair of user.departmentDesignationPairs) {
+                    let departmentData = {};
+                    let designationData = {};
+                    if (pair?.departmentRef && pair.departmentRef.get) {
+                        const deptSnap = await pair.departmentRef.get();
+                        if (deptSnap.exists) { 
+                            departmentData = deptSnap.data();
+                        }
+                    }
+
+                    if (pair?.designationRef && pair.designationRef.get) {
+                        const desgSnap = await pair.designationRef.get();
+                        if (desgSnap.exists) {
+                            designationData = desgSnap.data();
+                        }
+                    }   
+                    
+                    // push pair to departmentDesignationData object
+                    departmentDesignationData[pair.departmentCode] = {departmentData, designationData};
+                }
+            }
+        }
+
+        departmentDesignationData = Object.entries(departmentDesignationData);
+        
         return {
             user,
             role,
-            permissions,
-            departmentData,
-            designationData
+            permissions, 
+            departmentDesignationData
         };
     }
 
@@ -271,7 +300,7 @@ class UserUtil extends Util {
                 data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
                     return { 
                         departmentCode: pair.department || '',
-                        departmentRef: pair.department ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.department) :  '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) :  '',
                         designationCode: pair.designation || '',
                         designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
                     }
@@ -444,7 +473,7 @@ class UserUtil extends Util {
                 data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => { 
                     return { 
                         departmentCode: pair.department || '',
-                        departmentRef: pair.department ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.department) :  '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) :  '',
                         designationCode: pair.designation || '',
                         designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
                     }

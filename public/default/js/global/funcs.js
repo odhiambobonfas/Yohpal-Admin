@@ -1218,6 +1218,7 @@ function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector
             if (currentId) { 
                 const newId = currentId + '-' + Date.now();
                 select.id = newId; 
+                select.value = '';
             }  
         }); 
 
