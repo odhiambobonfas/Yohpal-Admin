@@ -390,11 +390,13 @@ function searchSelectInitializer(selector = '.searchSelect', endpoint = '', minI
  * @param {HTMLSelectElement} element 
  * @returns {void} void
  */
-function cloneNodeElement(element) {
+function cloneNodeElement(element, deep = true, replace = true) {
     var newElement = null;
     if (documentContains(element)) {
-        newElement = element.cloneNode(true);
-        element.replaceWith(newElement);
+        newElement = element.cloneNode(deep);
+        if (replace) {
+            element.replaceWith(newElement);
+        }
     }
 
     return newElement;
@@ -1198,7 +1200,7 @@ function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector
         const cloneWrapper = wrapper.querySelector(itemSelector);
         const clonableSection = cloneWrapper.querySelector('.row');  
 
-        const clone = cloneNodeElement(clonableSection);
+        const clone = cloneNodeElement(clonableSection, true, false);
         
         if (clone) {
             const removeBtn = clone.querySelector('.remove-dept-designation');
@@ -1209,8 +1211,7 @@ function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector
             }
         } 
 
-        // change ids of inputs
-        let count = 1;
+        // change ids of inputs 
         const selects = clone.querySelectorAll('select');
         selects.forEach(select => {
             const currentId = select.id;
@@ -1218,9 +1219,7 @@ function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector
                 const newId = currentId + '-' + Date.now();
                 select.id = newId; 
             }  
-        });
-
-        console.log(clone);
+        }); 
 
         __append_html(clone.outerHTML, cloneWrapper, true);
     }); 

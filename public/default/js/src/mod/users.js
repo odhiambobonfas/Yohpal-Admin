@@ -103,6 +103,18 @@ class User extends Master {
             let form = btn.closest('form');
             let data = new FormData(form);
 
+            // map departments and designations to array of objects
+            const departments = data.getAll('departmentDesignationPair[department][]');
+            const designations = data.getAll('departmentDesignationPair[designation][]');
+
+            // Zip into pairs
+            const pairs = departments.map((dept, i) => ({
+                department: dept,
+                designation: designations[i] ?? null
+            }));
+
+            data.append('departmentDesignationPairs', JSON.stringify(pairs));
+            
             try {
                 const res = await fetch(formRouteParser(form), {
                     method: form.method || 'POST',

@@ -166,7 +166,7 @@
                                             <select class="form-select" name="departmentDesignationPair[department][]" id="department">
                                                 <option value="">Select department</option>
                                                 <% departments?.forEach(department => { %>
-                                                    <option value="<%= department?.departmentCode %>"><%= department?.departmentName %></option>
+                                                    <option value="<%= department?.id %>"><%= department?.departmentName %></option>
                                                 <% }) %>
                                             </select>
                                         </div>
@@ -177,7 +177,7 @@
                                             <select class="form-select" name="departmentDesignationPair[designation][]" id="designation">
                                                 <option value="">Select designation</option>
                                                 <% designations?.forEach(designation => { %>
-                                                    <option value="<%= designation?.designationCode %>"><%= designation?.designationName %></option>
+                                                    <option value="<%= designation?.id %>"><%= designation?.designationName %></option>
                                                 <% }) %>
                                             </select>
                                         </div>

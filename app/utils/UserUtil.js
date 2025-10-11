@@ -270,9 +270,9 @@ class UserUtil extends Util {
             if (data?.departmentDesignationPairs?.length) {
                 data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
                     return { 
-                        departmentName: pair.department || '',
+                        departmentCode: pair.department || '',
                         departmentRef: pair.department ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.department) :  '',
-                        designationName: pair.designation || '',
+                        designationCode: pair.designation || '',
                         designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
                     }
                 });
@@ -297,10 +297,6 @@ class UserUtil extends Util {
                 status: data.status || "active", 
 
                 // HRM information 
-                departmentDesignationPairs: data?.departmentDesignationPairs || [],
-
-                paymentComponentRefs: paymentComponentRefs,
-                
                 basicSalary: data?.basicSalary || 0,
                 basicSalaryDuration: data?.basicSalaryDuration || '',
                 tokenAmount: data?.tokenAmount || 0,
@@ -313,6 +309,14 @@ class UserUtil extends Util {
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             };
+
+            if (data?.departmentDesignationPairs?.length) {
+                newUser.departmentDesignationPairs = data.departmentDesignationPairs;
+            }
+
+            if (paymentComponentRefs.length) {
+                newUser.paymentComponentRefs = paymentComponentRefs;
+            }
 
             const userRef = await FirestoreDatabase.collection(User.collection).doc(userRecord.uid).set(newUser);
             console.log("USER REF: ", userRef);
@@ -437,16 +441,16 @@ class UserUtil extends Util {
             }
 
             if (data?.departmentDesignationPairs?.length) {
-                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
+                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => { 
                     return { 
-                        departmentName: pair.department || '',
+                        departmentCode: pair.department || '',
                         departmentRef: pair.department ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.department) :  '',
-                        designationName: pair.designation || '',
+                        designationCode: pair.designation || '',
                         designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
                     }
                 });
             }
-
+            
             let hrmInformation = {
                 // HRM information 
                 departmentDesignationPairs: data?.departmentDesignationPairs || [],

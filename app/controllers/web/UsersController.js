@@ -212,7 +212,7 @@ class UsersController {
                     } 
                 }
 
-                data.departmentDesignationPairs = qs.parse(data.departmentDesignationPairs) || [];   
+                data.departmentDesignationPairs = JSON.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb; 
@@ -257,7 +257,7 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {   
+            try {     
                 let user = req.session.user; 
                 
                 if (!user || !user.uid) {
@@ -316,7 +316,7 @@ class UsersController {
                     } 
                 }
             
-                data.departmentDesignationPairs = qs.parse(data.departmentDesignationPairs) || [];   
+                data.departmentDesignationPairs = JSON.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb;
