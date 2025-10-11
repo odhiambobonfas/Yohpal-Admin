@@ -215,8 +215,15 @@
                                 <% } %>
                                 <% if (hasPermission('hrm.attendance.access')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#attendance">
+                                    <a class="nav-link" href="/employee/attendance">
                                         <i class="fa fa-calendar-check me-2"></i> Attendance
+                                    </a>
+                                </li>
+                                <% } %>
+                                <% if (hasPermission('hrm.holidays.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/holidays/list">
+                                        <i class="fa fa-umbrella-beach me-2"></i> Holidays
                                     </a>
                                 </li>
                                 <% } %>
