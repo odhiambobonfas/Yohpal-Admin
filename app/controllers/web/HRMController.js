@@ -383,6 +383,32 @@ class HRMController {
             });
         } 
     }
+
+    static async employeeAttendance(req, res) { 
+        let user = req.session.user;
+        
+        return res.render("crm/hrm/attendance", {
+            title: `${ config.APP.APP_NAME } || List Attendance`,
+            user: user, 
+        });
+    }
+
+    static async createAttendanceRecord(req, res) {
+        //...
+    }
+
+    static async holidaysList(req, res) { 
+        let user = req.session.user;
+        
+        return res.render("crm/hrm/holidays", {
+            title: `${ config.APP.APP_NAME } || List Holidays`,
+            user: user, 
+        });
+    }
+
+    static async createHoliday(req, res) {
+        //...
+    }
 }
 
 export default HRMController;

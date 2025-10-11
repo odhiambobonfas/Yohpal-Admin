@@ -79,6 +79,16 @@ router.route('/institution/designations')
 
 router.post('/designation/create', authMiddleware, HRMController.createDesignation);
 
+router.route('/employee/attendance')
+    .get(authMiddleware, HRMController.employeeAttendance);
+
+router.post('/employee/attendance/create', authMiddleware, HRMController.createAttendanceRecord);
+
+router.route('/holidays/list')
+    .get(authMiddleware, HRMController.holidaysList);
+
+router.post('/holiday/create', authMiddleware, HRMController.createHoliday);
+
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
 router.post('/api/setting/create', authMiddleware, upload.single('generalSetting[otherSettings][companyLogo]'), SettingsController.createUpdateSettings);

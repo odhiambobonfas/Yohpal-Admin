@@ -390,11 +390,13 @@ function searchSelectInitializer(selector = '.searchSelect', endpoint = '', minI
  * @param {HTMLSelectElement} element 
  * @returns {void} void
  */
-function cloneNodeElement(element) {
+function cloneNodeElement(element, deep = true, replace = true) {
     var newElement = null;
     if (documentContains(element)) {
-        newElement = element.cloneNode(true);
-        element.replaceWith(newElement);
+        newElement = element.cloneNode(deep);
+        if (replace) {
+            element.replaceWith(newElement);
+        }
     }
 
     return newElement;
@@ -1178,6 +1180,50 @@ function growing3FlexedSpinners() {
                 </div>
             </div>
         </div>`;
+}
+
+
+/**
+ * Clone Department × Designation block dynamically
+ * 
+ * @param {string} triggableBtn - The btn selector that triggers the cloning
+ * @param {string} wrapperSelector - The main wrapper holding all dept-design blocks
+ * @param {string} itemSelector - The class of the item block to be cloned
+ */
+function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector) {
+    let btn = document.querySelector(triggableBtn);
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        const wrapper = btn.closest(wrapperSelector);
+        if (!wrapper) return; 
+        const cloneWrapper = wrapper.querySelector(itemSelector);
+        const clonableSection = cloneWrapper.querySelector('.row');  
+
+        const clone = cloneNodeElement(clonableSection, true, false);
+        
+        if (clone) {
+            const removeBtn = clone.querySelector('.remove-dept-designation');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    clone.remove();
+                });
+            }
+        } 
+
+        // change ids of inputs 
+        const selects = clone.querySelectorAll('select');
+        selects.forEach(select => {
+            const currentId = select.id;
+            if (currentId) { 
+                const newId = currentId + '-' + Date.now();
+                select.id = newId; 
+                select.value = '';
+            }  
+        }); 
+
+        __append_html(clone.outerHTML, cloneWrapper, true);
+    }); 
 }
 
 // Call functions Below.

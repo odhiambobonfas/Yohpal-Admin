@@ -49,7 +49,7 @@ class RolesUtil extends Util {
 
                     return data;
                 },
-                3600
+                600
             );
             
             return data;
@@ -94,7 +94,7 @@ class RolesUtil extends Util {
             }
 
             let rolesRef = FirestoreDatabase.collection(Role.collection); 
-            const roleDocRef = rolesRef.doc();
+            const roleDocRef = rolesRef.doc(inputCode);
             await roleDocRef.set({
                 name: ucwords(input.roleName),
                 code: inputCode,
@@ -143,7 +143,7 @@ class RolesUtil extends Util {
                 throw new Exception(201, 'GENERIC_EXCEPTION' `${LANG_EN.undefined_error}`, 'Role ID Not Found Error!');
             } 
             
-            roleDocRef = rolesRef.doc(input.roleId);
+            roleDocRef = rolesRef.doc(inputCode);
             await roleDocRef.update({
                 name: ucwords(input.roleName),
                 code: inputCode,

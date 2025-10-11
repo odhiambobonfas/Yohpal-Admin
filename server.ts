@@ -125,6 +125,11 @@ const InitializeServer = async () => {
         },
     })); 
 
+    // Get departments and designations data
+    const roles = await getAllRoles(rdCache);
+    const departmentsData = await departments(rdCache);
+    const designationsData = await designations(rdCache); 
+
     // import everything to the views, custom functions i.e helper 
     // functions
     app.use(async(req, res, next) => { 
@@ -169,9 +174,9 @@ const InitializeServer = async () => {
         res.locals.hasAnyPermission = (keys) => hasAnyPermission(user['permissions'] || [], keys);
         res.locals.isAdmin = () => isAdmin(user['role']);
         res.locals.isSuperAdmin = () => isSuperAdmin(user['role']);
-        res.locals.allRoles = await getAllRoles(redis);
-        res.locals.departments = await departments(redis);
-        res.locals.designations = await designations(redis);
+        res.locals.allRoles = roles;
+        res.locals.departments = departmentsData;
+        res.locals.designations = designationsData;
         
         next();
     });

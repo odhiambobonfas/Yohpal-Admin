@@ -7,12 +7,13 @@ import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
-import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, jsonParser, fbCollectionParser } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, reduceToObj, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil'; 
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util'; 
+import qs from 'qs';    
 
 class UsersController {
     static async index(req, res) {
@@ -149,9 +150,8 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {   
-                let user = req.session.user; 
-
+            try {    
+                let user = req.session.user;  
                 if (!user || !user.uid) {
                     throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
                 }
@@ -212,6 +212,7 @@ class UsersController {
                     } 
                 }
 
+                data.departmentDesignationPairs = JSON.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb; 
@@ -256,9 +257,9 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {   
+            try {     
                 let user = req.session.user; 
-
+                
                 if (!user || !user.uid) {
                     throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
                 }
@@ -314,7 +315,8 @@ class UsersController {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
                     } 
                 }
-
+            
+                data.departmentDesignationPairs = JSON.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb;
@@ -348,8 +350,8 @@ class UsersController {
             }
         } 
 
-        let {user, role, departmentData, designationData} = await UsersUtil.getUserByUid(uid);  
-        
+        let {user, role, departmentDesignationData} = await UsersUtil.getUserByUid(uid);   
+
         if (!user || !user.uid) { 
             return res.redirect('/users');
         }
@@ -358,8 +360,7 @@ class UsersController {
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
             roleData: role,
-            departmentData: {},
-            designationData: {},
+            departmentDesignationData: departmentDesignationData || {}, 
             user: req.session.user
         });
     }

@@ -153,11 +153,11 @@ class AuthController {
             permissions = permissions?.permissions ?? []; 
 
             if (!permissions.includes('auth.access')) {
-                throw new Exception(201, 'AUTHORIZATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
+                throw new Exception(201, 'AUTHORIZATION_ERROR', LANG_EN.authentication_error_exception, 'Access Auth Error!');
             }
             
             if (permissions.includes('auth.suspend')) {
-                throw new Exception(201, 'ACCOUNT_SUSPENDED', LANG_EN.account_suspended_exception, 'Auth Error!');
+                throw new Exception(201, 'ACCOUNT_SUSPENDED', LANG_EN.account_suspended_exception, 'Suspension Auth Error!');
             }
 
             let userPayload = {
@@ -178,11 +178,11 @@ class AuthController {
             }; 
             
             if (user.status !== 'active') {
-                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'user status related auth Error!');
             }
 
             if (!role.status || role.status !== 'active') {
-                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'Auth Error!');
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.authentication_error_exception, 'role status auth Error!');
             }
 
             let token = jwt.sign(userPayload, config.APP.JWT_SECRET, {
