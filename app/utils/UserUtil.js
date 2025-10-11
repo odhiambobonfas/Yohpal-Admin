@@ -267,6 +267,17 @@ class UserUtil extends Util {
                 });
             }
             
+            if (data?.departmentDesignationPairs?.length) {
+                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
+                    return { 
+                        departmentName: pair.department || '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.department) :  '',
+                        designationName: pair.designation || '',
+                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
+                    }
+                });
+            }
+            
             let newUser = { 
                 uid: userRecord.uid,
                 firstName: ucwords(data.firstName) || "", 
@@ -286,12 +297,8 @@ class UserUtil extends Util {
                 status: data.status || "active", 
 
                 // HRM information 
-                departmentName: data?.departmentName || '',
-                departmentRef: data?.departmentId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.departmentId) :  '',
-                
-                designationName: data?.designationName || '',
-                designationRef: data?.designationId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.designationId) :  '',
-                
+                departmentDesignationPairs: data?.departmentDesignationPairs || [],
+
                 paymentComponentRefs: paymentComponentRefs,
                 
                 basicSalary: data?.basicSalary || 0,
@@ -429,13 +436,20 @@ class UserUtil extends Util {
                 });
             }
 
+            if (data?.departmentDesignationPairs?.length) {
+                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
+                    return { 
+                        departmentName: pair.department || '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.department) :  '',
+                        designationName: pair.designation || '',
+                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
+                    }
+                });
+            }
+
             let hrmInformation = {
                 // HRM information 
-                departmentName: data?.departmentName || '',
-                departmentRef: data?.departmentId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.departmentId) :  '',
-                
-                designationName: data?.designationName || '',
-                designationRef: data?.designationId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.designationId) :  '',
+                departmentDesignationPairs: data?.departmentDesignationPairs || [],
                 
                 paymentComponentRefs: paymentComponentRefs,
                 

@@ -13,6 +13,7 @@ import UsersUtil from '@utils/UserUtil';
 import Binding from '@config/bindings'; 
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util'; 
+import qs from 'qs';    
 
 class UsersController {
     static async index(req, res) {
@@ -149,9 +150,8 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {   
-                let user = req.session.user; 
-
+            try {    
+                let user = req.session.user;  
                 if (!user || !user.uid) {
                     throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
                 }
@@ -212,6 +212,7 @@ class UsersController {
                     } 
                 }
 
+                data.departmentDesignationPairs = qs.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb; 
@@ -258,7 +259,7 @@ class UsersController {
 
             try {   
                 let user = req.session.user; 
-
+                
                 if (!user || !user.uid) {
                     throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
                 }
@@ -314,7 +315,8 @@ class UsersController {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
                     } 
                 }
-
+            
+                data.departmentDesignationPairs = qs.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb;

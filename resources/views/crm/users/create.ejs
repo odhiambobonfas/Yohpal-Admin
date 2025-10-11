@@ -148,30 +148,40 @@
 							HRM Information
 						</div>
 						<div class="card-body">  
-							<div class="clonable-section">
-								<div class="row mb-3">
-									<!-- Department Name -->
-									<div class="col-md-6 mb-3">
-										<label for="departmentId">Departments:</label> 
-										<select class="form-select searchSelec" name="departmentId" id="departmentId">
-											<option value="">Select department</option>  
-										</select>
-									</div> 
-
-									<!-- Designation -->
-									<div class="col-md-6 mb-3">
-										<label for="designationId">Designation</label>
-										
-										<select class="form-select searchSelect" name="designationId" id="designationId">
-											<option value="">Select designation</option>  
-										</select>
-									</div> 
-								</div>
-
-								<div class="mb-3">
-									butt
-								</div>
-							</div>
+							<div id="deptxdesignWrapper" class="deptxdesignWrapper">
+                                <div class="deptxdesign">
+                                    <div class="row mb-3 shadow-sm">
+                                        <!-- Department -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="department">Department</label>
+                                            <select class="form-select" name="departmentDesignationPair[department][]" id="department">
+                                                <option value="">Select department</option>
+                                                <% departments?.forEach(department => { %>
+                                                    <option value="<%= department?.departmentCode %>"><%= department?.departmentName %></option>
+                                                <% }) %>
+                                            </select>
+                                        </div>
+                                
+                                        <!-- Designation -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="designation">Designation</label>
+                                            <select class="form-select" name="departmentDesignationPair[designation][]" id="designation">
+                                                <option value="">Select designation</option>
+                                                <% designations?.forEach(designation => { %>
+                                                    <option value="<%= designation?.designationCode %>"><%= designation?.designationName %></option>
+                                                <% }) %>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Add button -->
+                                <div class="add-btn">
+                                    <button type="button" id="addDeptDesignBtn" class="btn btn-outline-danger btn-sm w-100 addDeptDesignBtn">
+                                        Add Department & Designation
+                                    </button>
+                                </div>
+                            </div>
 
 							<h4 class="pt-3">Payroll Information</h4>
 							<hr>
