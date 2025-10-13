@@ -1,0 +1,99 @@
+<!-- Modal -->
+<div class="modal fade createAttendanceModal" id="createAttendanceModal" tabindex="-1" aria-labelledby="createAttendanceModalLabel" aria-hidden="true">
+    <form action="/attendance/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createAttendanceModalLabel">Add Attendance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Employee -->
+                    <div class="mb-3">
+                        <label for="employeeId" class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-select searchSelect" id="userId" name="userId" required>
+                            <option value="">-- Select Employee --</option>
+                            <!-- Options populated dynamically -->
+                            <% employees?.forEach(employee => { %>
+                                <option value="<%= employee.uid %>"><%= employee.firstName %> <%= employee.lastName %> (<%= employee.employeeId %>)</option>
+                            <% }); %>
+                            <!-- /Options populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="mb-3">
+                        <label for="attendanceDate" class="form-label">Attendance Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="attendanceDate" name="attendanceDate" required>
+                    </div>
+
+                    <!-- Shift -->
+                    <div class="mb-3">
+                        <label for="shiftType" class="form-label">Shift <span class="text-danger">*</span></label>
+                        <select class="form-select shiftSelect" id="shiftType" name="shiftType" required>
+                            <option value="">-- Select Shift --</option>
+                            <!-- loop to get the dynamic shifts -->
+                            <% shifts.forEach(shift => { %>
+                                <option value="<%= shift.id %>"><%= shift.name %> (<%= shift.startTime %> - <%= shift.endTime %>)</option>
+                            <% }); %>
+                            <!-- /loop to get the dynamic shifts -->
+                            <% if (hasPermission('hrm.attendance.customShifts.create')) { %>
+                                <option value="custom">Custom Shift</option>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <!-- Custom Shift Times -->
+                    <div class="row customShiftSection d-none">
+                        <div class="col-md-6 mb-3">
+                            <label for="customShiftStart" class="form-label">Shift Start Time</label>
+                            <input type="time" class="form-control" id="customShiftStart" name="customShiftStart">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="customShiftEnd" class="form-label">Shift End Time</label>
+                            <input type="time" class="form-control" id="customShiftEnd" name="customShiftEnd">
+                        </div>
+                    </div>
+                    
+                    <!-- Clock In / Clock Out -->
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="clockIn" class="form-label">Clock In <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="clockIn" name="clockIn" required>
+                        </div>
+                        <div class="col-md-12 mb-3 d-none">
+                            <label for="clockOut" class="form-label">Clock Out</label>
+                            <input type="time" class="form-control" id="clockOut" name="clockOut">
+                        </div>
+                    </div>
+
+                    <!-- Attendance Status -->
+                    <div class="mb-3">
+                        <label for="attendanceStatus" class="form-label">Status <span class="text-danger">*</span></label>
+                        <select class="form-select" id="attendanceStatus" name="attendanceStatus" required>
+                            <option value="">-- Select Status --</option>
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="on_leave">On Leave</option>
+                            <option value="half_day">Half Day</option>
+                        </select>
+                    </div>
+
+                    <!-- Optional Notes -->
+                    <div class="mb-3">
+                        <label for="attendanceNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="attendanceNotes" name="attendanceNotes" rows="4" placeholder="Additional remarks (optional)"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger btn-sm create-attendance-submit-btn">
+                        <i class="fa fa-plus-square" aria-hidden="true"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div> 

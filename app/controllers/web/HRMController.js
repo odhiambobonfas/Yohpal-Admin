@@ -386,6 +386,101 @@ class HRMController {
 
     static async employeeAttendance(req, res) { 
         let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                let attendanceRecords = await HRMUtil.getAllAttendanceRecords(req?.redis, req.query);
+                    
+                let mex = new mexDtParser(attendanceRecords);
+            
+                attendanceRecords = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        let id = col['id'] || col['uid'];
+                        if (hasPermission(user?.permissions || [], 'hrm.attendance.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        }
+                        if (hasPermission(user?.permissions || [], 'hrm.attendance.delete')) {
+                            actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+                        let actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId"  
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>  
+                                <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                    ${actions}
+                                </div>
+                            </div>
+                        `;
+                        return actionDropdown;
+                    }) 
+                    .addColumn('Employee', (col) => {
+                        return ucwords(col.employeeName || (col.user.firstName + " " + col.user.lastName)  || 'N/A');
+                    }) 
+                    .editColumn('attendanceDate', (col) => {
+                        return dateToISO8601Formatter(col?.toDate?.() || col || '');
+                    }) 
+                    .editColumn('shift', (col) => {
+                        return ucfirst(col.shift || 'N/A');
+                    }) 
+                    .editColumn('attendanceStatus', (col) => {  
+                        col = col ? col.attendanceStatus : 'inactive';
+
+                        if (col === 'present') {
+                            return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
+                        } else if (col === 'leave') {
+                            return `<span class="badge text-dark bg-warning">${ucfirst(col)}</span>`;
+                        } else if (col === 'absent') {
+                            return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
+                        } else if (col === 'holiday') {
+                            return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
+                        } else {
+                            return `<span class="badge text-dark bg-warning">N/A</span>`;
+                        } 
+                    }) 
+                    .addColumn('CheckIn', (col) => {
+                        return col.clockInTime || 'N/A';
+                    }) 
+                    .addColumn('CheckOut', (col) => {
+                        return col.clockOutTime || 'N/A';   
+                    })
+                    .editColumn('remarks', (col) => {
+                        return ucfirst(col || 'N/A');
+                    }) 
+                    .addColumn('AddedBy', (col) => {
+                        return ucwords(col.addedBy || 'N/A');
+                    }) 
+                    .addColumn('createdAt', (col) => {
+                        return dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '');
+                    })
+                    .addColumn('updatedAt', (col) => {
+                        return dateToISO8601Formatter(col.updatedAt?.toDate?.() || col.updatedAt || '');
+                    }) 
+                    .make();
+
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Attendance records retrieved successfully.',
+                    data: attendanceRecords
+                });
+            } catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            }   
+        }   
         
         return res.render("crm/hrm/attendance", {
             title: `${ config.APP.APP_NAME } || List Attendance`,
@@ -394,11 +489,206 @@ class HRMController {
     }
 
     static async createAttendanceRecord(req, res) {
-        //...
+        try {  
+            const post = req.body;
+            let user = req.session.user; 
+            
+            if (!post.userId) {
+                throw new Exception(
+                    201,
+                    "EMPLOYEE_ID_INVALID",
+                    LANG_EN.req.employee_id_invalid,
+                    "Invalid employee ID"
+                );
+            }
+            
+            if (!post.attendanceDate || isNaN(new Date(post.attendanceDate).getTime())) {
+                throw new Exception(
+                    201,
+                    "ATTENDANCE_DATE_INVALID",
+                    LANG_EN.req.attendance_date_invalid,
+                    "Invalid attendance date"
+                );
+            }
+
+            if (post.shiftType === 'custom') {
+                if (!post.customShiftStart || isNaN(new Date(`1970-01-01T${post.customShiftStart}:00`).getTime())) {
+                    throw new Exception(
+                        201,
+                        "CUSTOM_SHIFT_START_INVALID",
+                        LANG_EN.req.custom_shift_start_invalid,
+                        "Invalid custom shift start time"
+                    );
+                }
+
+                if (!post.customShiftEnd || isNaN(new Date(`1970-01-01T${post.customShiftEnd}:00`).getTime())) {
+                    throw new Exception(
+                        201,
+                        "CUSTOM_SHIFT_END_INVALID",
+                        LANG_EN.req.custom_shift_end_invalid,
+                        "Invalid custom shift end time"
+                    );
+                }
+
+                if (new Date(`1970-01-01T${post.customShiftEnd}:00`).getTime() <= new Date(`1970-01-01T${post.customShiftStart}:00`).getTime()) {
+                    throw new Exception(
+                        201,
+                        "CUSTOM_SHIFT_END_BEFORE_START",
+                        LANG_EN.req.custom_shift_end_before_start,
+                        "Custom shift end time must be after start time"
+                    );
+                }
+            }
+
+            if (!post.attendanceStatus || !['present', 'absent', 'leave', 'holiday'].includes(post.attendanceStatus)) {
+                throw new Exception(
+                    201,
+                    "ATTENDANCE_STATUS_INVALID",
+                    LANG_EN.req.attendance_status_invalid,
+                    "Invalid attendance status"
+                );
+            }
+
+            if (post.remarks && post.remarks.length > 500) {
+                throw new Exception(
+                    201,
+                    "ATTENDANCE_REMARKS_TOO_LONG",
+                    LANG_EN.req.attendance_remarks_too_long,
+                    "Remarks too long"
+                );
+            }
+
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...post
+            };
+
+            const result = await HRMUtil.createAttendanceRecordQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "ATTENDANCE_RECORD_CREATE_FAILED",
+                    LANG_EN.error.attendance_record_creation_failed,
+                    "Database Error"
+                );
+            } 
+
+            return res.status(200).json({
+                status: 'success',
+                message: LANG_EN.success.attendance_record_created,
+                data: result,
+            });  
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code || 'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        }   
     }
 
     static async holidaysList(req, res) { 
         let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                let holidays = await HRMUtil.getAllHolidays(req?.redis, req.query);
+
+                let mex = new mexDtParser(holidays);
+
+                holidays = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        let id = col['id'] || col['uid'];
+                        if (hasPermission(user?.permissions || [], 'hrm.holidays.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        } 
+
+                        if (hasPermission(user?.permissions || [], 'hrm.holidays.delete')) {
+                            actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+
+                        let actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                    ${actions}
+                                </div>
+                            </div>
+                        `;
+                        return actionDropdown;
+                    }) 
+                    .addColumn('Name', (col) => {
+                        return ucwords(col.holidayName || 'N/A');
+                    }) 
+                    .addColumn('Type', (col) => {
+                        let type = col.holidayType || 'N/A';
+                        if (type === 'custom' && col.customHolidayType) {
+                            type = `Custom (${ucwords(col.customHolidayType)})`;
+                        }
+                        return ucfirst(type);
+                    }) 
+                    .addColumn('StartDate', (col) => {
+                        return dateToISO8601Formatter(col.startDate?.toDate?.() || col.startDate || '');    
+                    })
+                    .addColumn('EndDate', (col) => {
+                        return dateToISO8601Formatter(col.endDate?.toDate?.() || col.endDate || '');    
+                    })
+                    .addColumn('Date', (col) => {
+                        let start = dateToISO8601Formatter(col.startDate?.toDate?.() || col.startDate || '');    
+                        let end = dateToISO8601Formatter(col.endDate?.toDate?.() || col.endDate || '');
+                        if (start && end && start !== end) {
+                            return `${start} to ${end}`;
+                        }
+                        return start || 'N/A';
+                    })
+                    .addColumn('Description', (col) => {
+                        return ucfirst(col.holidayDescription || 'N/A');
+                    }) 
+                    .addColumn('AddedBy', (col) => {
+                        return ucwords(col.addedBy || 'N/A');
+                    }) 
+                    .addColumn('createdAt', (col) => {
+                        return dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '');
+                    })
+                    .addColumn('updatedAt', (col) => {
+                        return dateToISO8601Formatter(col.updatedAt?.toDate?.() || col.updatedAt || '');
+                    }) 
+                    .make();
+
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Holidays retrieved successfully.',
+                    data: holidays
+                });
+            }
+            catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }
+
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            }   
+        }
         
         return res.render("crm/hrm/holidays", {
             title: `${ config.APP.APP_NAME } || List Holidays`,
@@ -407,7 +697,98 @@ class HRMController {
     }
 
     static async createHoliday(req, res) {
-        //...
+        try { 
+            const post = req.body;
+            let user = req.session.user; 
+
+            if (!post.holidayName || post.holidayName.trim() === "") {
+                throw new Exception(
+                    201,
+                    "HOLIDAY_NAME_REQUIRED",
+                    LANG_EN.req.holiday_name_required,
+                    "Missing holiday name"
+                );
+            }
+
+            if (!post.startDate || isNaN(new Date(post.startDate).getTime())) {
+                throw new Exception(
+                    201,
+                    "HOLIDAY_START_DATE_INVALID",
+                    LANG_EN.req.holiday_start_date_invalid,
+                    "Invalid holiday start date"
+                );
+            }   
+
+            if (post.endDate && isNaN(new Date(post.endDate).getTime())) {
+                throw new Exception(
+                    201,
+                    "HOLIDAY_END_DATE_INVALID",
+                    LANG_EN.req.holiday_end_date_invalid,
+                    "Invalid holiday end date"
+                );
+            }
+
+            if (!post.holidayType || (post.holidayType !== 'public' && post.holidayType !== 'company' && post.holidayType !== 'custom')) {
+                throw new Exception(
+                    201,
+                    "HOLIDAY_TYPE_INVALID",
+                    LANG_EN.req.holiday_type_invalid,
+                    "Invalid holiday type"
+                );
+            }
+
+            if (post.holidayType === 'custom' && (!post.customHolidayType || post.customHolidayType.trim() === "")) {
+                throw new Exception(
+                    201,
+                    "CUSTOM_HOLIDAY_TYPE_REQUIRED",
+                    LANG_EN.req.custom_holiday_type_required,
+                    "Missing custom holiday type"
+                );
+            }
+
+            if (post.holidayDescription && post.holidayDescription.length > 500) {
+                throw new Exception(
+                    201,
+                    "HOLIDAY_DESCRIPTION_TOO_LONG",
+                    LANG_EN.req.holiday_description_too_long,
+                    "Description too long"
+                );
+            }
+            
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...post
+            }
+
+            const result = await HRMUtil.createHolidayQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "HOLIDAY_CREATE_FAILED",
+                    LANG_EN.error.holiday_creation_failed,
+                    "Database Error"
+                );
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                message: LANG_EN.success.holiday_created,
+                data: result,
+            }); 
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        }
     }
 }
 

@@ -35,8 +35,10 @@ import corsconfig from "@config/cors";
 import { hasPermission, hasAnyPermission } from "@funcs/permissions";
 import authentHelperFuncs from "@funcs/authentication";
 import globalFuncs from "@funcs/global_funcs";
-import { departments, designations } from "@funcs/hrm";
+import { departments, designations, employees } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+
+import Attendance from "@models/Attendance";
 
 import routes from "@routes/app";
 
@@ -124,11 +126,17 @@ const InitializeServer = async () => {
             domain: config.COOKIES.DOMAIN || undefined
         },
     })); 
-
+    
     // Get departments and designations data
     const roles = await getAllRoles(rdCache);
     const departmentsData = await departments(rdCache);
     const designationsData = await designations(rdCache); 
+
+    // Get shifts data
+    const shiftsData = await Attendance.getAllShifts(rdCache);
+
+    // users
+    const employeesData = await employees(rdCache); 
 
     // import everything to the views, custom functions i.e helper 
     // functions
@@ -174,9 +182,12 @@ const InitializeServer = async () => {
         res.locals.hasAnyPermission = (keys) => hasAnyPermission(user['permissions'] || [], keys);
         res.locals.isAdmin = () => isAdmin(user['role']);
         res.locals.isSuperAdmin = () => isSuperAdmin(user['role']);
+        
         res.locals.allRoles = roles;
         res.locals.departments = departmentsData;
         res.locals.designations = designationsData;
+        res.locals.shifts = shiftsData;
+        res.locals.employees = employeesData;
         
         next();
     });

@@ -9,3 +9,8 @@ export async function designations(redis) {
     const res = await HRMUtil.getAllDesignations(redis);
     return res;
 } 
+
+export async function employees(redis) { 
+    const res = await HRMUtil.getAllEmployees(redis);
+    return res;
+}

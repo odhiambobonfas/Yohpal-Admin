@@ -82,12 +82,12 @@ router.post('/designation/create', authMiddleware, HRMController.createDesignati
 router.route('/employee/attendance')
     .get(authMiddleware, HRMController.employeeAttendance);
 
-router.post('/employee/attendance/create', authMiddleware, HRMController.createAttendanceRecord);
+router.post('/attendance/create', authMiddleware, HRMController.createAttendanceRecord);
 
 router.route('/holidays/list')
     .get(authMiddleware, HRMController.holidaysList);
 
-router.post('/holiday/create', authMiddleware, HRMController.createHoliday);
+router.post('/holidays/create', authMiddleware, HRMController.createHoliday);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);

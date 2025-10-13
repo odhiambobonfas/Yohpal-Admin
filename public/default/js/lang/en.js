@@ -87,6 +87,24 @@ const LANG_EN = {
         designation_code_required: "Designation code is required.",
         designation_exists: "A designation with the same name or code already exists.",
         provider_code_required: "Provider code is required.",
+
+        // holiday
+        holiday_name_required: "Holiday name is required.",
+        holiday_start_date_invalid: "Please provide a valid start date for the holiday.",
+        holiday_end_date_invalid: "Please provide a valid end date for the holiday.",
+        holiday_type_invalid: "Please select a valid holiday type (public, company, or custom).",
+        custom_holiday_type_required: "Please specify a custom holiday type.",
+        holiday_description_too_long: "Holiday description cannot exceed 500 characters.",
+
+        // attendance
+        employee_id_invalid: "Invalid or missing employee ID.",
+        attendance_date_invalid: "Please provide a valid attendance date.",
+        shift_type_invalid: "Invalid shift type. Allowed types: morning, evening, night, or custom.",
+        custom_shift_start_invalid: "Please provide a valid custom shift start time.",
+        custom_shift_end_invalid: "Please provide a valid custom shift end time.",
+        custom_shift_end_before_start: "Custom shift end time must be after the start time.",
+        attendance_status_invalid: "Invalid attendance status. Allowed values: present, absent, or on leave.",
+        attendance_remarks_too_long: "Attendance remarks cannot exceed 500 characters."
     },
 
     // response errors and statements
@@ -97,8 +115,15 @@ const LANG_EN = {
     },
     
     success: {
+        // department
         department_created: "Department created successfully.",
         designation_created: "Designation created successfully.",
+
+        // holiday
+        holiday_created: "Holiday has been successfully created.",
+
+        // attendance
+        attendance_record_created: "Attendance record has been successfully created."
     },
 
     error: {
@@ -121,6 +146,12 @@ const LANG_EN = {
         invalid_img_size_warning: "Image must be less than 2MB",
         generic_auth_error: "An authentication error occurred!",
         invalid_username_password_warning: "Check your Username and Password, & try again!",
+
+        // holiday
+        holiday_creation_failed: "Failed to create the holiday. Please try again later.",
+
+        // attendance
+        attendance_record_creation_failed: "Failed to create attendance record. Please try again later."
     },
 
     // New role/authentication errors

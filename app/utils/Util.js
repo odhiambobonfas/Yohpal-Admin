@@ -66,6 +66,16 @@ class Util {
         const isMatch = await bcrypt.compare(plainTextPassword, hashedPassword);
         return isMatch;
     }
+
+    /**
+     * Generate an employee number
+     *
+     * @return {string} Employee number
+     */
+    generateEmployeeNumber(prefix = 'EMP') { 
+        const randomNumber = Math.floor(100000 + Math.random() * 900000);
+        return `${prefix}-${randomNumber}`;
+    }
 }
 
 export default Util;

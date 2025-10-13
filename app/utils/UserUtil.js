@@ -124,7 +124,6 @@ class UserUtil extends Util {
 
         return [];
     }
-
     
     async getUserByUid(uid) {
         const usersRef = FirestoreDatabase.collection(User.collection)
@@ -306,13 +305,18 @@ class UserUtil extends Util {
                     }
                 });
             }
+
+            if (data.isEmployee) {
+                data.employeeId = data.employeeId && data.employeeId.trim().length ? data.employeeId.trim() : this.generateEmployeeNumber();
+            }
             
             let newUser = { 
                 uid: userRecord.uid,
                 firstName: ucwords(data.firstName) || "", 
                 lastName: ucwords(data.lastName) || "", 
                 userName: data.userName.toLowerCase() || "", 
-                isEmployee: data.isEmployee ? true : false, 
+                isEmployee: data.isEmployee ? true : false,
+                employeeId: data.employeeId || '', 
                 email: data.email.toLowerCase() || "", 
                 Country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
@@ -467,6 +471,10 @@ class UserUtil extends Util {
                     const ref = FirestoreDatabase.collection(PaymentComponent.collection).doc(componentId);
                     paymentComponentRefs.push(ref);
                 });
+            }
+
+            if (data.isEmployee) {
+                updatedData.employeeId = data.employeeId && data.employeeId.trim().length ? data.employeeId.trim() : this.generateEmployeeNumber();
             }
 
             if (data?.departmentDesignationPairs?.length) {
