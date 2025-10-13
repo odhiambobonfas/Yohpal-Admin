@@ -19,10 +19,7 @@ class RedisCache {
 
 		let redisOptions;
 
-		if (
-			config.APP.APP_ENV?.trim() === "development" &&
-			config.CACHE.REDIS.USE_REDIS_LOCAL
-		) {
+		if (config.CACHE.REDIS.USE_REDIS_LOCAL == true || config.CACHE.REDIS.USE_REDIS_LOCAL === 'true') {
 			const host = config.CACHE.REDIS.REDIS_URL || "127.0.0.1";
 			const port = config.CACHE.REDIS.REDIS_PORT || 6379;
 

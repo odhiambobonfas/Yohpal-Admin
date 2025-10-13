@@ -3,20 +3,6 @@ class User extends Master {
         super();
     }
 
-    getDepartmentDesignationArray(form) {
-        const departments = form.querySelectorAll('.department');
-        const designations = form.querySelectorAll('.designation');
-      
-        const result = [];
-        for (let i = 0; i < departments.length; i++) {
-          result.push({
-            department: departments[i].value,
-            designation: designations[i].value
-          });
-        }
-        return result;
-      }
-
     createInHouseUser() {
         let btn = document.querySelector('.create-user-submit-btn');
         if (!documentContains(btn)) return;

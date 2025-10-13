@@ -12,7 +12,7 @@
                     <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
                     <span>|</span>
                     <a href="/holidays/create" class="text-decoration-line-none" data-bs-toggle="modal" 
-                        data-bs-target="#createDeptModal">
+                        data-bs-target="#createHolidayModal">
                         <span class="badge bg-danger text-light rounded-4">Create Holidays</span>
                     </a>
                 </div>
@@ -61,7 +61,8 @@
                                 <tr>
                                     <th>Action</th>
                                     <th>Name</th>
-                                    <th>Code</th>
+                                    <th>Type</th>  
+                                    <th>Date</th>  
                                     <th>Description</th>    
                                 </tr>
                             </thead>
@@ -81,5 +82,5 @@
 <!-- /modals -->
 
 <%- include('crm/partials/footer') %>
-<script type="text/javascript" src="/default/js/src/mod/holiday.js"></script>
+<script type="text/javascript" src="/default/js/src/mod/hrm.js"></script>
 <%- include('crm/partials/closure') %>

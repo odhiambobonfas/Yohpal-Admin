@@ -119,6 +119,7 @@ const bindings = {
             attendance_access: 'hrm.attendance.access',
             attendance_edit: 'hrm.attendance.edit',
             attendance_view: 'hrm.attendance.view',
+            create_attendance_shift: 'hrm.attendance.customShifts.create',
             holidays_access: 'hrm.holidays.access',
             holidays_edit: 'hrm.holidays.edits',
             holidays_view: 'hrm.holidays.view',
