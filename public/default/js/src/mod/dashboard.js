@@ -262,8 +262,7 @@ class Dashboard extends Master {
                     },
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            max: 300,
+                            beginAtZero: true,  
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.1)'
                             }
