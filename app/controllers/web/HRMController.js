@@ -25,9 +25,11 @@ import Binding from '@config/bindings';
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
 import Setting from '@models/Setting'
+import Leave from '@models/Leave';
 import SettingsUtil from '@utils/SettingsUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from "qs"; 
+
 class HRMController {
     static async index(req, res) {
         let settings = await SettingsUtil.getAllSettings();   
@@ -789,6 +791,281 @@ class HRMController {
                 title: error.title || 'Unexpected Error'
             });
         }
+    }
+
+    static async leavesList(req, res) { 
+        let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                let leaves = await HRMUtil.getAllLeaveRequests(req?.redis, req.query);
+                let mex = new mexDtParser(leaves);
+                leaves = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        let id = col['id'] || col['uid'];
+                        if (hasPermission(user?.permissions || [], 'hrm.leaves.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'hrm.leaves.delete')) {
+                            actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+
+                        let actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                    ${actions}
+                                </div>
+                            </div>
+                        `;
+                        return actionDropdown;
+                    }) 
+                    .addColumn('Employee', (col) => {
+                        return ucwords(col.employeeName || (col.user.firstName + " " + col.user.lastName)  || 'N/A');
+                    }) 
+                    .addColumn('LeaveType', (col) => {
+                        let type = col.leaveType || 'N/A';
+                        if (type === 'custom' && col.customLeaveType) {
+                            type = `Custom (${ucwords(col.customLeaveType)})`;
+                        }
+                        return ucfirst(type);
+                    }) 
+                    .editColumn('startDate', (col) => {
+                        return dateToISO8601Formatter(col?.toDate?.() || col || '');
+                    })
+                    .editColumn('endDate', (col) => {
+                        return dateToISO8601Formatter(col?.toDate?.() || col || '');
+                    })
+                    .addColumn('Date', (col) => {
+                        let start = dateToISO8601Formatter(col.startDate?.toDate?.() || col.startDate || '');
+                        let end = dateToISO8601Formatter(col.endDate?.toDate?.() || col.endDate || '');
+                        if (start && end && start !== end) {
+                            return `${start} to ${end}`;
+                        }
+                        return start || 'N/A';
+                    })
+                    .editColumn('reason', (col) => {
+                        return ucfirst(col || 'N/A');
+                    }) 
+                    .editColumn('status', (col) => {  
+                        col = col ? col : 'pending'; 
+                        if (col.toLowerCase() === 'approved') {
+                            return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
+                        } else if (col.toLowerCase() === 'rejected') {
+                            return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
+                        } else {
+                            return `<span class="badge text-dark bg-warning">${ucfirst(col)}</span>`;
+                        }
+                    }) 
+                    .addColumn('addedBy', (col) => {
+                        return ucwords(col || 'N/A');
+                    }) 
+                    .addColumn('createdAt', (col) => {
+                        return dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '');
+                    })
+                    .addColumn('updatedAt', (col) => {
+                        return dateToISO8601Formatter(col.updatedAt?.toDate?.() || col.updatedAt || '');
+                    }) 
+                    .make();
+
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Leave requests retrieved successfully.',
+                    data: leaves
+                });
+            }   
+            catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }   
+
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            }
+
+        } 
+
+        const leaveTypes = await Leave.getAllLeaveTypes(); 
+        const leaveStatuses = await Leave.getAllLeaveStatuses();
+
+        console.log("Leave Types:", leaveTypes);
+        
+        return res.render("crm/hrm/leaves", {
+            title: `${ config.APP.APP_NAME } || List Leave Requests`,
+            user: user, 
+            leaveTypes: leaveTypes,
+            leaveStatuses: leaveStatuses,
+        });
+    }
+
+    static async createLeaveRequest(req, res) {
+        try { 
+            const post = req.body;
+            let user = req.session.user;
+
+            if (!post.employeeId) {
+                throw new Exception(
+                    201,
+                    "EMPLOYEE_ID_INVALID",
+                    LANG_EN.req.employee_id_invalid,
+                    "Invalid employee ID"
+                );
+            }
+
+            if (!post.startDate || isNaN(new Date(post.startDate).getTime())) {
+                throw new Exception(
+                    201,
+                    "LEAVE_START_DATE_INVALID",
+                    LANG_EN.req.leave_start_date_invalid,
+                    "Invalid leave start date"
+                );
+            }
+
+            if (post.endDate && isNaN(new Date(post.endDate).getTime())) {
+                throw new Exception(
+                    201,
+                    "LEAVE_END_DATE_INVALID",
+                    LANG_EN.req.leave_end_date_invalid,
+                    "Invalid leave end date"
+                );
+            }
+
+            const leaveTypes = await Leave.getAllLeaveTypes(); 
+            if (!leaveTypes.some(type => type.slug === post.leaveType)) {
+                throw new Exception(
+                    201,
+                    "LEAVE_TYPE_INVALID",
+                    LANG_EN.req.leave_type_invalid,
+                    "Invalid leave type"
+                );
+            }   
+
+            if (post.leaveType === 'custom' && (!post.customLeaveType || post.customLeaveType.trim() === "")) {
+                throw new Exception(
+                    201,
+                    "CUSTOM_LEAVE_TYPE_REQUIRED",
+                    LANG_EN.req.custom_leave_type_required,
+                    "Missing custom leave type"
+                );
+            }
+
+            if (!post.reason || post.reason.trim() === "") {
+                throw new Exception(
+                    201,
+                    "LEAVE_REASON_REQUIRED",
+                    LANG_EN.req.leave_reason_required,
+                    "Missing leave reason"
+                );
+            }
+
+            if (post.reason && post.reason.length > 500) {
+                throw new Exception(
+                    201,
+                    "LEAVE_REASON_TOO_LONG",
+                    LANG_EN.req.leave_reason_too_long,
+                    "Leave reason too long"
+                );
+            }
+            
+            let attachment = '';
+            let fileUploadToFb = '';
+            if (req.file && req.file?.fieldname == 'leaveAttachment') {  
+                const uploadFilePath = handleFileUploads(req, 'docs/hrm/leaves'); 
+                if (!uploadFilePath) {
+                    throw new Exception(
+                        500,
+                        "LEAVE_ATTACHMENT_UPLOAD_FAILED",
+                        LANG_EN.error.leave_attachment_upload_failed,
+                        "File upload error"
+                    );
+                }
+                
+                attachment = path.relative(process.cwd(), (Array.isArray(uploadFilePath) ? uploadFilePath[0] : uploadFilePath)).replace(/\\/g, "/");
+                const FBUTIL = new FirebaseUtility();
+                fileUploadToFb = await FBUTIL.uploadFile(attachment, "company/yohpal/hrm/leaves", {
+                    linkType: "firebase",
+                    makePublic: true
+                }); 
+                if (!fileUploadToFb) {
+                    throw new Exception(
+                        500,
+                        "LEAVE_ATTACHMENT_UPLOAD_FAILED",
+                        LANG_EN.error.leave_attachment_upload_failed,
+                        "File upload error"
+                    );
+                } 
+            }
+
+            post.attachmentLocalPath = attachment.replace('public', ''); 
+            post.fbAttachmentFbPath = fileUploadToFb;
+
+            console.log("Attachments:", attachment); 
+            const leaveStatuses = await Leave.getAllLeaveStatuses(); 
+            if (!leaveStatuses.some(status => status === post.status)) {
+                throw new Exception(
+                    201,
+                    "LEAVE_STATUS_INVALID",
+                    LANG_EN.req.leave_status_invalid,
+                    "Invalid leave status"
+                );
+            }
+
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...post
+            }
+
+            const result = await HRMUtil.createLeaveRequestQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "LEAVE_REQUEST_CREATE_FAILED",
+                    LANG_EN.error.leave_request_creation_failed,
+                    "Database Error"
+                );
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                message: LANG_EN.success.leave_request_created,
+                data: result,
+            }); 
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        }   
+    } 
+
+    static async payrollView(req, res) {
+        let user = req.session.user;
+        
+        return res.render("crm/hrm/payroll", {
+            title: `${ config.APP.APP_NAME } || List Payment Components`,
+            user: user,  
+        });
     }
 }
 
