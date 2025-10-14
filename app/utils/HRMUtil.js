@@ -9,6 +9,7 @@ import EmployeeDesignation from '@models/EmployeeDesignation';
 import Role from '@models/Role';
 import Permissions from '@models/Permissions';
 import Holiday from '@models/Holiday';
+import Leave from '@models/Leave';
 import Attendance from '@models/Attendance';
 import Exception from '@config/exceptions';
 import { payloadExtras, ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';
@@ -325,6 +326,80 @@ class HRMUtil extends Util {
                         
                         attendance.user = user; 
                         return attendance;
+                    })); 
+
+                    return fetched;
+                },
+                100
+            );
+
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    async createLeaveRequestQuery(data) { 
+        const db = FirestoreDatabase.collection(Leave.collection);
+        let _payloadExtras = {
+            userLoggedInUid: data?.userLoggedInUid,
+            userLoggedInUserName: data?.userLoggedInUserName
+        };
+
+        const extras = payloadExtras(_payloadExtras);
+
+        const payload = {
+            userId: data.employeeId, 
+            userRef: FirestoreDatabase.collection(User.collection).doc(data.employeeId),
+            leaveType: data.leaveType === 'custom' ? data.customLeaveType : data.leaveType,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            reason: data.reason || "",
+            attachments: data.attachmentLocalPath || '',
+            fbAttachmentFbPath: data.fbAttachmentFbPath || '',
+            status: data?.status?.length ? data.status : 'pending', // pending, approved, rejected
+            ...extras
+        };
+
+        const result = await db.add(payload);   
+
+        return result;
+    }
+
+    async getAllLeaveRequests(redis, filters) {
+        try { 
+            const filtersKey = 'yp:attendances:filters';
+            const cacheKey = 'yp:attendances:filtered';
+            let ref = FirestoreDatabase.collection(Leave.collection); 
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }   
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => { 
+                    let collection = await ref.get();
+                    let data = fbCollectionParser(collection); 
+
+                    let fetched = await Promise.all(data.map( async (leave) => {
+                        let user = {};
+
+                        // if attendance has a userRef reference
+                        if (leave.userRef && leave.userRef.get) {
+                            const userDoc = await leave.userRef.get(); 
+                            if (userDoc.exists) {
+                                user = { id: userDoc.id, ...userDoc.data() }; 
+                            }
+                        }
+                        
+                        leave.user = user; 
+                        return leave;
                     })); 
 
                     return fetched;

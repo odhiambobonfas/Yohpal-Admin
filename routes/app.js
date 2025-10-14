@@ -89,6 +89,14 @@ router.route('/holidays/list')
 
 router.post('/holidays/create', authMiddleware, HRMController.createHoliday);
 
+router.route('/leaves/list')
+    .get(authMiddleware, HRMController.leavesList);
+
+router.post('/leaves/create', authMiddleware, upload.single('leaveAttachment'), HRMController.createLeaveRequest);
+
+router.route('/payroll/payment/components')
+    .get(authMiddleware, HRMController.payrollView);
+
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
 router.post('/api/setting/create', authMiddleware, upload.single('generalSetting[otherSettings][companyLogo]'), SettingsController.createUpdateSettings);

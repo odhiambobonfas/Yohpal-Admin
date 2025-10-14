@@ -104,7 +104,17 @@ const LANG_EN = {
         custom_shift_end_invalid: "Please provide a valid custom shift end time.",
         custom_shift_end_before_start: "Custom shift end time must be after the start time.",
         attendance_status_invalid: "Invalid attendance status. Allowed values: present, absent, or on leave.",
-        attendance_remarks_too_long: "Attendance remarks cannot exceed 500 characters."
+        attendance_remarks_too_long: "Attendance remarks cannot exceed 500 characters.",
+
+        // leave
+        leave_start_date_invalid: "Invalid leave start date.",
+        leave_end_date_invalid: "Invalid leave end date.",
+        leave_type_invalid: "Invalid leave type.",
+        custom_leave_type_required: "Custom leave type is required when leave type is set to 'custom'.",
+        leave_reason_required: "Leave reason is required.",
+        leave_reason_too_long: "Leave reason cannot exceed 500 characters.",
+        leave_status_invalid: "Invalid leave status.",
+        leave_attachment_upload_failed: "Failed to upload leave attachment. Please try again.",
     },
 
     // response errors and statements

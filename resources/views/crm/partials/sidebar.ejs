@@ -174,7 +174,7 @@
                     <% } %>
 
                     <!-- HRM Dropdown -->
-                    <% if (hasAnyPermission(['hrm.employees.access', 'hrm.payroll.access', 'hrm.attendance.access'])) { %>
+                    <% if (hasAnyPermission(['hrm.employees.access', 'hrm.payroll.access', 'hrm.departments.access', 'hrm.designation.access', 'hrm.attendance.access', 'hrm.holidays.access', 'hrm.leaves.access'])) { %>
                     <li class="nav-item">
                         <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse"
                             href="#hrmSubMenu" role="button" aria-expanded="false" aria-controls="hrmSubMenu">
@@ -227,9 +227,16 @@
                                     </a>
                                 </li>
                                 <% } %>
+                                <% if (hasPermission('hrm.leaves.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/leaves/list">
+                                        <i class="fa fa-leaf me-2"></i> Leaves
+                                    </a>
+                                </li>
+                                <% } %>
                                 <% if (hasPermission('hrm.payroll.access')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#payroll">
+                                    <a class="nav-link" href="/payroll/payment/components">
                                         <i class="fa fa-money-bill-wave me-2"></i> Payroll
                                     </a>
                                 </li>
