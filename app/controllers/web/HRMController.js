@@ -29,7 +29,9 @@ import Leave from '@models/Leave';
 import SettingsUtil from '@utils/SettingsUtil';
 import PayrollUtil from '@utils/PayrollUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
-import qs from "qs"; 
+import { departments, designations, employees } from "@funcs/hrm";
+import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+import Attendance from "@models/Attendance";
 
 class HRMController {
     static async index(req, res) {
@@ -485,9 +487,17 @@ class HRMController {
             }   
         }   
         
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/hrm/attendance", {
             title: `${ config.APP.APP_NAME } || List Attendance`,
             user: user, 
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
@@ -693,9 +703,13 @@ class HRMController {
             }   
         }
         
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/hrm/holidays", {
             title: `${ config.APP.APP_NAME } || List Holidays`,
-            user: user, 
+            user: user,  
+            employees: employeesData
         });
     }
 
@@ -900,15 +914,21 @@ class HRMController {
         } 
 
         const leaveTypes = await Leave.getAllLeaveTypes(); 
-        const leaveStatuses = await Leave.getAllLeaveStatuses();
+        const leaveStatuses = await Leave.getAllLeaveStatuses(); 
 
-        console.log("Leave Types:", leaveTypes);
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
         
         return res.render("crm/hrm/leaves", {
             title: `${ config.APP.APP_NAME } || List Leave Requests`,
             user: user, 
             leaveTypes: leaveTypes,
             leaveStatuses: leaveStatuses,
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
