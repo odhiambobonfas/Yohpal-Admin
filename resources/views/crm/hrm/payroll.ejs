@@ -13,42 +13,72 @@
                 <h4>Payroll Management</h4>
                 <div class="badge-span d-flex justify-content-center align-items-center gap-2">
                     <a class="text-decoration-line-none text-dark" href="/">Dashboard</a> 
+                    <span>|</span>
+                    <a href="/payroll/create" class="text-decoration-line-none">
+                        <span class="badge bg-danger text-light rounded-4">Create Payroll</span>
+                    </a>
                 </div>
             </div>
 
             <!-- Nav Tabs -->
-            <ul class="nav nav-tabs mb-3 m-1 border-4 shadow-lg justify-content-between align-items-center" id="paymentTabs" role="tablist"> 
-                <li class="nav-item col-md-6" role="presentation">
-                    <button class="nav-link active w-100" id="earnings-tab" data-bs-toggle="tab" data-bs-target="#earnings" type="button" role="tab" aria-controls="earnings" aria-selected="false">
-                        <i class="fa fa-plus-circle me-2 text-success"></i> Earnings Management
+            <ul class="nav nav-tabs mb-3 m-1 border-4 shadow-lg justify-content-between align-items-center" id="paymentTabs" role="tablist">
+                <li class="nav-item col-md-3" role="presentation">
+                    <button class="nav-link text-dark active w-100" id="components-tab" data-bs-toggle="tab" data-bs-target="#components" type="button" role="tab" aria-controls="earnings" aria-selected="false">
+                        <i class="fa fa-coins me-2 text-success"></i> Components Management
                     </button>
                 </li>
-                <li class="nav-item col-md-6" role="presentation">
-                    <button class="nav-link w-100" id="deductions-tab" data-bs-toggle="tab" data-bs-target="#deductions" type="button" role="tab" aria-controls="deductions" aria-selected="true">
-                        <i class="fa fa-minus-circle me-2 text-danger"></i> Deductions Management
+
+                <li class="nav-item col-md-3" role="presentation">
+                    <button class="nav-link text-dark w-100" id="brackets-tab" data-bs-toggle="tab" data-bs-target="#brackets" type="button" role="tab" aria-controls="brackets" aria-selected="true">
+                        <i class="fa fa-sliders-h me-2 text-dark"></i> Brackets Management
                     </button>
-                </li> 
+                </li>
+
+                <li class="nav-item col-md-3" role="presentation">
+                    <button class="nav-link text-dark w-100" id="tiers-tab" data-bs-toggle="tab" data-bs-target="#tiers" type="button" role="tab" aria-controls="tiers" aria-selected="false">
+                        <i class="fa fa-layer-group me-2 text-info"></i> Tiers Management
+                    </button>
+                </li>
+
+                <li class="nav-item col-md-3" role="presentation">
+                    <button class="nav-link text-dark w-100" id="payroll-tab" data-bs-toggle="tab" data-bs-target="#payroll" type="button" role="tab" aria-controls="deductions" aria-selected="false">
+                        <i class="fa fa-file-invoice-dollar me-2 text-danger"></i> Payroll Management
+                    </button>
+                </li>
             </ul>
 
             <!-- Tab Content -->
-            <div class="tab-content payment-content-section shadow-sm rounded-0 bg-light p-2" id="paymentTabsContent">
+            <div class="tab-content payment-content-section shadow-sm rounded-0 bg-light p-2" id="paymentTabsContent"> 
                 <!-- Earnings -->
-                <div class="tab-pane fade show active earnings-res" id="earnings" role="tabpanel" aria-labelledby="earnings-tab">
-                    <%- include('hrm/partials/payroll/earning-components') %>
+                <div class="tab-pane fade show active components-res" id="components" role="tabpanel" aria-labelledby="components-tab">
+                    <%- include('hrm/partials/payroll/payment-components') %>
+                </div>
+                
+                <!-- brackets -->
+                <div class="tab-pane fade brackets-res" id="brackets" role="tabpanel" aria-labelledby="brackets-tab">
+                    <%- include('hrm/partials/payroll/bracket-components') %>
+                </div>
+
+                <!-- tiers -->
+                <div class="tab-pane fade tiers-res" id="tiers" role="tabpanel" aria-labelledby="tiers-tab">
+                    <%- include('hrm/partials/payroll/tiers-components') %>
                 </div>
 
                 <!-- Deductions -->
-                <div class="tab-pane fade deductions-res" id="deductions" role="tabpanel" aria-labelledby="deductions-tab">
-                    <%- include('hrm/partials/payroll/deduction-components') %>
+                <div class="tab-pane fade payroll-res" id="payroll" role="tabpanel" aria-labelledby="payroll-tab">
+                    <%- include('hrm/partials/payroll/payroll-panel') %>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal -->
-<%- include('hrm/partials/create-payment-component') %>
-<!-- /Modal -->
+<!-- Modals -->
+<%- include('hrm/partials/payroll/create-bracket') %>
+<%- include('hrm/partials/payroll/create-component') %>
+<%- include('hrm/partials/payroll/create-bracket-scope') %>
+<%- include('hrm/partials/payroll/create-tier-scope') %>
+<!-- /Modals -->
 
 <%- include('crm/partials/footer') %>
 <script type="text/javascript" src="/default/js/src/mod/hrm.js"></script>

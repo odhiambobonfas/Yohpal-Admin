@@ -27,8 +27,11 @@ import Util from '@utils/Util';
 import Setting from '@models/Setting'
 import Leave from '@models/Leave';
 import SettingsUtil from '@utils/SettingsUtil';
+import PayrollUtil from '@utils/PayrollUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
-import qs from "qs"; 
+import { departments, designations, employees } from "@funcs/hrm";
+import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+import Attendance from "@models/Attendance";
 
 class HRMController {
     static async index(req, res) {
@@ -484,9 +487,17 @@ class HRMController {
             }   
         }   
         
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/hrm/attendance", {
             title: `${ config.APP.APP_NAME } || List Attendance`,
             user: user, 
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
@@ -692,9 +703,13 @@ class HRMController {
             }   
         }
         
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/hrm/holidays", {
             title: `${ config.APP.APP_NAME } || List Holidays`,
-            user: user, 
+            user: user,  
+            employees: employeesData
         });
     }
 
@@ -899,15 +914,21 @@ class HRMController {
         } 
 
         const leaveTypes = await Leave.getAllLeaveTypes(); 
-        const leaveStatuses = await Leave.getAllLeaveStatuses();
+        const leaveStatuses = await Leave.getAllLeaveStatuses(); 
 
-        console.log("Leave Types:", leaveTypes);
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
         
         return res.render("crm/hrm/leaves", {
             title: `${ config.APP.APP_NAME } || List Leave Requests`,
             user: user, 
             leaveTypes: leaveTypes,
             leaveStatuses: leaveStatuses,
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
@@ -1066,6 +1087,201 @@ class HRMController {
             title: `${ config.APP.APP_NAME } || List Payment Components`,
             user: user,  
         });
+    }
+
+    static async getPaymentComponents(req, res) {
+        let user = req.session.user; 
+        try {
+            let components = await PayrollUtil.getAllPaymentComponents(req?.redis, req.query);
+            let mex = new mexDtParser(components);
+
+            components = mex
+                .addColumn('actions', (col) => {
+                    let actions = '';
+                    let id = col['id'] || col['uid'];
+
+                    if (hasPermission(user?.permissions || [], 'hrm.payments.components.edit')) {
+                        actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>`;
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'hrm.payments.components.delete')) {
+                        actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                            <i class="fas fa-trash-alt me-1"></i> Delete
+                        </a>`;
+                    }
+
+                    return `
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                ${actions}
+                            </div>
+                        </div>
+                    `;
+                })
+                .editColumn('componentName', (col) => {
+                    return ucwords(col || 'N/A');
+                })
+                .editColumn('componentCode', (col) => {
+                    return ucwords(col || 'N/A');
+                })
+                .editColumn('componentDescription', (col) => {
+                    return ucfirst(col || 'N/A');
+                })
+                .editColumn('componentCategory', (col) => {
+                    return ucfirst(col || 'N/A');
+                })
+                .editColumn('componentScope', (col) => {
+                    return ucfirst(col || 'N/A');
+                })
+                .editColumn('componentType', (col) => {
+                    return ucfirst(col || 'N/A');
+                })
+                .addColumn('rate', (col) => {
+                    let rate = col?.componentRate ?? 'N/A';
+                    let type = col?.rateType === 'percentage' ? '%' : '';
+                    return `${rate}${type}`;
+                })
+                .editColumn('addedBy', (col) => {
+                    return ucwords(col || 'N/A');
+                })
+                .editColumn('createdAt', (col) => {
+                    return dateToISO8601Formatter(col?.toDate?.() || col || '');
+                })
+                .addColumn('updatedAt', (col) => {
+                    return dateToISO8601Formatter(col?.toDate?.() || col || '');
+                })
+                .make();
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Payment components retrieved successfully.',
+                data: components
+            });
+        }
+        catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code || 'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+            } 
+    }
+
+    static async createPaymentComponent(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user;
+            
+            if (!post.componentName || post.componentName.trim() === "") {
+                throw new Exception(
+                    201,
+                    "COMPONENT_NAME_REQUIRED",
+                    LANG_EN.req.component_name_required,
+                    "Component name is required"
+                );
+            }
+
+            if (!post.componentType || !["earning", "deduction"].includes(post.componentType)) {
+                throw new Exception(
+                    201,
+                    "COMPONENT_TYPE_INVALID",
+                    LANG_EN.req.component_type_invalid,
+                    "Invalid component type"
+                );
+            }
+            
+            if (post.componentScope && !["none", "tier", "bracket"].includes(post.componentScope)) {
+                throw new Exception(
+                    201,
+                    "COMPONENT_SCOPE_INVALID",
+                    LANG_EN.req.component_scope_invalid,
+                    "Invalid component scope"
+                );
+            }
+            
+            if (post.componentRate) {
+                if (isNaN(post.componentRate) || Number(post.componentRate) < 0) {
+                    throw new Exception(
+                        201,
+                        "COMPONENT_RATE_INVALID",
+                        LANG_EN.req.component_rate_invalid,
+                        "Invalid component rate"
+                    );
+                }
+            }
+
+            if (post.rateType && !["value", "percentage"].includes(post.rateType)) {
+                throw new Exception(
+                    201,
+                    "RATE_TYPE_INVALID",
+                    LANG_EN.req.rate_type_invalid,
+                    "Invalid rate type"
+                );
+            }
+
+            if (post.componentCategory && !["basic", "allowance", "bonus", "tax", "benefit", "other"].includes(post.componentCategory)) {
+                throw new Exception(
+                    201,
+                    "COMPONENT_CATEGORY_INVALID",
+                    LANG_EN.req.component_category_invalid,
+                    "Invalid component category"
+                );
+            }
+            
+            if (post.componentDescription && post.componentDescription.length > 1000) {
+                throw new Exception(
+                    201,
+                    "COMPONENT_DESCRIPTION_TOO_LONG",
+                    LANG_EN.req.component_description_too_long,
+                    "Component description too long"
+                );
+            }
+            
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...post
+            }
+            
+            const result = await PayrollUtil.createPaymentComponentQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "PAYMENT_COMPONENT_CREATE_FAILED",
+                    LANG_EN.error.payment_component_creation_failed,
+                    "Database error creating payment component"
+                );
+            }
+            
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.payment_component_created,
+                data: result,
+            });
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
     }
 }
 

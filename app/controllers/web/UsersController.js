@@ -9,11 +9,11 @@ import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
 import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, reduceToObj, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
-import UsersUtil from '@utils/UserUtil'; 
-import Binding from '@config/bindings'; 
-import LANG_EN from '@lang/en';
-import Util from '@utils/Util'; 
-import qs from 'qs';    
+import UsersUtil from '@utils/UserUtil';  
+import LANG_EN from '@lang/en'; 
+import { departments, designations, employees } from "@funcs/hrm";
+import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+import Attendance from "@models/Attendance";
 
 class UsersController {
     static async index(req, res) {
@@ -139,9 +139,26 @@ class UsersController {
             }
         }
 
+
+        // Get departments and designations data
+        const allRoles = await getAllRoles(req.redis);
+        const departmentsData = await departments(req.redis);
+        const designationsData = await designations(req.redis); 
+
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/users/index", { 
             title: `${ config.APP.APP_NAME } || List Users`,
-            user: req.session.user
+            user: req.session.user,
+            allRoles: allRoles,
+            departments: departmentsData,
+            designations: designationsData,
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
@@ -246,9 +263,25 @@ class UsersController {
             }
         }
 
+        // Get departments and designations data
+        const allRoles = await getAllRoles(req.redis);
+        const departmentsData = await departments(req.redis);
+        const designationsData = await designations(req.redis); 
+
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis); 
+
         return res.render("crm/users/create", { 
             title: `${ config.APP.APP_NAME } || Create User(s)`,
-            user: req.session.user
+            user: req.session.user,
+            allRoles: allRoles,
+            departments: departmentsData,
+            designations: designationsData,
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
@@ -356,12 +389,28 @@ class UsersController {
             return res.redirect('/users');
         }
 
+        // Get departments and designations data
+        const allRoles = await getAllRoles(req.redis);
+        const departmentsData = await departments(req.redis);
+        const designationsData = await designations(req.redis); 
+
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/users/update", { 
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
             roleData: role,
             departmentDesignationData: departmentDesignationData || {}, 
-            user: req.session.user
+            user: req.session.user,
+            allRoles: allRoles,
+            departments: departmentsData,
+            designations: designationsData,
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
