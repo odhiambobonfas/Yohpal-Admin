@@ -115,6 +115,15 @@ const LANG_EN = {
         leave_reason_too_long: "Leave reason cannot exceed 500 characters.",
         leave_status_invalid: "Invalid leave status.",
         leave_attachment_upload_failed: "Failed to upload leave attachment. Please try again.",
+
+        // payroll components
+        component_name_required: "Component name is required.",
+        component_type_invalid: "Invalid component type selected.",
+        component_scope_invalid: "Invalid component scope provided.",
+        component_rate_invalid: "Invalid rate or amount entered.",
+        rate_type_invalid: "Invalid rate type selected.",
+        component_category_invalid: "Invalid component category.",
+        component_description_too_long: "Component description is too long.",
     },
 
     // response errors and statements
@@ -133,7 +142,12 @@ const LANG_EN = {
         holiday_created: "Holiday has been successfully created.",
 
         // attendance
-        attendance_record_created: "Attendance record has been successfully created."
+        attendance_record_created: "Attendance record has been successfully created.",
+
+        // payroll
+        payment_component_created: "Payment component created successfully.",
+        payment_component_updated: "Payment component updated successfully.",
+        payment_component_deleted: "Payment component deleted successfully.",
     },
 
     error: {
@@ -161,7 +175,12 @@ const LANG_EN = {
         holiday_creation_failed: "Failed to create the holiday. Please try again later.",
 
         // attendance
-        attendance_record_creation_failed: "Failed to create attendance record. Please try again later."
+        attendance_record_creation_failed: "Failed to create attendance record. Please try again later.",
+
+        // payroll
+        payment_component_creation_failed: "Failed to create payment component. Please try again later.",
+        payment_component_name_exists: "A payment component with this name already exists.",
+        payment_component_code_exists: "A payment component with this code already exists.", 
     },
 
     // New role/authentication errors

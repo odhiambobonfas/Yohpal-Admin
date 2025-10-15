@@ -94,8 +94,11 @@ router.route('/leaves/list')
 
 router.post('/leaves/create', authMiddleware, upload.single('leaveAttachment'), HRMController.createLeaveRequest);
 
-router.route('/payroll/payment/components')
+router.route('/payroll')
     .get(authMiddleware, HRMController.payrollView);
+
+router.get('/payroll/components', authMiddleware, HRMController.getPaymentComponents);
+router.post('/payroll/component/create', authMiddleware, HRMController.createPaymentComponent);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
