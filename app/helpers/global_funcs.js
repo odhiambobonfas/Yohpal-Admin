@@ -59,8 +59,28 @@ export function parseToISO(dateStr) {
   return `${year}-${month}-${day}`;
 } 
 
+/**
+ * Format numbers into readable currency format.
+ * 
+ * @param {number} amount - The amount to format
+ * @param {string} [currency='USD'] - The ISO 4217 currency code
+ * @param {string} [locale='en-US'] - The locale string
+ * @returns {string}
+ */
+export function currencyFormat(amount, currency = 'USD', locale = 'en-US') {
+    if (amount === null || amount === undefined || isNaN(amount)) return '0.00';
+
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+}
+
 let globalFuncs = {
     env, 
+    currencyFormat,
     isInDevelopment,
     parseToISO,
     parseDateRange

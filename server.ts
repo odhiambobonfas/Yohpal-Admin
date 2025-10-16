@@ -156,6 +156,7 @@ const InitializeServer = async () => {
         } 
 
         // expose user to views
+        res.locals.appSettings = (user as any).appSettings || {};
         res.locals.user = user;
 
         // global function helpers 

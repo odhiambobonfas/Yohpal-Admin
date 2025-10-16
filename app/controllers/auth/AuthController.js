@@ -4,12 +4,14 @@ import config from '@config/config';
 import User from '@models/User';
 import Util from '@utils/Util';
 import UserUtil from '@utils/UserUtil';
+import SettingsUtil from '@utils/SettingsUtil';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import {env, isInDevelopment} from "@funcs/global_funcs";  
+import { mergeDataGroupObjects } from '@config/utils';
 
 class AuthController {
     static async register(req, res) {
@@ -160,6 +162,10 @@ class AuthController {
                 throw new Exception(201, 'ACCOUNT_SUSPENDED', LANG_EN.account_suspended_exception, 'Suspension Auth Error!');
             }
 
+            let settings = await SettingsUtil.getAllSettings(req.redis); 
+            
+            settings = mergeDataGroupObjects(settings);
+            
             let userPayload = {
                 email: user.email,
                 username: user.userName,
@@ -174,7 +180,8 @@ class AuthController {
                 role: role || null,
                 permissions: permissions,
                 refreshToken: refreshToken,
-                status: user.status || 'inactive'
+                status: user.status || 'inactive',
+                appSettings: settings
             }; 
             
             if (user.status !== 'active') {

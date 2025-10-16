@@ -28,7 +28,7 @@ import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from "qs"; 
 class SettingsController {
     static async index(req, res) {
-        let settings = await SettingsUtil.getAllSettings();   
+        let settings = await SettingsUtil.getAllSettings(req.redis);   
 
         let generalsettings = Object.assign({}, ...(settings?.generalsettings || [])); 
 
@@ -444,7 +444,7 @@ class SettingsController {
     static async getApiSettingsList(req, res) {
         try {  
             let user = req.session.user;
-            let settings = await SettingsUtil.getAllAPISettings(req.query); 
+            let settings = await SettingsUtil.getAllAPISettings(req.redis, req.query); 
             
             let mex = new mexDtParser(settings);
             settings = mex.addColumn('actions', (col) => {
