@@ -31,11 +31,12 @@ import PayrollUtil from '@utils/PayrollUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import { departments, designations, employees } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+import { currencyFormat } from '@funcs/global_funcs';
 import Attendance from "@models/Attendance";
 
 class HRMController {
     static async index(req, res) {
-        let settings = await SettingsUtil.getAllSettings();   
+        let settings = await SettingsUtil.getAllSettings(req.redis);   
 
         let generalsettings = Object.assign({}, ...(settings?.generalsettings || [])); 
         let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
@@ -1082,10 +1083,11 @@ class HRMController {
 
     static async payrollView(req, res) {
         let user = req.session.user;
-        
+        let components = await PayrollUtil.getAllPaymentComponents(req.redis); 
         return res.render("crm/hrm/payroll", {
             title: `${ config.APP.APP_NAME } || List Payment Components`,
-            user: user,  
+            user: user,
+            components: components
         });
     }
 
@@ -1143,9 +1145,10 @@ class HRMController {
                     return ucfirst(col || 'N/A');
                 })
                 .addColumn('rate', (col) => {
-                    let rate = col?.componentRate ?? 'N/A';
+                    let rate = col?.employeeRate ?? 'N/A';
                     let type = col?.rateType === 'percentage' ? '%' : '';
-                    return `${rate}${type}`;
+                    
+                    return rate ? `${rate}${type}` : '';
                 })
                 .editColumn('addedBy', (col) => {
                     return ucwords(col || 'N/A');
@@ -1210,8 +1213,8 @@ class HRMController {
                 );
             }
             
-            if (post.componentRate) {
-                if (isNaN(post.componentRate) || Number(post.componentRate) < 0) {
+            if (post.employeeRate) {
+                if (isNaN(post.employeeRate) || Number(post.employeeRate) < 0) {
                     throw new Exception(
                         201,
                         "COMPONENT_RATE_INVALID",
@@ -1280,6 +1283,475 @@ class HRMController {
                 message: error.message || "Something went wrong. Please try again later.",
                 code: error.code || "INTERNAL_SERVER_ERROR",
                 title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async createBracketScope(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user; 
+
+            if (!post.componentId || post.componentId.trim() === "") {
+                throw new Exception(
+                    201,
+                    "COMPONENT_ID_REQUIRED",
+                    LANG_EN.req.component_id_required,
+                    "Linked component is required"
+                );
+            }
+
+            if (!post.bracketName || post.bracketName.trim() === "") {
+                throw new Exception(
+                    201,
+                    "BRACKET_NAME_REQUIRED",
+                    LANG_EN.req.bracket_name_required,
+                    "Bracket name is required"
+                );
+            }
+
+            if (post.bracketCode && post.bracketCode.length > 50) {
+                throw new Exception(
+                    201,
+                    "BRACKET_CODE_TOO_LONG",
+                    LANG_EN.req.bracket_code_too_long,
+                    "Bracket code too long"
+                );
+            } 
+
+            const min = Number(post.minRange);
+            const max = Number(post.maxRange);
+
+            if (isNaN(min) || min < 0) {
+                throw new Exception(
+                    201,
+                    "BRACKET_MIN_INVALID",
+                    LANG_EN.req.bracket_min_invalid,
+                    "Invalid minimum amount"
+                );
+            }
+
+            if (post.maxRange && (isNaN(max) || max < min)) {
+                throw new Exception(
+                    201,
+                    "BRACKET_MAX_INVALID",
+                    LANG_EN.req.bracket_max_invalid,
+                    "Invalid maximum amount"
+                );
+            }
+            
+            if (post.employeeRate && (isNaN(post.employeeRate) || Number(post.employeeRate) < 0)) {
+                throw new Exception(
+                    201,
+                    "BRACKET_RATE_INVALID",
+                    LANG_EN.req.bracket_rate_invalid,
+                    "Invalid rate or amount"
+                );
+            }
+
+            if (post.employeeRateType && !["value", "percentage"].includes(post.employeeRateType)) {
+                throw new Exception(
+                    201,
+                    "RATE_TYPE_INVALID",
+                    LANG_EN.req.rate_type_invalid,
+                    "Invalid rate type"
+                );
+            }
+            
+            if (post.bracketDescription && post.bracketDescription.length > 1000) {
+                throw new Exception(
+                    201,
+                    "BRACKET_DESCRIPTION_TOO_LONG",
+                    LANG_EN.req.bracket_description_too_long,
+                    "Bracket description too long"
+                );
+            }
+
+            post.max = max;
+            post.min = min;
+            
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...post
+            }
+            
+            const result = await PayrollUtil.createPaymentBracketQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "PAYMENT_BRACKET_CREATE_FAILED",
+                    LANG_EN.error.payment_bracket_creation_failed,
+                    "Database error creating bracket"
+                );
+            }
+            
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.payment_bracket_created,
+                data: result,
+            });
+
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async createTierScope(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user;
+
+            if (!post.componentId || post.componentId.trim() === "") {
+                throw new Exception(
+                    201,
+                    "COMPONENT_ID_REQUIRED",
+                    LANG_EN.req.component_id_required,
+                    "Component ID is required"
+                );
+            }
+
+            if (!post.tierName || post.tierName.trim() === "") {
+                throw new Exception(
+                    201,
+                    "TIER_NAME_REQUIRED",
+                    LANG_EN.req.tier_name_required,
+                    "Tier name is required"
+                );
+            }
+
+            if (post.tierCode && post.tierCode.length > 50) {
+                throw new Exception(
+                    201,
+                    "TIER_CODE_TOO_LONG",
+                    LANG_EN.req.tier_code_too_long,
+                    "Tier code too long"
+                );
+            }
+
+            if (post.employeeRate && (isNaN(post.employeeRate) || Number(post.employeeRate) < 0)) {
+                throw new Exception(
+                    201,
+                    "TIER_RATE_INVALID",
+                    LANG_EN.req.tier_rate_invalid,
+                    "Invalid employee contribution rate"
+                );
+            }
+
+            if (post.employerRate && (isNaN(post.employerRate) || Number(post.employerRate) < 0)) {
+                throw new Exception(
+                    201,
+                    "EMPLOYER_RATE_INVALID",
+                    LANG_EN.req.employer_rate_invalid,
+                    "Invalid employer contribution rate"
+                );
+            }
+
+            if (post.employeeRateType && !["value", "percentage"].includes(post.employeeRateType)) {
+                throw new Exception(
+                    201,
+                    "RATE_TYPE_INVALID",
+                    LANG_EN.req.rate_type_invalid,
+                    "Invalid employee rate type"
+                );
+            }
+
+            if (post.employerRateType && !["value", "percentage"].includes(post.employerRateType)) {
+                throw new Exception(
+                    201,
+                    "EMPLOYER_RATE_TYPE_INVALID",
+                    LANG_EN.req.employer_rate_type_invalid,
+                    "Invalid employer rate type"
+                );
+            }
+
+            if (post.effectiveFrom && isNaN(Date.parse(post.effectiveFrom))) {
+                throw new Exception(
+                    201,
+                    "EFFECTIVE_FROM_INVALID",
+                    LANG_EN.req.effective_from_invalid,
+                    "Invalid effective from date"
+                );
+            }
+
+            const finalPayload = {
+                userLoggedInUid: user.uid,
+                userLoggedInUserName: user.name,
+                ...post
+            };
+
+            const result = await PayrollUtil.createPaymentTierQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "PAYMENT_TIER_CREATE_FAILED",
+                    LANG_EN.error.payment_tier_creation_failed,
+                    "Database error creating payment tier"
+                );
+            }
+
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.payment_tier_created,
+                data: result
+            });
+
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async getComponentBrackets(req, res) {
+        const user = req.session.user;
+        try {
+            let filters = req.query;  
+            filters['scope'] = 'bracket';
+            let brackets = await PayrollUtil.getAllComponentSettingsByLinkedComponents(req?.redis, filters);
+            let mex = new mexDtParser(brackets);
+
+            brackets = mex
+                .addColumn('actions', (col) => {
+                    let actions = '';
+                    const id = col['id'] || col['uid'];
+
+                    if (hasPermission(user?.permissions || [], 'hrm.payments.brackets.edit')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'hrm.payments.brackets.delete')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                    }
+
+                    return `
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId_${id}"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu action-btns" aria-labelledby="triggerId_${id}">
+                                ${actions}
+                            </div>
+                        </div>
+                    `;
+                })
+                .editColumn('componentName', (col) => ucwords(col || 'N/A'))
+                .editColumn('componentCode', (col) => ucwords(col || 'N/A'))
+                .editColumn('componentDescription', (col) => ucfirst(col || 'N/A')) 
+                .addColumn('rate', (col) => {
+                    const rate = col?.employeeRate ?? 'N/A';
+                    const type = col?.rateType === 'percentage' ? '%' : '';
+                    return rate ? `${rate}${type}` : 'N/A';
+                })
+                .addColumn('component', (col) => {
+                    const component = col?.componentRefName || 'N/A';
+                    return ucwords(component);
+                })
+                .editColumn('addedBy', (col) => ucwords(col || 'N/A'))
+                .editColumn('createdAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
+                .addColumn('updatedAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || '')) 
+                .addColumn('essentials', (col) => {
+                    let essentials = col.essentials || [];
+                    essentials = essentials.sort((a, b) => (a.minRange ?? 0) - (b.minRange ?? 0));
+
+                    if (!essentials.length) {
+                        return `<span class="badge bg-light text-muted">No brackets defined</span>`;
+                    }
+
+                    let rows = essentials.map(row => {
+                        const rateSuffix = row.employeeRateType === 'percentage' ? '%' : '';
+                        return `
+                            <tr>
+                                <td>${ucwords(row.bracketName || '')}</td>
+                                <td>${currencyFormat(row.minRange, 'Ksh') ?? '—'}</td>
+                                <td>${currencyFormat(row.maxRange, 'Ksh') ?? '—'}</td>
+                                <td>${row.employeeRate ?? 0}${rateSuffix}</td>
+                                <td>${ucfirst(row.bracketDescription || '')}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div><h5 class="text-center">${col.componentName}</h5></div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Min</th>
+                                        <th>Max</th>
+                                        <th>Rate</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                })
+
+                .make();
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Payment brackets retrieved successfully.',
+                data: brackets
+            });
+        } catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code || 'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        }
+    } 
+
+    static async getComponentTiers(req, res) {
+        const user = req.session.user;
+        try {
+            let filters = req.query;  
+            filters['scope'] = 'tier';
+            let tiers = await PayrollUtil.getAllComponentSettingsByLinkedComponents(req?.redis, filters);
+            let mex = new mexDtParser(tiers);
+
+            tiers = mex
+                .addColumn('actions', (col) => {
+                    let actions = '';
+                    const id = col['id'] || col['uid'];
+
+                    if (hasPermission(user?.permissions || [], 'hrm.payments.tiers.edit')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'hrm.payments.tiers.delete')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                    }
+
+                    return `
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId_${id}"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu action-btns" aria-labelledby="triggerId_${id}">
+                                ${actions}
+                            </div>
+                        </div>
+                    `;
+                })
+                .editColumn('componentName', (col) => ucwords(col || 'N/A'))
+                .editColumn('componentCode', (col) => ucwords(col || 'N/A'))
+                .editColumn('componentDescription', (col) => ucfirst(col || 'N/A')) 
+                .addColumn('rate', (col) => {
+                    const rate = col?.employeeRate ?? 'N/A';
+                    const type = col?.rateType === 'percentage' ? '%' : '';
+                    return rate ? `${rate}${type}` : 'N/A';
+                })
+                .addColumn('component', (col) => {
+                    const component = col?.componentRefName || 'N/A';
+                    return ucwords(component);
+                })
+                .editColumn('addedBy', (col) => ucwords(col || 'N/A'))
+                .editColumn('createdAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
+                .addColumn('updatedAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || '')) 
+                .addColumn('essentials', (col) => {
+                    let essentials = col.essentials || [];
+                    essentials = essentials.sort((a, b) => (a.minRange ?? 0) - (b.minRange ?? 0));
+
+                    if (!essentials.length) {
+                        return `<span class="badge bg-light text-muted">No Tiers defined</span>`;
+                    } 
+                    
+                    let rows = essentials.map(row => {
+                        const employeeRateSuffix = row?.employeeRateType === 'percentage' ? '%' : '';
+                        const employerRateSuffix = row?.employerRateType === 'percentage' ? '%' : '';
+                        return `
+                            <tr>
+                                <td>${ucwords(row.tierName || '')}</td> 
+                                <td>${currencyFormat(row.contributionBase, 'Ksh') ?? '—'}</td>
+                                <td>${row.employeeRate ?? 0}${employeeRateSuffix}</td>
+                                <td>${row.employerRate ?? 0}${employerRateSuffix}</td>
+                                <td>${ucfirst(row.tierDescription || '')}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div><h5 class="text-center">${col.componentName}</h5></div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Max/Min Amount</th> 
+                                        <th>Employer Rate</th>
+                                        <th>Employee Rate</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                })
+
+                .make();
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Payment brackets retrieved successfully.',
+                data: tiers
+            });
+        } catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: 'error',
+                message: error.message || 'Something went wrong. Please try again later.',
+                code: error.code || 'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
             });
         }
     }

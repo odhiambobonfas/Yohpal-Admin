@@ -1,0 +1,103 @@
+<div class="modal fade createTierScopeModal" id="createTierScopeModal" tabindex="-1" aria-labelledby="createTierScopeModalLabel" aria-hidden="true">
+    <form action="/payroll/tiers/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold" id="createTierScopeModalLabel">
+                        <i class="fa fa-layer-group me-2"></i> Define Tier Structure
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <!-- Linked Component -->
+                        <div class="col-md-12 mb-3">
+                            <label for="componentId" class="form-label fw-semibold">For Component <span class="text-danger">*</span></label>
+                            <select class="form-select" id="componentId" name="componentId" required>
+                                <option value="">Select Component</option> 
+                                <% components?.forEach(c => { %>
+                                    <% if (c.componentScope == 'tier') { %>
+                                        <option value="<%= c.id %>"><%= c.componentName %> (<%= c.componentCode %>)</option>
+                                    <% } %>
+                                <% }) %> 
+                            </select>
+                        </div>
+                    </div>
+                
+                    <div class="row g-3">
+                        <!-- Tier Name -->
+                        <div class="col-md-6 mb-3">
+                            <label for="tierName" class="form-label fw-semibold">Tier Name</label>
+                            <input type="text" class="form-control" id="tierName" name="tierName" placeholder="e.g. Tier 1, Tier 2..." required>
+                        </div>
+
+                        <!-- Tier Code -->
+                        <div class="col-md-6 mb-3">
+                            <label for="tierCode" class="form-label fw-semibold">Tier Code</label>
+                            <input type="text" class="form-control" id="tierCode" name="tierCode" placeholder="e.g. TIER001">
+                        </div>
+
+                        <!-- Contribution Base -->
+                        <div class="col-md-12 mb-3">
+                            <label for="contributionBase" class="form-label fw-semibold">Contribution Base</label>
+                            <input type="number" class="form-control" id="contributionBase" name="contributionBase" placeholder="e.g. 18000">
+                            <small class="text-muted">This is the maximum salary base for this tier.</small>
+                        </div>
+
+                        <!-- Contribution Rate -->
+                        <div class="col-md-6 mb-3">
+                            <label for="employeeRate" class="form-label fw-semibold">Employee Rate</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="employeeRate" name="employeeRate" placeholder="e.g. 6">
+                                <select class="form-select" id="employeeRateType" name="employeeRateType" style="max-width: 150px;">
+                                    <option value="percentage" selected>Percentage</option>
+                                    <option value="value">Fixed Value</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Employer Rate -->
+                        <div class="col-md-6">
+                            <label for="employerRate" class="form-label fw-semibold">Employer Rate</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="employerRate" name="employerRate" placeholder="e.g. 6">
+                                <select class="form-select" id="employerRateType" name="employerRateType" style="max-width: 150px;">
+                                    <option value="percentage" selected>Percentage</option>
+                                    <option value="value">Fixed Value</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Effective Dates -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="effectiveFrom" class="form-label fw-semibold">Effective From</label>
+                            <input type="date" class="form-control" id="effectiveFrom" name="effectiveFrom" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="effectiveTo" class="form-label fw-semibold">Effective To</label>
+                            <input type="date" class="form-control" id="effectiveTo" name="effectiveTo">
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <!-- Description -->
+                        <div class="col-md-12">
+                            <label for="tierDescription" class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control" id="tierDescription" name="tierDescription" rows="2" placeholder="Describe this tier (optional)..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm create-tier-submit-btn">
+                        <i class="fa fa-save me-2"></i> Save Tier
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

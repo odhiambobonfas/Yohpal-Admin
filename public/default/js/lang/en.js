@@ -117,6 +117,7 @@ const LANG_EN = {
         leave_attachment_upload_failed: "Failed to upload leave attachment. Please try again.",
 
         // payroll components
+        component_id_required: "Linked component is required.",
         component_name_required: "Component name is required.",
         component_type_invalid: "Invalid component type selected.",
         component_scope_invalid: "Invalid component scope provided.",
@@ -124,9 +125,27 @@ const LANG_EN = {
         rate_type_invalid: "Invalid rate type selected.",
         component_category_invalid: "Invalid component category.",
         component_description_too_long: "Component description is too long.",
-    },
+        
+        // component essentials
+        // brackets
+        bracket_name_required: "Bracket name is required.",
+        bracket_code_too_long: "Bracket code is too long.",
+        bracket_min_invalid: "Invalid minimum amount.",
+        bracket_max_invalid: "Invalid maximum amount.",
+        bracket_rate_invalid: "Invalid bracket rate or amount.",
+        rate_type_invalid: "Invalid rate type.",
+        bracket_description_too_long: "Bracket description too long.",
 
-    // response errors and statements
+        // tiers 
+        tier_name_required: "Tier name is required.",
+        tier_code_too_long: "Tier code must not exceed 50 characters.",
+        tier_rate_invalid: "Invalid employee contribution rate value.",
+        employer_rate_invalid: "Invalid employer contribution rate value.",
+        rate_type_invalid: "Invalid rate type selected.",
+        employer_rate_type_invalid: "Invalid employer rate type selected.",
+        effective_from_invalid: "Invalid effective from date format."
+    }, 
+     // // response errors and statements
     res: {
         invalid_json_exception: "Invalid JSON response",
         default_setting_exists: "A default setting for the target application you tried to add, already exists!",
@@ -148,6 +167,13 @@ const LANG_EN = {
         payment_component_created: "Payment component created successfully.",
         payment_component_updated: "Payment component updated successfully.",
         payment_component_deleted: "Payment component deleted successfully.",
+
+        // component essentials
+        // brackets
+        payment_bracket_created: "Payment bracket created successfully!",
+
+        // tiers
+        payment_tier_created: "Payment tier created successfully."
     },
 
     error: {
@@ -181,6 +207,17 @@ const LANG_EN = {
         payment_component_creation_failed: "Failed to create payment component. Please try again later.",
         payment_component_name_exists: "A payment component with this name already exists.",
         payment_component_code_exists: "A payment component with this code already exists.", 
+
+        // components essentials
+        // brackets
+        bracket_name_exists: "A bracket with this name already exists for the selected component.",
+        bracket_code_exists: "A bracket with this code already exists for the selected component.",
+        payment_bracket_creation_failed: "Failed to create payment bracket. Please try again.",
+
+        // tiers 
+        payment_tier_name_exists: "A tier with the same name already exists.",
+        payment_tier_code_exists: "A tier with the same code already exists.",
+        payment_tier_creation_failed: "Failed to create payment tier. Please try again."
     },
 
     // New role/authentication errors

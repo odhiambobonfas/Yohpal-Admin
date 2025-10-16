@@ -100,6 +100,12 @@ router.route('/payroll')
 router.get('/payroll/components', authMiddleware, HRMController.getPaymentComponents);
 router.post('/payroll/component/create', authMiddleware, HRMController.createPaymentComponent);
 
+router.get('/payroll/brackets', authMiddleware, HRMController.getComponentBrackets);
+router.post('/payroll/brackets/create', authMiddleware, HRMController.createBracketScope);
+
+router.post('/payroll/tiers/create', authMiddleware, HRMController.createTierScope);
+router.get('/payroll/tiers', authMiddleware, HRMController.getComponentTiers);
+
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
 router.post('/api/setting/create', authMiddleware, upload.single('generalSetting[otherSettings][companyLogo]'), SettingsController.createUpdateSettings);

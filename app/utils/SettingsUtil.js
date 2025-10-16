@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser, reduceToObj, convertToCamelCaseKeys, jsonStringifier, jsonParser } from '@config/utils';  
+import { ucwords, fbCollectionParser, reduceToObj, convertToCamelCaseKeys, normalizeFilters, jsonStringifier, jsonParser } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs'; 
 
@@ -15,25 +15,37 @@ class SettingsUtil extends Util {
         super();
     }
 
-    async getAllAPISettings(filters={}) {
+    async getAllAPISettings(redis, filters={}) { 
         try { 
-            console.log("Filters: ", filters);
+            const filtersKey = 'yp:appApiSettings:filters';
+            const cacheKey = 'yp:appApiSettings:filtered';
             filters.docId = filters.targetApp || 'yohpal';
-            let query = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
+            let ref = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
                 .collection('apisetting');
-            
-            const snapshot = await query.get();
 
-            if (snapshot.empty) {
-                return [];
-            } 
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }   
 
-            const settings = fbCollectionParser(snapshot);
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => { 
+                    let collection = await ref.get();
+                    let data = fbCollectionParser(collection);
+                    
+                    return data;
+                },
+                300
+            );
 
-            return settings;
+            return data;
         } catch (error) {
-            console.error("Error fetching API settings:", error);
-            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+            return [];
         }
     }
 
@@ -54,28 +66,49 @@ class SettingsUtil extends Util {
         return settings;
     }
 
-    async getAllSettings(filters = {}) {
+    async getAllSettings(redis, filters = {}) { 
         try { 
-            filters.docId = filters.targetApp || 'yohpal'; 
-            const docs = Setting.documentSettingTypes || []; 
-            
-            const promises = docs.map(async (type) => {
-                filters.documentType = type;
-                try {
-                    const setting = await this.getSettingByDocType(filters);
-                    if (!setting) return null; 
-                    return { [type]: setting };
-                } catch (error) {
-                    return null;
-                }
-            });
-            
-            const results = await Promise.all(promises); 
+            const filtersKey = 'yp:applicationSettings:filters';
+            const cacheKey = 'yp:applicationSettings:filtered'; 
+            filters.docId = filters.targetApp || 'yohpal';
 
-            return reduceToObj(results); 
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+
+            await redis.deleteFunc(cacheKey);
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }   
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => { 
+                    const docs = Setting.documentSettingTypes || []; 
+                    
+                    const promises = docs.map(async (type) => {
+                        filters.documentType = type;
+                        try {
+                            const setting = await this.getSettingByDocType(filters);
+                            if (!setting) return null; 
+                            return { [type]: setting };
+                        } catch (error) {
+                            return null;
+                        }
+                    });
+                    
+                    const results = await Promise.all(promises); 
+
+                    return reduceToObj(results);   
+                },
+                300
+            );
+
+            return data;
         } catch (error) {
-            console.error("Error fetching API settings:", error);
-            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+            return [];
         }
     }
 

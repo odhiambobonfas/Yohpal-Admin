@@ -125,6 +125,26 @@ export function reduceToObj(array) {
 }
 
 /**
+ * Ensure objects 
+ * 
+ * @param {Object} data 
+ * @returns 
+ */
+export function mergeDataGroupObjects(data = {}) {
+    const merged = {};
+
+    for (const [key, arr] of Object.entries(data)) {
+        if (Array.isArray(arr) && arr.length) {
+            merged[key] = arr.reduce((acc, obj) => ({ ...acc, ...obj }), {});
+        } else {
+            merged[key] = {};
+        }
+    }
+
+    return merged;
+}
+
+/**
  * Handles single/multiple file uploads and attaches them to req.body.attachments
  * 
  * @param {Object} req - Express request object
