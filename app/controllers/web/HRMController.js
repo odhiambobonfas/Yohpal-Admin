@@ -1683,7 +1683,7 @@ class HRMController {
                 .addColumn('rate', (col) => {
                     const rate = col?.employeeRate ?? 'N/A';
                     const type = col?.rateType === 'percentage' ? '%' : '';
-                    return rate ? `${rate}${type}` : 'N/A';
+                    return rate !== null ? `${rate}${type}` : 'N/A';
                 })
                 .addColumn('component', (col) => {
                     const component = col?.componentRefName || 'N/A';

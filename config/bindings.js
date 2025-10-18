@@ -139,6 +139,8 @@ const bindings = {
             delete_components: 'hrm.payments.components.delete',
             edit_component_brackets: 'hrm.payments.brackets.edit',
             delete_component_brackets: 'hrm.payments.brackets.delete',
+            edit_component_tiers: 'hrm.payments.tiers.edit',
+            delete_component_tiers: 'hrm.payments.tiers.delete',
         },
 
         // Wallet
