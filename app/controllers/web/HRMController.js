@@ -1201,7 +1201,7 @@ class HRMController {
                 code: error.code || 'INTERNAL_SERVER_ERROR',
                 title: error.title || 'Unexpected Error'
             });
-            } 
+        } 
     }
 
     static async createPaymentComponent(req, res) {

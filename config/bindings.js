@@ -83,12 +83,14 @@ const bindings = {
 
         // Payment Accounts
         accounts: {
-            access: 'accounts.access',
-            view: 'accounts.view',
-            create: 'accounts.create',
-            edit: 'accounts.edit',
-            delete: 'accounts.delete',
-            bank_accounts_access: 'accounts.bank.access',
+            access_accounts: 'accounts.access',
+            view_accounts: 'accounts.view',
+            create_accounts: 'accounts.create',
+            edit_accounts: 'accounts.edit',
+            delete_accounts: 'accounts.delete',
+            access_bank_accounts: 'accounts.bank.access',
+            edit_account_categories: 'accounts.categories.edit',
+            delete_account_categories: 'accounts.categories.delete',
         }, 
 
         invoices: {
@@ -140,7 +142,8 @@ const bindings = {
             edit_component_brackets: 'hrm.payments.brackets.edit',
             delete_component_brackets: 'hrm.payments.brackets.delete',
             edit_component_tiers: 'hrm.payments.tiers.edit',
-            delete_component_tiers: 'hrm.payments.tiers.delete',
+            delete_component_tiers: 'hrm.payments.tiers.delete', 
+            manage_account_types: 'accounts.types.manage',
         },
 
         // Wallet
@@ -182,6 +185,7 @@ const bindings = {
             payments: 'reports.view.payments',
             communication: 'reports.view.communication',
             system: 'reports.view.system',
+            access_account_report: 'reports.accounts.access'
         },
 
         // Profile

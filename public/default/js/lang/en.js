@@ -143,7 +143,13 @@ const LANG_EN = {
         employer_rate_invalid: "Invalid employer contribution rate value.",
         rate_type_invalid: "Invalid rate type selected.",
         employer_rate_type_invalid: "Invalid employer rate type selected.",
-        effective_from_invalid: "Invalid effective from date format."
+        effective_from_invalid: "Invalid effective from date format.",
+
+        // account category
+        category_name_required: "Account category name is required.",
+        category_code_too_long: "The category code cannot exceed 20 characters.",
+        category_status_invalid: "Invalid account category status.",
+        category_description_too_long: "The description cannot exceed 500 characters.",
     }, 
      // // response errors and statements
     res: {
@@ -173,7 +179,12 @@ const LANG_EN = {
         payment_bracket_created: "Payment bracket created successfully!",
 
         // tiers
-        payment_tier_created: "Payment tier created successfully."
+        payment_tier_created: "Payment tier created successfully.",
+
+        // account categories
+        account_category_created: "Account category created successfully.",
+        account_category_updated: "Account category updated successfully.",
+        account_category_deleted: "Account category deleted successfully."
     },
 
     error: {
@@ -217,7 +228,12 @@ const LANG_EN = {
         // tiers 
         payment_tier_name_exists: "A tier with the same name already exists.",
         payment_tier_code_exists: "A tier with the same code already exists.",
-        payment_tier_creation_failed: "Failed to create payment tier. Please try again."
+        payment_tier_creation_failed: "Failed to create payment tier. Please try again.",
+
+        // account categories
+        account_category_creation_failed: "Failed to create account category. Please try again later.",
+        account_category_name_exists: "An account category with this name already exists.",
+        account_category_code_exists: "An account category with this code already exists.",
     },
 
     // New role/authentication errors

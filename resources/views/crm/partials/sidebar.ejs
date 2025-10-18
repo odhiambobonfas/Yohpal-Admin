@@ -117,15 +117,23 @@
                             <ul class="nav flex-column">
                                 <% if (hasPermission('accounts.access')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#accountsList">
+                                    <a class="nav-link" href="/accounts/list">
                                         <i class="fa fa-wallet me-2"></i> List Accounts
                                     </a>
                                 </li>
                                 <% } %>
-                                <% if (hasPermission('accounts.bank.access')) { %>
+                                <% if (hasPermission('accounts.types.manage')) { %>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#bankAccounts">
-                                        <i class="fa fa-university me-2"></i> Bank Accounts
+                                    <a class="nav-link" href="/accounts/categories">
+                                        <i class="fa fa-layer-group me-2"></i> Account Types
+                                    </a>
+                                </li>
+                                <% } %>
+
+                                <% if (hasPermission('reports.accounts.access')) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#accounts/reports">
+                                        <i class="fa fa-chart-line me-2"></i> Account Reports
                                     </a>
                                 </li>
                                 <% } %>
