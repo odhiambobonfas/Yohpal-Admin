@@ -1083,6 +1083,29 @@ class HRMController {
 
     static async payrollView(req, res) {
         let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Payrolls retrieved successfully.',
+                    data: []
+                });
+            }   
+            catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }   
+
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            } 
+        } 
+
         let components = await PayrollUtil.getAllPaymentComponents(req.redis); 
         return res.render("crm/hrm/payroll", {
             title: `${ config.APP.APP_NAME } || List Payment Components`,

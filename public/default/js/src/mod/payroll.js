@@ -167,7 +167,7 @@ class Payroll extends HRM {
             fnDrawCallback: () => {
                 const inst = new Payroll();
                 inst.actionOnPaymentComponentsRes();
-                watchFilterChanges('.bracketScopesFilters', inst.paymentComponentsListing.bind(inst));
+                watchFilterChanges('.bracketScopesFilters', inst.bracketScopesListing.bind(inst));
             },
         });
     }
@@ -245,9 +245,41 @@ class Payroll extends HRM {
             fnDrawCallback: () => {
                 const inst = new Payroll();
                 inst.actionOnPaymentComponentsRes();
-                watchFilterChanges('.tierScopesFilters', inst.paymentComponentsListing.bind(inst));
+                watchFilterChanges('.tierScopesFilters', inst.tierScopesListing.bind(inst));
             },
         });
+    }
+
+    payrollListing() {
+        $('.payroll-table').DataTable({
+            destroy: true,
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+            ajax: ajaxDtParser(
+                'GET', 
+                '/payroll', 
+                filtersParser('.payrollFilters')
+            ),             
+            // columns: [
+            //     {
+            //         data: 'actions',
+            //         orderable: false,
+            //         searchable: false
+            //     },   
+            // ],
+            fnDrawCallback: () => {
+                const inst = new Payroll();
+                inst.actionOnPayrollRes();
+                watchFilterChanges('.payrollFilters', inst.payrollListing.bind(inst));
+            },
+        });
+    }
+
+    actionOnPayrollRes() {
+        // ...
     }
 }
 
@@ -259,4 +291,5 @@ document.addEventListener('DOMContentLoaded', async() => {
     inst.createTierScope();
     inst.bracketScopesListing();
     inst.tierScopesListing();
+    inst.payrollListing();
 });

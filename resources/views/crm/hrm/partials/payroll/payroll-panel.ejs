@@ -1,0 +1,114 @@
+    
+<div class="container-fluid col-12 p-0 d-block">
+    <!-- Card Header -->
+    <div class="card-header bg-white shadow-sm d-flex justify-content-between align-items-center p-1">
+        <button
+            class="btn btn-sm btn-lg btn-link w-100 text-start text-dark d-flex align-items-center gap-3 text-decoration-line-none"
+            type="button" data-bs-toggle="collapse" data-bs-target="#payrollFilters" aria-expanded="false"
+            aria-controls="payrollFilters">
+            <i class="fas fa-filter fa-2x"></i> <span>Toggle Filters</span>
+        </button> 
+    </div>
+
+    <!-- Collapsible Filters Section -->
+    <div class="container-fluid col-12 collapse mb-3 payrollFilters shadow-sm payroll-filters" id="payrollFilters">
+        <div class="col-12 mt-3 row g-3">
+
+            <div class="col-md-4 mb-2">
+                <label for="payrollRef">Payroll Reference</label>
+                <input type="text" name="payrollRef" class="form-control payrollRef"
+                    placeholder="Search by reference...">
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="employeeName">Employee Name</label>
+                <input type="text" name="employeeName" class="form-control employeeName"
+                    placeholder="Search by employee...">
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="department">Department</label>
+                <input type="text" name="department" class="form-control department"
+                    placeholder="Search by department...">
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="payPeriod">Pay Period</label>
+                <input type="text" name="payPeriod" id="payPeriodRange" class="form-control daterange payPeriod"
+                    placeholder="Select date range...">
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="status">Status</label>
+                <select name="status" class="form-control status searchSelect">
+                    <option value="">All</option>
+                    <option value="draft">Draft</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="processed">Processed</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="createdBy">Created By</label>
+                <input type="text" name="createdBy" class="form-control createdBy"
+                    placeholder="Search by creator...">
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="invoiceType">Invoice Type</label>
+                <select name="invoiceType" class="form-control invoiceType searchSelect">
+                    <option value="">All</option>
+                    <option value="regular">Regular</option>
+                    <option value="bonus">Bonus</option>
+                    <option value="adjustment">Adjustment</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="paymentMethod">Payment Method</label>
+                <select name="paymentMethod" class="form-control paymentMethod searchSelect">
+                    <option value="">All</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="cash">Cash</option>
+                    <option value="cheque">Cheque</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-2">
+                <label for="runBy">Run By</label>
+                <input type="text" name="runBy" class="form-control runBy"
+                    placeholder="Search by processor...">
+            </div>
+
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="table-responsive m-1">
+        <table class="table table-striped w-100 payroll-table" id="payroll-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Payroll Ref</th>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Pay Period</th>
+                    <th>Gross Pay</th>
+                    <th>Deductions</th>
+                    <th>Net Pay</th>
+                    <th>Status</th>
+                    <th>Processed By</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic Content -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
