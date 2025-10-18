@@ -21,6 +21,7 @@ import RolesController from "@app/controllers/web/RolesController";
 import SettingsController from "@app/controllers/web/SettingsController";
 import UsersController from "@app/controllers/web/UsersController";
 import HRMController from "@app/controllers/web/HRMController";
+import AccountsController from "@app/controllers/web/AccountsController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
 
@@ -105,6 +106,11 @@ router.post('/payroll/brackets/create', authMiddleware, HRMController.createBrac
 
 router.post('/payroll/tiers/create', authMiddleware, HRMController.createTierScope);
 router.get('/payroll/tiers', authMiddleware, HRMController.getComponentTiers);
+
+// Accounts Routes
+router.get('/accounts/list', authMiddleware, AccountsController.index);
+router.get('/accounts/categories', authMiddleware, AccountsController.accountCategories);
+router.post('/accounts/categories/create', authMiddleware, AccountsController.createAccountCategory);
 
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);

@@ -84,7 +84,7 @@ class HRMController {
                                     Actions
                                 </button>
                                 <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
-                                    ${actions}
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -252,7 +252,7 @@ class HRMController {
                                     Actions
                                 </button>
                                 <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
-                                    ${actions}
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -420,7 +420,7 @@ class HRMController {
                                     Actions
                                 </button>  
                                 <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
-                                    ${actions}
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -640,7 +640,7 @@ class HRMController {
                                     Actions
                                 </button>
                                 <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
-                                    ${actions}
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -839,7 +839,7 @@ class HRMController {
                                     Actions
                                 </button>
                                 <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
-                                    ${actions}
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -1083,6 +1083,29 @@ class HRMController {
 
     static async payrollView(req, res) {
         let user = req.session.user;
+
+        if (isAjaxRequest(req)) {
+            try {
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Payrolls retrieved successfully.',
+                    data: []
+                });
+            }   
+            catch (error) {
+                if (error instanceof Exception && config.APP.APP_DEBUG) {
+                    error.mexLogger();
+                }   
+
+                return res.status((error.status || 500)).json({
+                    status: 'error',
+                    message: error.message || 'Something went wrong. Please try again later.',
+                    code: error.code || 'INTERNAL_SERVER_ERROR',
+                    title: error.title || 'Unexpected Error'
+                });
+            } 
+        } 
+
         let components = await PayrollUtil.getAllPaymentComponents(req.redis); 
         return res.render("crm/hrm/payroll", {
             title: `${ config.APP.APP_NAME } || List Payment Components`,
@@ -1121,7 +1144,7 @@ class HRMController {
                                 Actions
                             </button>
                             <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
-                                ${actions}
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                             </div>
                         </div>
                     `;
@@ -1178,7 +1201,7 @@ class HRMController {
                 code: error.code || 'INTERNAL_SERVER_ERROR',
                 title: error.title || 'Unexpected Error'
             });
-            } 
+        } 
     }
 
     static async createPaymentComponent(req, res) {
@@ -1555,7 +1578,7 @@ class HRMController {
                                 Actions
                             </button>
                             <div class="dropdown-menu action-btns" aria-labelledby="triggerId_${id}">
-                                ${actions}
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                             </div>
                         </div>
                     `;
@@ -1672,7 +1695,7 @@ class HRMController {
                                 Actions
                             </button>
                             <div class="dropdown-menu action-btns" aria-labelledby="triggerId_${id}">
-                                ${actions}
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                             </div>
                         </div>
                     `;
@@ -1683,7 +1706,7 @@ class HRMController {
                 .addColumn('rate', (col) => {
                     const rate = col?.employeeRate ?? 'N/A';
                     const type = col?.rateType === 'percentage' ? '%' : '';
-                    return rate ? `${rate}${type}` : 'N/A';
+                    return rate !== null ? `${rate}${type}` : 'N/A';
                 })
                 .addColumn('component', (col) => {
                     const component = col?.componentRefName || 'N/A';
