@@ -76,7 +76,7 @@ class SettingsController {
                                     Actions
                             </button>
                             <div class="dropdown-menu action-btns" aria-labelledby="triggerId">  
-                                ${actions}
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                             </div>
                         </div>
                     `;
@@ -489,7 +489,7 @@ class SettingsController {
                                 Actions
                         </button>
                         <div class="dropdown-menu action-btns" aria-labelledby="triggerId">  
-                            ${actions}
+                            ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                         </div>
                     </div>
                 `;
