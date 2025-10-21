@@ -26,6 +26,7 @@ import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
 import Setting from '@models/Setting'
 import Leave from '@models/Leave';
+import Application from '@models/Application';
 import SettingsUtil from '@utils/SettingsUtil';
 import PayrollUtil from '@utils/PayrollUtil';
 import AccountUtil from '@utils/AccountUtil';
@@ -41,10 +42,86 @@ class AccountsController {
 
         if (isAjaxRequest(req)) {
             try {
+                const user = req.session.user;
+                let accounts = await AccountUtil.getAllAccounts(req?.redis, req.query);
+
+                let mex = new mexDtParser(accounts);
+
+                accounts = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        const id = col['id'] || col['uid'];
+
+                        if (hasPermission(user?.permissions || [], 'accounts.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item edit-account" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.deposit')) {
+                            actions += `<a class="dropdown-item deposit" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-coins me-1 text-success"></i> Deposit Amount
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.transfer')) {
+                            actions += `<a class="dropdown-item transfer" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-exchange-alt me-1 text-warning"></i> Transfer Amount
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.view')) {
+                            actions += `<a class="dropdown-item view-account" href="/accounts/${id}">
+                                <i class="fas fa-eye me-1 text-info"></i> View
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.delete')) {
+                            actions += `<a class="dropdown-item delete-account text-danger" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+
+                        return `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="actionDropdown-${id}"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns" aria-labelledby="actionDropdown-${id}">
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                                </div>
+                            </div>
+                        `;
+                    })
+                    .editColumn('accountName', (col) => ucwords(col || 'N/A'))
+                    .editColumn('accountNumber', (col) => col || 'N/A')
+                    .addColumn('accountCategory', (col) => {
+                        return ucwords(col.category.name || 'N/A');
+                    })
+                    .addColumn('accountBalance', (col) => {
+                        const balance = currencyFormat(col.accountBalance || 0, "Ksh");
+                        return balance;
+                    })
+                    .editColumn('accountStatus', (col) => { 
+                        return `<span class="badge ${col == 'active' ? 'bg-success' : 'bg-danger'}">
+                            ${col == 'active' ? 'Active' : 'Inactive'}
+                        </span>`;
+                    })
+                    .addColumn('ownerDetails', (col) => {
+                        const name = ucwords(col?.ownerName || 'N/A');
+                        const phone = col?.ownerContactNumber ? `<br><small class="text-muted">${col?.ownerContactNumber}</small>` : '';
+                        return `${name}${phone}`;
+                    })
+                    .addColumn('createdAt', (col) =>
+                        dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '')
+                    )
+                    .make();
+
                 return res.status(200).json({
                     status: 'success',
                     message: 'Payment Accounts retrieved successfully.',
-                    data: []
+                    data: accounts
                 });
             }   
             catch (error) {
@@ -61,9 +138,14 @@ class AccountsController {
             } 
         } 
 
+        let ypApplications = await Application.ypApplications();
+        let categories = await AccountUtil.getAllAccountCategories(req?.redis, req.query);
+
         return res.render("crm/accounts/index", {
             title: `${ config.APP.APP_NAME } || Accounts Management`,
             user: req.session.user, 
+            categories: categories,
+            applications: ypApplications
         });
     }
 
@@ -200,6 +282,83 @@ class AccountsController {
                 data: result
             });
 
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async createAccount(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user;
+            
+            if (!post.accountName || post.accountName.trim() === "") {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_NAME_REQUIRED",
+                    LANG_EN.req.account_name_required,
+                    "Account name is required"
+                );
+            }
+
+            if (!post.accountCategory || post.accountCategory.trim() === "") {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_CATEGORY_REQUIRED",
+                    LANG_EN.req.account_category_required,
+                    "Account category is required"
+                );
+            }
+
+            if (post.accountNumber && post.accountNumber.length > 30) {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_NUMBER_TOO_LONG",
+                    LANG_EN.req.account_number_too_long,
+                    "Account number is too long"
+                );
+            }
+
+            if (post.accountDescription && post.accountDescription.length > 500) {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_DESCRIPTION_TOO_LONG",
+                    LANG_EN.req.account_description_too_long,
+                    "Description too long"
+                );
+            }
+            
+            const finalPayload = {
+                userLoggedInUid: user.uid,
+                userLoggedInUserName: user.name,
+                ...post
+            };
+            
+            const result = await AccountUtil.createAccountQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "ACCOUNT_CREATE_FAILED",
+                    LANG_EN.error.account_creation_failed,
+                    "Database error creating payment account"
+                );
+            }
+            
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.account_created,
+                data: result
+            });
         } catch (error) {
             console.log(error.message);
             if (error instanceof Exception && config.APP.APP_DEBUG) {
