@@ -58,8 +58,26 @@ class AccountsController {
                             </a>`;
                         }
 
+                        if (hasPermission(user?.permissions || [], 'accounts.deposit')) {
+                            actions += `<a class="dropdown-item deposit" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-coins me-1 text-success"></i> Deposit Amount
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.transfer')) {
+                            actions += `<a class="dropdown-item transfer" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-exchange-alt me-1 text-warning"></i> Transfer Amount
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.view')) {
+                            actions += `<a class="dropdown-item view-account" href="/accounts/${id}">
+                                <i class="fas fa-eye me-1 text-info"></i> View
+                            </a>`;
+                        }
+
                         if (hasPermission(user?.permissions || [], 'accounts.delete')) {
-                            actions += `<a class="btn btn-sm dropdown-item delete-account" href="javascript:void(0)" data-id="${id}">
+                            actions += `<a class="dropdown-item delete-account text-danger" href="javascript:void(0)" data-id="${id}">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </a>`;
                         }
@@ -78,7 +96,9 @@ class AccountsController {
                     })
                     .editColumn('accountName', (col) => ucwords(col || 'N/A'))
                     .editColumn('accountNumber', (col) => col || 'N/A')
-                    .editColumn('accountCategory', (col) => ucwords(col || 'N/A'))
+                    .addColumn('accountCategory', (col) => {
+                        return ucwords(col.category.name || 'N/A');
+                    })
                     .addColumn('accountBalance', (col) => {
                         const balance = currencyFormat(col.accountBalance || 0, "Ksh");
                         return balance;

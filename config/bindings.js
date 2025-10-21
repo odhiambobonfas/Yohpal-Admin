@@ -88,6 +88,8 @@ const bindings = {
             create_accounts: 'accounts.create',
             edit_accounts: 'accounts.edit',
             delete_accounts: 'accounts.delete',
+            deposit_amount: 'accounts.deposit',
+            transfer_amount: 'accounts.transfer',
             access_bank_accounts: 'accounts.bank.access',
             edit_account_categories: 'accounts.categories.edit',
             delete_account_categories: 'accounts.categories.delete',

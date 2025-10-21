@@ -201,9 +201,24 @@ class AccountsUtil extends Util {
             async () => { 
                 let collection = await ref.get();
                 
-                let data = fbCollectionParser(collection);
+                let data = fbCollectionParser(collection); 
+                
+                let fetched = await Promise.all(data.map( async (account) => {
+                    let category = {};
 
-                return data;
+                    // if account has a accountCategoryRef reference
+                    if (account.accountCategoryRef && account.accountCategoryRef.get) {
+                        const userDoc = await account.accountCategoryRef.get(); 
+                        if (userDoc.exists) {
+                            category = { id: userDoc.id, ...userDoc.data() }; 
+                        }
+                    }
+                    
+                    account.category = category; 
+                    return account;
+                })); 
+
+                return fetched; 
             },
             300
         );
