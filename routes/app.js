@@ -109,6 +109,7 @@ router.get('/payroll/tiers', authMiddleware, HRMController.getComponentTiers);
 
 // Accounts Routes
 router.get('/accounts/list', authMiddleware, AccountsController.index);
+router.post('/accounts/create', authMiddleware, AccountsController.createAccount);
 router.get('/accounts/categories', authMiddleware, AccountsController.accountCategories);
 router.post('/accounts/categories/create', authMiddleware, AccountsController.createAccountCategory);
 

@@ -150,6 +150,12 @@ const LANG_EN = {
         category_code_too_long: "The category code cannot exceed 20 characters.",
         category_status_invalid: "Invalid account category status.",
         category_description_too_long: "The description cannot exceed 500 characters.",
+        
+        // accounts
+        account_name_required: "Account name is required",
+        account_category_required: "Account category is required",
+        account_number_too_long: "Account number is too long (maximum 30 characters)",
+        account_description_too_long: "Account description is too long (maximum 500 characters)",
     }, 
      // // response errors and statements
     res: {
@@ -184,7 +190,12 @@ const LANG_EN = {
         // account categories
         account_category_created: "Account category created successfully.",
         account_category_updated: "Account category updated successfully.",
-        account_category_deleted: "Account category deleted successfully."
+        account_category_deleted: "Account category deleted successfully.",
+        
+        // accounts
+        account_created: "Account has been created successfully.",
+        account_updated: "Account has been updated successfully.",
+        account_deleted: "Account has been deleted successfully.",
     },
 
     error: {
@@ -234,6 +245,15 @@ const LANG_EN = {
         account_category_creation_failed: "Failed to create account category. Please try again later.",
         account_category_name_exists: "An account category with this name already exists.",
         account_category_code_exists: "An account category with this code already exists.",
+
+        // accounts
+        account_creation_failed: "Failed to create account due to a database error.",
+        account_name_exists: "An account with this name already exists.",
+        account_number_exists: "An account with this number already exists.",
+        account_not_found: "The specified account could not be found.",
+        account_update_failed: "Failed to update the account.",
+        account_delete_failed: "Failed to delete the account.",
+        account_opening_balance_failed: "Failed to record opening balance transaction.",
     },
 
     // New role/authentication errors

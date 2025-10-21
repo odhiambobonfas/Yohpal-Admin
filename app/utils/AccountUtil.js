@@ -13,6 +13,7 @@ import Permissions from '@models/Permissions';
 import Holiday from '@models/Holiday';
 import Leave from '@models/Leave';
 import Attendance from '@models/Attendance';
+import Transaction from '@models/Transaction';
 import Exception from '@config/exceptions';
 import { payloadExtras, ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';
 import LANG_EN from '@lang/en';
@@ -96,6 +97,87 @@ class AccountsUtil extends Util {
         );
         
         return data;
+    }
+
+    async createAccountQuery(data) {
+        let accountQuery = await FirestoreDatabase.runTransaction(async (trans) => {
+            let accountCol = FirestoreDatabase.collection(PaymentAccount.collection);
+            let accountRef = accountCol.doc();
+            
+            const nameSnap = await accountCol
+                .where("name", "==", data.accountName)
+                .where("category", "==", data.accountCategory)
+                .get();
+
+            if (!nameSnap.empty) {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_NAME_DUPLICATE",
+                    LANG_EN.error.account_name_exists,
+                    "Duplicate account name under this category"
+                );
+            }
+
+            if (data.accountNumber) {
+                const numSnap = await accountCol
+                    .where("number", "==", data.accountNumber)
+                    .get();
+                if (!numSnap.empty) {
+                    throw new Exception(
+                        201,
+                        "ACCOUNT_NUMBER_DUPLICATE",
+                        LANG_EN.error.account_number_exists,
+                        "Duplicate account number"
+                    );
+                }
+            }
+            
+            const extras = payloadExtras({
+                userLoggedInUid: data?.userLoggedInUid,
+                userLoggedInUserName: data?.userLoggedInUserName
+            });
+        
+            // Create the account first 
+            const accountData = {
+                accountName: data.accountName.trim(),
+                accountNumber: data.accountNumber?.trim() || "",
+                accountCategory: data.accountCategory,
+                ownerName: data.ownerName || "",
+                bankDetails: { 
+                    bankName: data.bankName || "",
+                    swiftCode: data.swiftCode || "", 
+                    bankCode: data.bankCode || "",
+                    branchCode: data.branchCode || "",
+                    bin: data.bin || "",
+                },
+                ownerContactNumber: data.ownerContactNumber || "",
+                accountDescription: data.accountDescription?.trim() || "", 
+                ...extras
+            };
+            
+            trans.set(accountRef, accountData);
+
+            // If opening balance exists, record a transaction
+            const openingBalance = parseFloat(data.openingBalance) || 0;
+            if (openingBalance > 0) { 
+                let transRef = FirestoreDatabase.collection(Transaction.collection).doc();
+                const transactionPayload = {
+                    accountId: accountRef.id,
+                    accountRef: FirestoreDatabase.collection(PaymentAccount.collection).doc(accountRef.id),
+                    type: "CREDIT",
+                    amount: openingBalance,
+                    description: "Opening Balance",
+                    reference: `OPEN-${accountRef.id.toUpperCase().slice(0, 8)}`,
+                    ...extras
+                };
+
+                trans.set(transRef, transactionPayload);
+            }
+
+            return { id: accountRef.id, ...accountData, openingBalance };
+        });
+
+        return accountQuery;
     }
 }
 

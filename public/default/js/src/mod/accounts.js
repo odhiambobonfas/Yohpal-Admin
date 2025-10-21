@@ -42,6 +42,7 @@ class Account extends Master {
                     enableElement(btn);
 
                     if (response && response.status === 'success') {
+                        resetFormAndCloseModal(form);
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                         (new Account()).accountCategoriesListing();
                         return;
@@ -78,14 +79,14 @@ class Account extends Master {
 
                 let form = btn.closest('form');
                 let data = new FormData(form);
-                data.append('type', form.getAttribute('id'));
 
                 fetch(formRouteParser(form), {
                     method: form.method,
                     headers: { 
+                        'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: data
+                    body: jsonifyFormData(data)
                 })
                 .then(async res => {
                     let response;
@@ -100,6 +101,7 @@ class Account extends Master {
                     enableElement(btn);
 
                     if (response && response.status === 'success') {
+                        resetFormAndCloseModal(form);
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                         (new Account()).accountsListing();
                         return;

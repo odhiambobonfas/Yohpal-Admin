@@ -20,7 +20,7 @@
                         <i class="fa fa-home me-1"></i> Dashboard
                     </a>
                     <span>|</span>
-                    <a href="javascript:void(0)" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#createPaymentAccountModal">
+                    <a href="javascript:void(0)" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#createAccountModal">
                         <span class="badge bg-danger text-light rounded-4">
                             <i class="fa fa-plus-circle me-1"></i> Add Payment Account
                         </span>
@@ -65,21 +65,13 @@
                         <div class="col-md-4 mb-2">
                             <label for="accountCategory">Account Category</label>
                             <select name="accountCategory" class="form-control accountCategory searchSelect">
-                                <option value="">All</option> 
+                                <option selected value="">All</option>  
+                                <% categories?.forEach(category => { %>
+                                    <option value="<%= category.id %>"><%= category.name %></option>
+                                <% }) %>
                             </select>
                         </div>
-
-                        <div class="col-md-4 mb-2">
-                            <label for="currency">Currency</label>
-                            <select name="currency" class="form-control currency searchSelect">
-                                <option value="">All</option>
-                                <option value="KES">KES</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                            </select>
-                        </div>
-
+                        
                         <div class="col-md-4 mb-2">
                             <label for="status">Status</label>
                             <select name="status" class="form-control status searchSelect">
@@ -115,8 +107,7 @@
                                     <th>Account Name</th>
                                     <th>Account Number</th>
                                     <th>Bank</th>
-                                    <th>Type</th>
-                                    <th>Currency</th>
+                                    <th>Type</th> 
                                     <th>Status</th>
                                     <th>Owner</th>
                                     <th>Created At</th>
@@ -132,6 +123,10 @@
         </div>
     </div>
 </div>
+
+<!-- modals -->
+<%- include('accounts/partials/create-account') %>
+<!-- /modals -->
 
 <%- include('crm/partials/footer') %>
 <script type="text/javascript" src="/default/js/src/mod/accounts.js"></script>

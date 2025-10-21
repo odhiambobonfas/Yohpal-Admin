@@ -26,6 +26,7 @@ import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
 import Setting from '@models/Setting'
 import Leave from '@models/Leave';
+import Application from '@models/Application';
 import SettingsUtil from '@utils/SettingsUtil';
 import PayrollUtil from '@utils/PayrollUtil';
 import AccountUtil from '@utils/AccountUtil';
@@ -61,9 +62,14 @@ class AccountsController {
             } 
         } 
 
+        let ypApplications = await Application.ypApplications();
+        let categories = await AccountUtil.getAllAccountCategories(req?.redis, req.query);
+
         return res.render("crm/accounts/index", {
             title: `${ config.APP.APP_NAME } || Accounts Management`,
             user: req.session.user, 
+            categories: categories,
+            applications: ypApplications
         });
     }
 
@@ -200,6 +206,83 @@ class AccountsController {
                 data: result
             });
 
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async createAccount(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user;
+            
+            if (!post.accountName || post.accountName.trim() === "") {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_NAME_REQUIRED",
+                    LANG_EN.req.account_name_required,
+                    "Account name is required"
+                );
+            }
+
+            if (!post.accountCategory || post.accountCategory.trim() === "") {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_CATEGORY_REQUIRED",
+                    LANG_EN.req.account_category_required,
+                    "Account category is required"
+                );
+            }
+
+            if (post.accountNumber && post.accountNumber.length > 30) {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_NUMBER_TOO_LONG",
+                    LANG_EN.req.account_number_too_long,
+                    "Account number is too long"
+                );
+            }
+
+            if (post.accountDescription && post.accountDescription.length > 500) {
+                throw new Exception(
+                    201,
+                    "ACCOUNT_DESCRIPTION_TOO_LONG",
+                    LANG_EN.req.account_description_too_long,
+                    "Description too long"
+                );
+            }
+            
+            const finalPayload = {
+                userLoggedInUid: user.uid,
+                userLoggedInUserName: user.name,
+                ...post
+            };
+            
+            const result = await AccountUtil.createAccountQuery(finalPayload);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "ACCOUNT_CREATE_FAILED",
+                    LANG_EN.error.account_creation_failed,
+                    "Database error creating payment account"
+                );
+            }
+            
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.account_created,
+                data: result
+            });
         } catch (error) {
             console.log(error.message);
             if (error instanceof Exception && config.APP.APP_DEBUG) {
