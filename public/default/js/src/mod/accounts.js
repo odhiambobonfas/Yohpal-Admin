@@ -169,13 +169,20 @@ class Account extends Master {
                 '/accounts/list', 
                 filtersParser('.accountsFilters')
             ),             
-            // columns: [
-            //     {
-            //         data: 'actions',
-            //         orderable: false,
-            //         searchable: false
-            //     },   
-            // ],
+            columns: [
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false
+                },   
+                { data: 'accountName' },
+                { data: 'accountNumber' },
+                { data: 'accountCategory' },
+                { data: 'accountBalance' },
+                { data: 'accountStatus' },
+                { data: 'ownerDetails' },
+                { data: 'createdAt' },
+            ],
             fnDrawCallback: () => {
                 const inst = new Account();
                 inst.actionOnAccountRes();

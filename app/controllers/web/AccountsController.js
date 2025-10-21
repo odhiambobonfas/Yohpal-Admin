@@ -42,10 +42,66 @@ class AccountsController {
 
         if (isAjaxRequest(req)) {
             try {
+                const user = req.session.user;
+                let accounts = await AccountUtil.getAllAccounts(req?.redis, req.query);
+
+                let mex = new mexDtParser(accounts);
+
+                accounts = mex 
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        const id = col['id'] || col['uid'];
+
+                        if (hasPermission(user?.permissions || [], 'accounts.edit')) {
+                            actions += `<a class="btn btn-sm dropdown-item edit-account" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.delete')) {
+                            actions += `<a class="btn btn-sm dropdown-item delete-account" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                        }
+
+                        return `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="actionDropdown-${id}"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns" aria-labelledby="actionDropdown-${id}">
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                                </div>
+                            </div>
+                        `;
+                    })
+                    .editColumn('accountName', (col) => ucwords(col || 'N/A'))
+                    .editColumn('accountNumber', (col) => col || 'N/A')
+                    .editColumn('accountCategory', (col) => ucwords(col || 'N/A'))
+                    .addColumn('accountBalance', (col) => {
+                        const balance = currencyFormat(col.accountBalance || 0, "Ksh");
+                        return balance;
+                    })
+                    .editColumn('accountStatus', (col) => { 
+                        return `<span class="badge ${col == 'active' ? 'bg-success' : 'bg-danger'}">
+                            ${col == 'active' ? 'Active' : 'Inactive'}
+                        </span>`;
+                    })
+                    .addColumn('ownerDetails', (col) => {
+                        const name = ucwords(col?.ownerName || 'N/A');
+                        const phone = col?.ownerContactNumber ? `<br><small class="text-muted">${col?.ownerContactNumber}</small>` : '';
+                        return `${name}${phone}`;
+                    })
+                    .addColumn('createdAt', (col) =>
+                        dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '')
+                    )
+                    .make();
+
                 return res.status(200).json({
                     status: 'success',
                     message: 'Payment Accounts retrieved successfully.',
-                    data: []
+                    data: accounts
                 });
             }   
             catch (error) {

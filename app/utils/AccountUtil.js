@@ -141,7 +141,7 @@ class AccountsUtil extends Util {
             const accountData = {
                 accountName: data.accountName.trim(),
                 accountNumber: data.accountNumber?.trim() || "",
-                accountCategory: data.accountCategory,
+                accountCategory: FirestoreDatabase.collection(PaymentAccountCategory.collection).doc(data.accountCategory),
                 ownerName: data.ownerName || "",
                 bankDetails: { 
                     bankName: data.bankName || "",
@@ -151,7 +151,8 @@ class AccountsUtil extends Util {
                     bin: data.bin || "",
                 },
                 ownerContactNumber: data.ownerContactNumber || "",
-                accountDescription: data.accountDescription?.trim() || "", 
+                accountDescription: data.accountDescription?.trim() || "",
+                accountStatus: data.accountStatus || 'inactive',
                 ...extras
             };
             
@@ -178,6 +179,36 @@ class AccountsUtil extends Util {
         });
 
         return accountQuery;
+    }
+
+    async getAllAccounts (redis, filters={}){
+        const filtersKey = 'yp:paymentAccounts:filters';
+        const cacheKey = 'yp:paymentAccounts:filtered';
+        let ref = FirestoreDatabase.collection(PaymentAccount.collection);
+
+        const cachedFilters = await redis.getFunc(filtersKey);
+        const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+        const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;  
+        
+        if (savedFilters !== currentFilters) {
+            await redis.deleteFunc(filtersKey);
+            await redis.deleteFunc(cacheKey);
+            await redis.cacheParser(filtersKey, async () => filters, 2000);
+        }
+
+        let data = await redis.cacheParser(
+            cacheKey,
+            async () => { 
+                let collection = await ref.get();
+                
+                let data = fbCollectionParser(collection);
+
+                return data;
+            },
+            300
+        );
+        
+        return data;
     }
 }
 
