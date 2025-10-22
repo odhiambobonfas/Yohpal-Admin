@@ -213,8 +213,11 @@ const bindings = {
             update_general_settings: 'settings.general.update', 
             create_api_settings: "settings.api.create", 
             edit_api_settings: "settings.api.edit", 
-            delete_api_settings: "settings.api.delete", 
+            activate_api_settings: "settings.api.activate", 
+            deactivate_api_settings: "settings.api.deactivate", 
+            suspend_api_settings: "settings.api.suspend", 
             update_status_api_settings: "settings.api.statusUpdate",  
+            register_mpesa_callbacks: "settings.mpesa.register_endpoint",  
         },
 
         // Developer

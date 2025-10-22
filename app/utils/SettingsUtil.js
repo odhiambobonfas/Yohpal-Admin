@@ -26,6 +26,7 @@ class SettingsUtil extends Util {
             const cachedFilters = await redis.getFunc(filtersKey);
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
             const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
             if (savedFilters !== currentFilters) {
                 await redis.deleteFunc(filtersKey);
                 await redis.deleteFunc(cacheKey);
@@ -76,7 +77,6 @@ class SettingsUtil extends Util {
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
             const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
 
-            await redis.deleteFunc(cacheKey);
             if (savedFilters !== currentFilters) {
                 await redis.deleteFunc(filtersKey);
                 await redis.deleteFunc(cacheKey);
@@ -124,8 +124,7 @@ class SettingsUtil extends Util {
                 let settingsRef = FirestoreDatabase.collection(Setting.collection).doc(targetApp)
                     .collection(colId); 
                 
-                if (data.code) {
-                    
+                if (data.code) { 
                     const codeSnap = await settingsRef
                         .where("code", "==", data.code)
                         .limit(1)
@@ -161,6 +160,13 @@ class SettingsUtil extends Util {
                 data['addeByRefUser'] = data.addedByRefUserId 
                     ?   FirestoreDatabase.collection(User.collection).doc(data.addedByRefUserId) 
                     :   null;
+
+                data['settings']['consumer_key'] = await this.encodeMessage(data['settings']['consumer_key']);
+                data['settings']['consumer_secret'] = await this.encodeMessage(data['settings']['consumer_secret']);
+                data['settings']['shortcode'] = await this.encodeMessage(data['settings']['shortcode']);
+                data['settings']['passkey'] = await this.encodeMessage(data['settings']['passkey']);
+                data['settings']['callback_url']['confirmation'] = await this.encodeMessage(data['settings']['callback_url']['confirmation']);
+                data['settings']['callback_url']['validation'] = await this.encodeMessage(data['settings']['callback_url']['validation']);
 
                 input = data;
                 

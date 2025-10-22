@@ -23,6 +23,7 @@ import Binding from '@config/bindings';
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
 import Setting from '@models/Setting'
+import Application from '@models/Application'
 import SettingsUtil from '@utils/SettingsUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from "qs"; 
@@ -35,13 +36,16 @@ class SettingsController {
         console.log(generalsettings.companyLogoLocalPath);
         let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
         let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
- 
+
+        let ypApplications = await Application.ypApplications();
+
         return res.render("crm/settings/index", {
             title: `${ config.APP.APP_NAME } || App Settings`,
             user: req.session.user,
             generalsetting: generalsettings,
             apisetting: apisettings,
-            taxsetting: taxsettings
+            taxsetting: taxsettings,
+            applications: ypApplications
         });
     }
 
@@ -450,7 +454,8 @@ class SettingsController {
             settings = mex.addColumn('actions', (col) => {
                 let actions = '';
                 let id = col['uid'] || col['id'];
-                let status = col['status'] || 'unset';  
+                let status = col['status'] || 'unset'; 
+                let provider = col.provider?.toLowerCase();
                 
                 if (hasPermission(user?.permissions || [], 'settings.api.edit')) {
                     actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
@@ -479,6 +484,12 @@ class SettingsController {
                 if (hasPermission(user?.permissions || [], 'settings.api.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
                     actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
                             <i class="fas fa-user-slash me-1"></i> Suspend
+                        </a>` 
+                }
+
+                if (hasPermission(user?.permissions || [], 'settings.mpesa.register_endpoint') && provider == 'mpesa' && status == 'active') { 
+                    actions += `<a class="btn btn-sm dropdown-item register_endpoint" href="javascript:void(0)" data-id="${id}">
+                            <i class="fas fa-globe"></i> Register Endpoint
                         </a>` 
                 }
 

@@ -12,7 +12,7 @@ class Util {
      * @param {mixed} message 
      * @returns {mixed} Encoded payload
      */
-    static encodeMessage(message) {
+    async encodeMessage(message) {
         try {
             const secretKey = config.APP.APP_SECRET;
             const encrypted = CryptoJS.AES.encrypt(message, secretKey).toString();
@@ -29,7 +29,7 @@ class Util {
      * @param {mixed} message 
      * @returns {mixed} Encoded payload
      */
-    static decodeMessage(message) {
+    async decodeMessage(message) {
         try {
             const secretKey = config.APP.APP_SECRET;
             const decryptedBytes = CryptoJS.AES.decrypt(decodeURIComponent(message), secretKey);

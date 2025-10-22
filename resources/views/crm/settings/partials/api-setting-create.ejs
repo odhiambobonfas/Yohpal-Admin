@@ -44,12 +44,9 @@
                         <label for="targetApp" class="form-label">Target App</label>
                         <select id="targetApp" name="targetApp" class="form-control searchSelect" required>
                             <option value="" disabled selected>-- Select App --</option>
-                            <option value="yohpal">Yohpal</option>
-                            <option value="app">Yohpal App</option>
-                            <option value="market">Yohpal Market</option>
-                            <option value="hustle">Yohpal Hustle</option>
-                            <option value="chat">Yohpal Chat</option>
-                            <option value="manager">Yohpal Manager</option>
+                                <% applications?.forEach(application => { %>
+                                    <option value="<%= application.slug %>"><%= application.name %></option>
+                                <% }) %>
                         </select>
                     </div>
 

@@ -74,18 +74,18 @@ class Auth {
                 dataType: 'json', 
                 contentType: 'application/json',
                 processData: false,
-                success: function (res) {  
+                success: function (res) {   
+                    enableElement(btn); 
                     toggleButtonContent(btn, null, true);
 
                     if (res && res.status && res.status == 'success') {  
+                        toast(res.status, 5000, res.message);
                         setTimeout(() => {  
                             if(res.redirectUrl) route(res.redirectUrl); 
                         }, 2000);
                         return;
                     }
-                    
-                    enableElement(btn);
-                    
+
                     if (res && res.status && res.status == 'error') {
                         toast(res.status, 5000, res.message || LANG_EN.undefined_error);
                         return;

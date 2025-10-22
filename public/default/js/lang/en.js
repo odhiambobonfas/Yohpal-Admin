@@ -165,6 +165,9 @@ const LANG_EN = {
     },
     
     success: {
+        // Authentication
+        auth_login: "Login success. Welcome back. Please hold on as we take you to dashboard.",
+
         // department
         department_created: "Department created successfully.",
         designation_created: "Designation created successfully.",
