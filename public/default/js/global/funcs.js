@@ -1237,8 +1237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchSelectInitializer();
     initDragAndDropFileUpload();
     fireUpSearchSelectFuncOnModals();
-    const masterInstance = new Master();
-    masterInstance.initOverlay('.main .content-section');
+    const masterInstance = new Master(); 
     masterInstance.initDonateNowFunc();
     setupDateRangeWithBootstrapDatePickerLib(); 
 });

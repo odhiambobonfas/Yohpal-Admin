@@ -454,42 +454,43 @@ class SettingsController {
             settings = mex.addColumn('actions', (col) => {
                 let actions = '';
                 let id = col['uid'] || col['id'];
+                let targetApp = col['targetApp'] || 'yohpal';
                 let status = col['status'] || 'unset'; 
                 let provider = col.provider?.toLowerCase();
                 
                 if (hasPermission(user?.permissions || [], 'settings.api.edit')) {
-                    actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                    actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>`
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.delete')) {
-                    actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                    actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}">
                             <i class="fas fa-trash-alt me-1"></i> Delete
                         </a>`
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.activate') && ['inactive', 'pending', 'unset'].includes(status)) { 
-                    actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
+                    actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="active">
                             <i class="fas fa-check-circle me-1"></i> Activate
                         </a>` 
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.deactivate') && ['active', 'unset'].includes(status)) { 
-                    actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
+                    actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="inactive">
                             <i class="fas fa-times-circle me-1"></i> Deactivate
                         </a>` 
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
-                    actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
+                    actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="suspended">
                             <i class="fas fa-user-slash me-1"></i> Suspend
                         </a>` 
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.mpesa.register_endpoint') && provider == 'mpesa' && status == 'active') { 
-                    actions += `<a class="btn btn-sm dropdown-item register_endpoint" href="javascript:void(0)" data-id="${id}">
-                            <i class="fas fa-globe"></i> Register Endpoint
+                    actions += `<a class="btn btn-sm dropdown-item register_endpoint" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" target-modal=".editApiSettingModal">
+                            <i class="fas fa-globe me-1"></i> Register Endpoint
                         </a>` 
                 }
 

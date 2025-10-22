@@ -112,6 +112,33 @@ class SettingsUtil extends Util {
         }
     }
 
+    async getApiSettingById(redis, api) {
+        try { 
+            const cacheKey = `yp:applicationSetting:${api?.targetApp}:${api?.id}`;  
+            let settingsRef = FirestoreDatabase.collection(Setting.collection)
+                    .doc(api?.targetApp)
+                    .collection(api?.settingType)
+                    .doc(api?.id);
+
+            if (api?.flushCache && api.flushCache) {
+                await redis.deleteFunc(cacheKey);
+            }
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => {   
+                    const snap = await settingsRef.get(); 
+                    return snap.exists ? { id: snap.id, ...snap.data() } : null;
+                },
+                300
+            );
+
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+
     async createSettingQuery(data) {
         try { 
             const colId = data.type;

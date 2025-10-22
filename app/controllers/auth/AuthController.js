@@ -82,7 +82,7 @@ class AuthController {
 
         if (req.query.message || req.query.auth) {
             try {
-                const decodedMessage = Util.decodeMessage(req.query.message || req.query.auth);
+                const decodedMessage = await (new Util()).decodeMessage(req.query.message || req.query.auth);
                 message = decodedMessage || message;
             } catch (error) {
                 console.error("Error decoding message:", error);
@@ -216,9 +216,10 @@ class AuthController {
 
     static async logout(req, res) {
         try { 
+            let msg = await (new Util()).encodeMessage('You have logged out successfully.');
             res.clearCookie(config.COOKIES.COOKIE_NAME); 
             res.clearCookie(config.SESSION.SESSION_NAME); 
-            res.redirect(`/login?auth=${Util.encodeMessage('You have logged out successfully.')}`);
+            res.redirect(`/login?auth=${msg}`);
         } catch (error) { 
             res.redirect('back');
         }

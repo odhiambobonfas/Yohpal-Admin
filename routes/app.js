@@ -22,6 +22,7 @@ import SettingsController from "@app/controllers/web/SettingsController";
 import UsersController from "@app/controllers/web/UsersController";
 import HRMController from "@app/controllers/web/HRMController";
 import AccountsController from "@app/controllers/web/AccountsController";
+import MpesaController from "@app/controllers/web/MpesaController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
 
@@ -119,5 +120,9 @@ router.post('/api/setting/create', authMiddleware, upload.single('generalSetting
 router.get('/api-settings', authMiddleware, SettingsController.getApiSettingsList);
 router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
+
+// Settings CRUD Operations
+router.route('/callback/register')
+    .get(authMiddleware, MpesaController.registerEndpoint);
 
 export default router;

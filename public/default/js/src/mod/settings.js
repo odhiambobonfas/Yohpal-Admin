@@ -117,7 +117,32 @@ class Settings extends Master {
     }
 
     actionOnApiSettingsRes() {
-        // ...
+        const btns = document.querySelectorAll('.api-settings-table .action-btns');
+        btns.forEach(btn => {
+            if (!documentContains(btn)) return;
+            btn = cloneNodeElement(btn);
+            btn.addEventListener('click', (event) => { 
+                toggleLoadingOverlay(true);
+                let clickedBtn = event.target;
+                let clickedId = clickedBtn.getAttribute('data-id'); 
+                let targetApp = clickedBtn.getAttribute('data-target'); 
+
+                if (containsClass(clickedBtn, 'register_endpoint')) {
+                    this.assistiveModalActionParser(
+                        event, 
+                        `/callback/register?modal=true&clickedId=${clickedId}&targetApp=${targetApp}`, 
+                        'GET',
+                        [
+                            { callback: this.registerEndpoint, params: [clickedId, targetApp] }
+                        ]
+                    );
+                }
+            });
+        })
+    }
+    
+    registerEndpoint(clickedId, targetApp) {
+        console.log(targetApp);
     }
 }
 
