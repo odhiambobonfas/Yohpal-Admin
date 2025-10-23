@@ -130,8 +130,14 @@ class SettingsUtil extends Util {
                     const snap = await settingsRef.get(); 
                     return snap.exists ? { id: snap.id, ...snap.data() } : null;
                 },
-                300
+                3600
             );
+
+            if (data) { 
+                let secret = config.APP.JWT_SECRET;
+                data.settings.callbackUrl.confirmation = await this.decodeMessage(data?.settings?.callbackUrl?.confirmation, secret);
+                data.settings.callbackUrl.validation = await this.decodeMessage(data?.settings?.callbackUrl?.validation, secret);
+            }
 
             return data;
         } catch (error) {
@@ -183,24 +189,23 @@ class SettingsUtil extends Util {
                         );
                     }
                 }
-
-                data['addeByRefUser'] = data.addedByRefUserId 
-                    ?   FirestoreDatabase.collection(User.collection).doc(data.addedByRefUserId) 
-                    :   null;
-
-                data['settings']['consumer_key'] = await this.encodeMessage(data['settings']['consumer_key']);
-                data['settings']['consumer_secret'] = await this.encodeMessage(data['settings']['consumer_secret']);
-                data['settings']['shortcode'] = await this.encodeMessage(data['settings']['shortcode']);
-                data['settings']['passkey'] = await this.encodeMessage(data['settings']['passkey']);
-                data['settings']['callback_url']['confirmation'] = await this.encodeMessage(data['settings']['callback_url']['confirmation']);
-                data['settings']['callback_url']['validation'] = await this.encodeMessage(data['settings']['callback_url']['validation']);
-
+                
+                const extras = payloadExtras({
+                    userLoggedInUid: data?.userLoggedInUid,
+                    userLoggedInUserName: data?.userLoggedInUserName
+                });
+            
+                data['settings']['consumerKey'] = await this.encodeMessage(data['settings']['consumerKey']);
+                data['settings']['consumerSecret'] = await this.encodeMessage(data['settings']['consumerSecret']);
+                data['settings']['shortCode'] = await this.encodeMessage(data['settings']['shortCode']);
+                data['settings']['passKey'] = await this.encodeMessage(data['settings']['passKey']);
+                data['settings']['callbackUrl']['confirmation'] = await this.encodeMessage(data['settings']['callbackUrl']['confirmation']);
+                data['settings']['callbackUrl']['validation'] = await this.encodeMessage(data['settings']['callbackUrl']['validation']); 
                 input = data;
                 
                 payload = {
                     ...input,
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    ...extras
                 };
                 
                 await settingsRef.add(payload);

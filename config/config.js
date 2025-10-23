@@ -8,7 +8,7 @@ export default {
         APP_PORT: process.env.APP_PORT || 5000,
         APP_IP: process.env.APP_IP || '0.0.0.0',
         APP_URL: process.env.APP_URL || 'https://admin.yohpal.com',
-        APP_SECRET: process.env.APP_SECRET || 'app_secret',
+        APP_SECRET: process.env.APP_SECRET || 'app_secret', 
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecretkey',
         SESSION_SECRET: process.env.SESSION_SECRET || 'session_secret',
         APP_DEBUG: process.env.APP_DEBUG || true,
@@ -31,7 +31,7 @@ export default {
     },
     AUTH: {
         JWT_SECRET: process.env.JWT_SECRET || 'jwtsecret',
-        TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '1h',
+        TOKEN_EXPIRY: process.env.TOKEN_EXPIRY || '3d',
         BCRYPT_SALT_ROUNDS: parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10,
     },
     MAIL: {

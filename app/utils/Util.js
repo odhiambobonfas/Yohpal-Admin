@@ -10,11 +10,12 @@ class Util {
      * Encodes a parsed payload which later gets decoded using the same algorithm
      * 
      * @param {mixed} message 
+     * @param {String} secret secret used to decode the message
      * @returns {mixed} Encoded payload
      */
-    async encodeMessage(message) {
+    async encodeMessage(message, secret = '') {
         try {
-            const secretKey = config.APP.APP_SECRET;
+            const secretKey = secret || config.APP.APP_SECRET;
             const encrypted = CryptoJS.AES.encrypt(message, secretKey).toString();
             return encodeURIComponent(encrypted);
         } catch (error) {
@@ -27,11 +28,12 @@ class Util {
      * Decodes a parsed payload
      * 
      * @param {mixed} message 
+     * @param {String} secret secret used to encode the message
      * @returns {mixed} Encoded payload
      */
-    async decodeMessage(message) {
+    async decodeMessage(message, secret = '') {
         try {
-            const secretKey = config.APP.APP_SECRET;
+            const secretKey = secret || config.APP.APP_SECRET;
             const decryptedBytes = CryptoJS.AES.decrypt(decodeURIComponent(message), secretKey);
             const decryptedMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);
 

@@ -413,10 +413,13 @@ class SettingsController {
                 };
             }
 
-            payload["userLoggedInUserName"] = session.name || session.email;
-            payload["userLoggedInUid"] = session.uid;
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...payload
+            } 
             
-            const query = await SettingsUtil.createSettingQuery(payload);
+            const query = await SettingsUtil.createSettingQuery(finalPayload);
 
             if (!query) {
                 throw new Exception(
@@ -459,7 +462,7 @@ class SettingsController {
                 let provider = col.provider?.toLowerCase();
                 
                 if (hasPermission(user?.permissions || [], 'settings.api.edit')) {
-                    actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}">
+                    actions += `<a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" target-modal=".editApiSettingModal">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>`
                 }
@@ -489,7 +492,7 @@ class SettingsController {
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.mpesa.register_endpoint') && provider == 'mpesa' && status == 'active') { 
-                    actions += `<a class="btn btn-sm dropdown-item register_endpoint" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" target-modal=".editApiSettingModal">
+                    actions += `<a class="btn btn-sm dropdown-item register_endpoint" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" target-modal=".registerApiCallbackModal">
                             <i class="fas fa-globe me-1"></i> Register Endpoint
                         </a>` 
                 }

@@ -122,7 +122,8 @@ router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
 
 // Settings CRUD Operations
-router.route('/callback/register')
-    .get(authMiddleware, MpesaController.registerEndpoint);
+router.route('/callbacks/register')
+    .get(authMiddleware, MpesaController.registerEndpoint)
+    .post(authMiddleware, MpesaController.registerEndpoint);
 
 export default router;
