@@ -46,6 +46,7 @@ class Settings extends Master {
                     enableElement(btn);
 
                     if (response && response.status === 'success') {
+                        resetFormAndCloseModal(form);
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error);
                         (new Settings()).getApiSettingsList();
                         return;
@@ -89,7 +90,7 @@ class Settings extends Master {
                     searchable: false
                 },
                 {
-                    data: 'provider'
+                    data: '_provider'
                 },
                 {
                     data: 'code'

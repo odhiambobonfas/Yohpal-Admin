@@ -78,9 +78,7 @@ class MpesaController {
                 let secret = jwt.sign({yohpalApiSecret: config.APP.APP_SECRET}, config.APP.APP_SECRET, {
                     expiresIn: config.AUTH.TOKEN_EXPIRY || '1h'
                 });
-
-                console.log("APP SECRET: ", secret);
-
+                
                 const body = {
                     id: post?.clickedId,
                     targetApp: post?.targetApp,
@@ -88,9 +86,7 @@ class MpesaController {
                     validation: callbacks.validation,
                     confirmation: callbacks.confirmation,
                 };
-
-                console.log("API POST DATA: ", post);
-
+                
                 const result = await fetch(endpoint1.route, {
                     credentials: 'include',
                     method: endpoint1.method,
@@ -108,8 +104,6 @@ class MpesaController {
                 }
 
                 let response = await result.json(); 
-                
-                console.log("API RESPONSE 2: ", response);
                 
                 if (!response.status) {
                     throw new Exception(201, 'INVALID_RESPONSE', LANG_EN.error.generic_error, 'Invalid API response error!');

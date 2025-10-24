@@ -16,7 +16,7 @@ const bindings = {
         // Mpesa endpoints bindings
         registerCallbacks: {
             method: "POST",
-            route: 'http://0.0.0.0:4000/v1/callbacks/register',
+            route: 'https://united-skunk-socially.ngrok-free.app/v1/callbacks/register',
             action: 'Callback registration happens via this endpoint!'
         },
     },

@@ -140,7 +140,8 @@ class SettingsController {
             req.body = qs.parse(req.body);
 
             let payload; 
-            const session = req.session.user;
+            let user;
+            const session = user = req.session.user;
 
             const {type} = req.body;
 
@@ -511,9 +512,13 @@ class SettingsController {
 
                 return action_dropdown;
             }) 
-            .editColumn('provider', (col) => { 
-                return ucwords(col || 'N/A');
-            }) 
+            .addColumn('_provider', (col) => { 
+                let provider = ucwords(col.provider || 'N/A');
+                if (col.isDefault) {
+                    provider += ' <sup class="text-danger fw-bold text-sm">default</sup>';
+                }
+                return provider;
+            })
             .editColumn('addedBy', (col) => { 
                 return ucwords(col || 'N/A');
             }) 
