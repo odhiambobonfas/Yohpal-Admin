@@ -156,6 +156,10 @@ const LANG_EN = {
         account_category_required: "Account category is required",
         account_number_too_long: "Account number is too long (maximum 30 characters)",
         account_description_too_long: "Account description is too long (maximum 500 characters)",
+
+        // API Callbacks
+        validation_url_required: "Validation URL is required!",
+        confirmation_url_required: "Confirmation URL is required!",
     }, 
      // // response errors and statements
     res: {
@@ -165,6 +169,9 @@ const LANG_EN = {
     },
     
     success: {
+        // Authentication
+        auth_login: "Login success. Welcome back. Please hold on as we take you to dashboard.",
+
         // department
         department_created: "Department created successfully.",
         designation_created: "Designation created successfully.",
@@ -196,6 +203,9 @@ const LANG_EN = {
         account_created: "Account has been created successfully.",
         account_updated: "Account has been updated successfully.",
         account_deleted: "Account has been deleted successfully.",
+
+        // API Callbacks 
+        api_callbacks_registered_successfully: "API Callbacks registered successfully!", 
     },
 
     error: {
@@ -210,7 +220,7 @@ const LANG_EN = {
 
         // General
         success: "Operation completed successfully!",
-        error: "An error occurred. Please try again.",
+        generic_error: "An error occurred. Please try again.",
         undefined_error: "An error occurred. Please try again or seek help!",
         nav_route_error: "Invalid route: must be a non-empty string.",
         delete_res_warning: "Delete not applicable at this time!",
@@ -254,6 +264,9 @@ const LANG_EN = {
         account_update_failed: "Failed to update the account.",
         account_delete_failed: "Failed to delete the account.",
         account_opening_balance_failed: "Failed to record opening balance transaction.",
+
+        // API CALLBACKS 
+        callback_registration_failed: "Callback registration failed. Please try again later!"
     },
 
     // New role/authentication errors

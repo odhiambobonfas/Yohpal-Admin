@@ -6,7 +6,7 @@ import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser, reduceToObj, convertToCamelCaseKeys, normalizeFilters, jsonStringifier, jsonParser } from '@config/utils';  
+import { payloadExtras, ucwords, fbCollectionParser, reduceToObj, convertToCamelCaseKeys, normalizeFilters, jsonStringifier, jsonParser } from '@config/utils';  
 import { FirestoreDatabase } from '@utils/FirebaseUtil';  
 import { parseDateRange } from '@funcs/global_funcs'; 
 
@@ -26,6 +26,7 @@ class SettingsUtil extends Util {
             const cachedFilters = await redis.getFunc(filtersKey);
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
             const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
             if (savedFilters !== currentFilters) {
                 await redis.deleteFunc(filtersKey);
                 await redis.deleteFunc(cacheKey);
@@ -76,7 +77,6 @@ class SettingsUtil extends Util {
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
             const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
 
-            await redis.deleteFunc(cacheKey);
             if (savedFilters !== currentFilters) {
                 await redis.deleteFunc(filtersKey);
                 await redis.deleteFunc(cacheKey);
@@ -112,6 +112,39 @@ class SettingsUtil extends Util {
         }
     }
 
+    async getApiSettingById(redis, api) {
+        try { 
+            const cacheKey = `yp:applicationSetting:${api?.targetApp}:${api?.id}`;  
+            let settingsRef = FirestoreDatabase.collection(Setting.collection)
+                    .doc(api?.targetApp)
+                    .collection(api?.settingType)
+                    .doc(api?.id);
+
+            if (api?.flushCache && api.flushCache) {
+                await redis.deleteFunc(cacheKey);
+            }
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => {   
+                    const snap = await settingsRef.get(); 
+                    return snap.exists ? { id: snap.id, ...snap.data() } : null;
+                },
+                3600
+            );
+
+            if (data) { 
+                let secret = config.APP.JWT_SECRET;
+                data.settings.callbackUrl.confirmation = await this.decodeMessage(data?.settings?.callbackUrl?.confirmation, secret);
+                data.settings.callbackUrl.validation = await this.decodeMessage(data?.settings?.callbackUrl?.validation, secret);
+            }
+
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+
     async createSettingQuery(data) {
         try { 
             const colId = data.type;
@@ -124,8 +157,7 @@ class SettingsUtil extends Util {
                 let settingsRef = FirestoreDatabase.collection(Setting.collection).doc(targetApp)
                     .collection(colId); 
                 
-                if (data.code) {
-                    
+                if (data.code) { 
                     const codeSnap = await settingsRef
                         .where("code", "==", data.code)
                         .limit(1)
@@ -157,17 +189,23 @@ class SettingsUtil extends Util {
                         );
                     }
                 }
-
-                data['addeByRefUser'] = data.addedByRefUserId 
-                    ?   FirestoreDatabase.collection(User.collection).doc(data.addedByRefUserId) 
-                    :   null;
-
+                
+                const extras = payloadExtras({
+                    userLoggedInUid: data?.userLoggedInUid,
+                    userLoggedInUserName: data?.userLoggedInUserName
+                });
+            
+                data['settings']['consumerKey'] = await this.encodeMessage(data['settings']['consumerKey']);
+                data['settings']['consumerSecret'] = await this.encodeMessage(data['settings']['consumerSecret']);
+                data['settings']['shortCode'] = await this.encodeMessage(data['settings']['shortCode']);
+                data['settings']['passKey'] = await this.encodeMessage(data['settings']['passKey']);
+                data['settings']['callbackUrl']['confirmation'] = await this.encodeMessage(data['settings']['callbackUrl']['confirmation']);
+                data['settings']['callbackUrl']['validation'] = await this.encodeMessage(data['settings']['callbackUrl']['validation']); 
                 input = data;
                 
                 payload = {
                     ...input,
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    ...extras
                 };
                 
                 await settingsRef.add(payload);

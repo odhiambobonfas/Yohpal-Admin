@@ -1,6 +1,7 @@
 const bindings = {
     // API endpoints bindings
     endpoints: {
+        // authentication endpoints bindings
         auth_user: {
             method: 'POST',
             route: 'https://yohpal-market-apis.onrender.com/auth/signin',
@@ -10,7 +11,14 @@ const bindings = {
             method: "POST",
             route: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=',
             action: 'Firebase authentication API endpoint'
-        }
+        },
+        
+        // Mpesa endpoints bindings
+        registerCallbacks: {
+            method: "POST",
+            route: 'https://yohpal-microservices-v1.onrender.com./v1/callbacks/register',
+            action: 'Callback registration happens via this endpoint!'
+        },
     },
 
     // Role Permission Bindings 
@@ -213,8 +221,11 @@ const bindings = {
             update_general_settings: 'settings.general.update', 
             create_api_settings: "settings.api.create", 
             edit_api_settings: "settings.api.edit", 
-            delete_api_settings: "settings.api.delete", 
+            activate_api_settings: "settings.api.activate", 
+            deactivate_api_settings: "settings.api.deactivate", 
+            suspend_api_settings: "settings.api.suspend", 
             update_status_api_settings: "settings.api.statusUpdate",  
+            register_mpesa_callbacks: "settings.mpesa.register_endpoint",  
         },
 
         // Developer

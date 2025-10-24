@@ -23,6 +23,7 @@ import Binding from '@config/bindings';
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
 import Setting from '@models/Setting'
+import Application from '@models/Application'
 import SettingsUtil from '@utils/SettingsUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from "qs"; 
@@ -35,13 +36,16 @@ class SettingsController {
         console.log(generalsettings.companyLogoLocalPath);
         let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
         let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
- 
+
+        let ypApplications = await Application.ypApplications();
+
         return res.render("crm/settings/index", {
             title: `${ config.APP.APP_NAME } || App Settings`,
             user: req.session.user,
             generalsetting: generalsettings,
             apisetting: apisettings,
-            taxsetting: taxsettings
+            taxsetting: taxsettings,
+            applications: ypApplications
         });
     }
 
@@ -136,7 +140,8 @@ class SettingsController {
             req.body = qs.parse(req.body);
 
             let payload; 
-            const session = req.session.user;
+            let user;
+            const session = user = req.session.user;
 
             const {type} = req.body;
 
@@ -409,10 +414,13 @@ class SettingsController {
                 };
             }
 
-            payload["userLoggedInUserName"] = session.name || session.email;
-            payload["userLoggedInUid"] = session.uid;
+            const finalPayload = {
+                userLoggedInUserName: user.name,
+                userLoggedInUid: user.uid,
+                ...payload
+            } 
             
-            const query = await SettingsUtil.createSettingQuery(payload);
+            const query = await SettingsUtil.createSettingQuery(finalPayload);
 
             if (!query) {
                 throw new Exception(
@@ -450,35 +458,43 @@ class SettingsController {
             settings = mex.addColumn('actions', (col) => {
                 let actions = '';
                 let id = col['uid'] || col['id'];
-                let status = col['status'] || 'unset';  
+                let targetApp = col['targetApp'] || 'yohpal';
+                let status = col['status'] || 'unset'; 
+                let provider = col.provider?.toLowerCase();
                 
                 if (hasPermission(user?.permissions || [], 'settings.api.edit')) {
-                    actions += `<a class="btn btn-sm dropdown-item" href="javascript:void(0)" data-id="${id}">
+                    actions += `<a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" target-modal=".editApiSettingModal">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>`
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.delete')) {
-                    actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
+                    actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}">
                             <i class="fas fa-trash-alt me-1"></i> Delete
                         </a>`
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.activate') && ['inactive', 'pending', 'unset'].includes(status)) { 
-                    actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
+                    actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="active">
                             <i class="fas fa-check-circle me-1"></i> Activate
                         </a>` 
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.deactivate') && ['active', 'unset'].includes(status)) { 
-                    actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
+                    actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="inactive">
                             <i class="fas fa-times-circle me-1"></i> Deactivate
                         </a>` 
                 }
 
                 if (hasPermission(user?.permissions || [], 'settings.api.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
-                    actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
+                    actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="suspended">
                             <i class="fas fa-user-slash me-1"></i> Suspend
+                        </a>` 
+                }
+
+                if (hasPermission(user?.permissions || [], 'settings.mpesa.register_endpoint') && provider == 'mpesa' && status == 'active') { 
+                    actions += `<a class="btn btn-sm dropdown-item register_endpoint" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" target-modal=".registerApiCallbackModal">
+                            <i class="fas fa-globe me-1"></i> Register Endpoint
                         </a>` 
                 }
 
@@ -496,9 +512,13 @@ class SettingsController {
 
                 return action_dropdown;
             }) 
-            .editColumn('provider', (col) => { 
-                return ucwords(col || 'N/A');
-            }) 
+            .addColumn('_provider', (col) => { 
+                let provider = ucwords(col.provider || 'N/A');
+                if (col.isDefault) {
+                    provider += ' <sup class="text-danger fw-bold text-sm">default</sup>';
+                }
+                return provider;
+            })
             .editColumn('addedBy', (col) => { 
                 return ucwords(col || 'N/A');
             }) 
