@@ -1,12 +1,13 @@
 class Settings extends Master {
     constructor () {
         super();
-        this.createupdatesettingBtn = document.querySelectorAll('.setting-submit-btn');
+        this.createupdatesettingBtn = document.querySelectorAll('.create-setting-submit-btn');
+        this.editUpdateSettingBtn = document.querySelectorAll('.edit-setting-submit-btn');
     }
 
     initializePageSetup() {
         initListTransition('.ulg', '.content');
-        initProviderToggle('provider', 'provider-form');
+        initProviderToggle('#provider', '.provider-form');
         enableImagePreview('.companyLogo', '.preview-on-edit img', true);
     }
 
@@ -131,10 +132,10 @@ class Settings extends Master {
                 if (containsClass(clickedBtn, 'edit')) {
                     this.assistiveModalActionParser(
                         event, 
-                        `/callbacks/edit?modal=true&clickedId=${clickedId}&targetApp=${targetApp}`, 
+                        `/api/callbacks/edit?modal=true&clickedId=${clickedId}&targetApp=${targetApp}`, 
                         'GET',
-                        [
-                            { callback: this.registerEndpoint, params: [clickedId, targetApp] }
+                        [ 
+                            { callback: this.editApiSettingRes, params: [clickedId, targetApp] }, 
                         ]
                     );
                 }
@@ -153,6 +154,67 @@ class Settings extends Master {
         })
     }
     
+    editApiSettingRes(clickedId, targetApp) {  
+        let btns = this.editUpdateSettingBtn;
+
+        btns.forEach(btn => { 
+            if (!documentContains(btn)) return;
+            btn = cloneNodeElement(btn); // avoid race conditions
+
+            btn.addEventListener('click', event => {
+                event.preventDefault();
+                toggleButtonContent(btn);
+                disableElement(btn);
+
+                let form = btn.closest('form');
+                let data = new FormData(form);
+                data.append('type', form.getAttribute('id'));
+                data.append('clickedId', clickedId);
+                data.append('targetApp', targetApp);
+
+                fetch(formRouteParser(form), {
+                    method: form.method,
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: data
+                })
+                .then(async res => {
+                    let response;
+                    try {
+                        response = await res.json();
+                    } catch (e) {
+                        throw new Error(LANG_EN.res.invalid_json_exception);
+                    }
+
+                    console.log(response);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+
+                    if (response && response.status === 'success') {
+                        resetFormAndCloseModal(form);
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        (new Settings()).getApiSettingsList();
+                        return;
+                    }
+
+                    if (response && response.status === 'error') {
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        return;
+                    }
+
+                    toast('error', 5000, LANG_EN.undefined_error);
+                })
+                .catch(error => {
+                    console.error(error.message || error);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+                    toast('error', 5000, LANG_EN.undefined_error);
+                });
+            }); 
+        });
+    }
+
     registerEndpoint(clickedId, targetApp) {
         let btns = document.querySelectorAll('.register-callbacks-submit-btn');
 
@@ -220,4 +282,5 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.initializePageSetup();
     inst.getApiSettingsList();
     inst.createupdatesetting();
+    inst.editApiSettingRes();
 });

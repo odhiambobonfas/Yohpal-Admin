@@ -125,12 +125,9 @@ class Master {
                         if (callbackFuncs !== undefined) { 
                             if (Array.isArray(callbackFuncs)) {
                                 callbackFuncs.forEach(item => { 
-                                    if (typeof item === 'function') {
-                                        item();
-                                    }
-                                    else if (typeof item === 'object' && item.callback) {
+                                    if (typeof item === 'object' && item.callback) {
                                         item.callback(...(item.params?.length ? item.params : []));
-                                    }
+                                    } 
                                 });
                             }
                         }

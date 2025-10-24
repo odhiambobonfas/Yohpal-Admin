@@ -1143,18 +1143,22 @@ function initListTransition(listSelector, contentSelector) {
     });
 }
 
-function initProviderToggle(selectId, formClass) {
-    const select = document.getElementById(selectId);
-    const forms = document.querySelectorAll(`.${formClass}`);
-    if (!select) return;
-    select.addEventListener('change', () => {
-        const provider = select.value;
-        forms.forEach(f => f.classList.add('d-none'));
-        if (provider) {
-            const activeForm = document.getElementById(`${provider}-form`);
-            if (activeForm) activeForm.classList.remove('d-none');
-        }
-    });
+function initProviderToggle(selectElems, formClass) {
+    const selects = document.querySelectorAll(selectElems);
+    const forms = document.querySelectorAll(formClass);
+    selects.forEach(select => {
+        if (!select) return;
+        select.addEventListener('change', () => {
+            const provider = select.value;
+            forms.forEach(f => f.classList.add('d-none'));
+            if (provider) {
+                const activeForms = document.querySelectorAll(`${provider}-form`);
+                activeForms.forEach(activeForm => { 
+                    if (activeForm) activeForm.classList.remove('d-none');
+                });
+            } 
+        });
+    }); 
 }
 
 /**

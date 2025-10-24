@@ -120,6 +120,8 @@ router.post('/api/setting/create', authMiddleware, upload.single('generalSetting
 router.get('/api-settings', authMiddleware, SettingsController.getApiSettingsList);
 router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
+router.get('/api/callbacks/edit', authMiddleware, SettingsController.editApiSettingRes);
+router.post('/api/callbacks/edit/:id', authMiddleware, SettingsController.editApiSettingRes);
 
 // Settings CRUD Operations
 router.route('/callbacks/register')

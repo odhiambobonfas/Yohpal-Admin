@@ -206,6 +206,9 @@ const LANG_EN = {
 
         // API Callbacks 
         api_callbacks_registered_successfully: "API Callbacks registered successfully!", 
+
+        // API Settings
+        provider_update_success: "API settings updated successfully!"
     },
 
     error: {
@@ -266,7 +269,10 @@ const LANG_EN = {
         account_opening_balance_failed: "Failed to record opening balance transaction.",
 
         // API CALLBACKS 
-        callback_registration_failed: "Callback registration failed. Please try again later!"
+        callback_registration_failed: "Callback registration failed. Please try again later!",
+
+        // API Settings
+        update_provider_query_failed: "Your request to update API provider settings failed!"
     },
 
     // New role/authentication errors
