@@ -138,8 +138,7 @@ class SettingsUtil extends Util {
                 data.settings.callbackUrl.validation = await this.decodeMessage(data?.settings?.callbackUrl?.validation);
                 data.settings.consumerKey = await this.decodeMessage(data?.settings?.consumerKey);
                 data.settings.consumerSecret = await this.decodeMessage(data?.settings?.consumerSecret);
-                data.settings.passKey = await this.decodeMessage(data?.settings?.passKey);
-                data.settings.shortCode = await this.decodeMessage(data?.settings?.shortCode); 
+                data.settings.passKey = await this.decodeMessage(data?.settings?.passKey); 
             }
 
             return data;
@@ -199,8 +198,7 @@ class SettingsUtil extends Util {
                 });
             
                 data['settings']['consumerKey'] = await this.encodeMessage(data['settings']['consumerKey']);
-                data['settings']['consumerSecret'] = await this.encodeMessage(data['settings']['consumerSecret']);
-                data['settings']['shortCode'] = await this.encodeMessage(data['settings']['shortCode']);
+                data['settings']['consumerSecret'] = await this.encodeMessage(data['settings']['consumerSecret']); 
                 data['settings']['passKey'] = await this.encodeMessage(data['settings']['passKey']);
                 data['settings']['callbackUrl']['confirmation'] = await this.encodeMessage(data['settings']['callbackUrl']['confirmation']);
                 data['settings']['callbackUrl']['validation'] = await this.encodeMessage(data['settings']['callbackUrl']['validation']); 
@@ -334,9 +332,7 @@ class SettingsUtil extends Util {
             if (settings.consumerKey)
                 settings.consumerKey = await this.encodeMessage(settings.consumerKey);
             if (settings.consumerSecret)
-                settings.consumerSecret = await this.encodeMessage(settings.consumerSecret);
-            if (settings.shortCode)
-                settings.shortCode = await this.encodeMessage(settings.shortCode);
+                settings.consumerSecret = await this.encodeMessage(settings.consumerSecret); 
             if (settings.passKey)
                 settings.passKey = await this.encodeMessage(settings.passKey);
             if (settings.callbackUrl?.confirmation)
