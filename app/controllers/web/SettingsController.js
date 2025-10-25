@@ -135,8 +135,7 @@ class SettingsController {
     }
 
     static async createUpdateSettings(req, res) {
-        try {
-            console.log(req.body);
+        try { 
             req.body = qs.parse(req.body);
 
             let payload; 
@@ -575,6 +574,183 @@ class SettingsController {
                 status: 'error', 
                 code: error.code ||  'INTERNAL_SERVER_ERROR',
                 title: error.title || 'Unexpected Error'
+            });
+        }
+    }
+
+    static async editApiSettingRes(req, res) {
+        try { 
+            let post = req.query;
+            if (post.modal) { 
+                let ypApplications = await Application.ypApplications();
+
+                const data = {
+                    id: post.clickedId,
+                    targetApp: post.targetApp,
+                    settingType: "apisetting",
+                    flushCache: post?.flushCache ? true : false
+                };
+
+                let apiSet = await SettingsUtil.getApiSettingById(req?.redis, data);  
+                return res.render('views/crm/settings/partials/edit-api-setting', { 
+                    user: req.session.user,
+                    applications: ypApplications,
+                    setting: apiSet
+                }); 
+            } 
+
+            if (!post.modal) {
+                let payload;  
+                let { id } = req.params;
+                let user = req.session.user; 
+                req.body = qs.parse(req.body);
+
+                if (!user?.uid) {
+                    throw new Exception(
+                        403,
+                        "AUTHENTICATION_ERROR_EXCEPTION",
+                        LANG_EN.req.authentication_error_exception,
+                        "Authentication Error"
+                    );
+                } 
+                
+                const { 
+                    type,
+                    provider,
+                    code,
+                    phone,
+                    email,
+                    targetApp,
+                    environ,
+                    status, 
+                    isDefault,
+                    description
+                } = req.body;
+
+                let settings = req.body['mpesaSetting'] || req.body['paypalSettings'] || req.body['customSettings'] || {}; 
+
+                if (!provider) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_NAME_EXCEPTION",
+                        LANG_EN.req.provider_name_required,
+                        "Provider Error"
+                    );
+                }
+
+                if (!phone) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_NAME_EXCEPTION",
+                        LANG_EN.req.phone_number_required,
+                        "Provider Error"
+                    );
+                }
+
+                if (!email) {
+                    throw new Exception(
+                        201,
+                        "PHONE_NUMBER_EXCEPTION",
+                        LANG_EN.req.email_address_required,
+                        "Provider Error"
+                    );
+                }
+
+                if (!code) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_CODE_EXCEPTION",
+                        LANG_EN.req.provider_code_required,
+                        "Code Error"
+                    );
+                }
+
+                if (!targetApp) {
+                    throw new Exception(
+                        201,
+                        "TARGET_APPLICATION_EXCEPTION",
+                        LANG_EN.req.target_application_required,
+                        "Code Error"
+                    );
+                }
+
+                if (!environ) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_CATEGORY_EXCEPTION",
+                        LANG_EN.req.provider_environ_required,
+                        "Category Error"
+                    );
+                }
+
+                if (!settings || typeof settings !== "object") {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_SETTINGS_EXCEPTION",
+                        LANG_EN.req.provider_settings_required,
+                        "Settings Error"
+                    );
+                }
+
+                if (description && description.length > 200) {
+                    throw new Exception(
+                        201,
+                        "PROVIDER_DESCRIPTION_EXCEPTION",
+                        LANG_EN.req.provider_description_limit,
+                        "Description Error"
+                    );
+                }
+
+                payload = {
+                    id,
+                    type,
+                    provider,
+                    code,
+                    phone,
+                    email,
+                    targetApp,
+                    environ,
+                    status,
+                    isDefault,
+                    settings
+                };  
+                
+                payload['isDefault'] = isDefault ? true : false;   
+
+                const finalPayload = {
+                    userLoggedInUserName: user.name,
+                    userLoggedInUid: user.uid,
+                    ...payload
+                } 
+                
+                const query = await SettingsUtil.updateApiSettingQuery(finalPayload, req?.redis);
+
+                if (!query) {
+                    throw new Exception(
+                        201,
+                        "UPDATE_PROVIDER_QUERY_EXCEPTION",
+                        LANG_EN.error.update_provider_query_failed,
+                        "Provider update error!"
+                    );
+                }
+
+                return res.status(200).json({
+                    status: "success",
+                    message: LANG_EN.success.provider_update_success,
+                });
+            }
+
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
             });
         }
     }

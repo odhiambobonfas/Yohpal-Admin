@@ -133,10 +133,13 @@ class SettingsUtil extends Util {
                 3600
             );
 
-            if (data) { 
-                let secret = config.APP.JWT_SECRET;
-                data.settings.callbackUrl.confirmation = await this.decodeMessage(data?.settings?.callbackUrl?.confirmation, secret);
-                data.settings.callbackUrl.validation = await this.decodeMessage(data?.settings?.callbackUrl?.validation, secret);
+            if (data) {  
+                data.settings.callbackUrl.confirmation = await this.decodeMessage(data?.settings?.callbackUrl?.confirmation);
+                data.settings.callbackUrl.validation = await this.decodeMessage(data?.settings?.callbackUrl?.validation);
+                data.settings.consumerKey = await this.decodeMessage(data?.settings?.consumerKey);
+                data.settings.consumerSecret = await this.decodeMessage(data?.settings?.consumerSecret);
+                data.settings.passKey = await this.decodeMessage(data?.settings?.passKey);
+                data.settings.shortCode = await this.decodeMessage(data?.settings?.shortCode); 
             }
 
             return data;
@@ -243,6 +246,116 @@ class SettingsUtil extends Util {
             } 
 
             return { id: colId, ...payload };
+        } catch (error) {
+            console.error("Error in createSettingQuery:", error);
+            throw new Exception((error.status || 500), error.code, error.message, error.reason);
+        }
+    }
+
+    async updateApiSettingQuery(data, redis) {
+        try {
+            const colId = data.type;
+            const targetApp = data.targetApp || 'yohpal';
+            const settingId = data.id;  
+
+            if (!settingId) {
+                throw new Exception(
+                    400,
+                    "SETTING_ID_REQUIRED",
+                    "Missing setting ID for update",
+                    "You must provide a valid setting ID to update"
+                );
+            }
+
+            const settingsRef = FirestoreDatabase
+                .collection(Setting.collection)
+                .doc(targetApp)
+                .collection(colId)
+                .doc(settingId);
+                
+            const docSnap = await settingsRef.get();
+            if (!docSnap.exists) {
+                throw new Exception(
+                    404,
+                    "SETTING_NOT_FOUND",
+                    `No setting found for ID '${settingId}'`,
+                    "Invalid document reference"
+                );
+            }
+            
+            if (data.code) {
+                const codeSnap = await FirestoreDatabase
+                    .collection(Setting.collection)
+                    .doc(targetApp)
+                    .collection(colId)
+                    .where("code", "==", data.code)
+                    .limit(1)
+                    .get();
+
+                const duplicate = !codeSnap.empty && codeSnap.docs[0].id !== settingId;
+                if (duplicate) {
+                    throw new Exception(
+                        409,
+                        "SETTING_CODE_EXISTS",
+                        `Setting with code '${data.code}' already exists`,
+                        `Duplicate code for type: ${colId}`
+                    );
+                }
+            }
+            
+            if (data.isDefault) {
+                const defaultSnap = await FirestoreDatabase
+                    .collection(Setting.collection)
+                    .doc(targetApp)
+                    .collection(colId)
+                    .where("targetApp", "==", targetApp)
+                    .where("isDefault", "==", true)
+                    .limit(1)
+                    .get();
+
+                const defaultExists = !defaultSnap.empty && defaultSnap.docs[0].id !== settingId;
+                if (defaultExists) {
+                    throw new Exception(
+                        409,
+                        "DEFAULT_SETTING_EXISTS",
+                        LANG_EN.res.default_setting_exists,
+                        `Default setting already exists for targetApp: ${ucwords(targetApp)}`
+                    );
+                }
+            }
+            
+            const extras = payloadExtras({
+                userLoggedInUid: data?.userLoggedInUid,
+                userLoggedInUserName: data?.userLoggedInUserName
+            });
+
+            const settings = { ...data.settings };
+
+            if (settings.consumerKey)
+                settings.consumerKey = await this.encodeMessage(settings.consumerKey);
+            if (settings.consumerSecret)
+                settings.consumerSecret = await this.encodeMessage(settings.consumerSecret);
+            if (settings.shortCode)
+                settings.shortCode = await this.encodeMessage(settings.shortCode);
+            if (settings.passKey)
+                settings.passKey = await this.encodeMessage(settings.passKey);
+            if (settings.callbackUrl?.confirmation)
+                settings.callbackUrl.confirmation = await this.encodeMessage(settings.callbackUrl.confirmation);
+            if (settings.callbackUrl?.validation)
+                settings.callbackUrl.validation = await this.encodeMessage(settings.callbackUrl.validation);
+
+            const payload = {
+                ...data,
+                settings: settings,
+                ...extras, 
+            };
+            
+            let query = await settingsRef.update(payload);
+
+            const cacheKey = `yp:applicationSetting:${data?.targetApp}:${data?.id}`;  
+            if (query && redis) await redis.deleteFunc(cacheKey);
+
+            return { id: settingId, ...payload };
         } catch (error) {
             console.error("Error in createSettingQuery:", error);
             throw new Exception((error.status || 500), error.code, error.message, error.reason);
