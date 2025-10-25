@@ -601,7 +601,8 @@ class SettingsController {
 
             if (!post.modal) {
                 let payload;  
-                let user = req.session.user;
+                let { id } = req.params;
+                let user = req.session.user; 
                 req.body = qs.parse(req.body);
 
                 if (!user?.uid) {
@@ -613,7 +614,7 @@ class SettingsController {
                     );
                 } 
                 
-                const {
+                const { 
                     type,
                     provider,
                     code,
@@ -701,6 +702,7 @@ class SettingsController {
                 }
 
                 payload = {
+                    id,
                     type,
                     provider,
                     code,
@@ -721,7 +723,7 @@ class SettingsController {
                     ...payload
                 } 
                 
-                const query = await SettingsUtil.updateApiSettingQuery(finalPayload);
+                const query = await SettingsUtil.updateApiSettingQuery(finalPayload, req?.redis);
 
                 if (!query) {
                     throw new Exception(

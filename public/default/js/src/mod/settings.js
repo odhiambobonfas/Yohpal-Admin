@@ -1,8 +1,8 @@
 class Settings extends Master {
     constructor () {
         super();
+        this.editUpdateSettingBtn;
         this.createupdatesettingBtn = document.querySelectorAll('.create-setting-submit-btn');
-        this.editUpdateSettingBtn = document.querySelectorAll('.edit-setting-submit-btn');
     }
 
     initializePageSetup() {
@@ -132,7 +132,7 @@ class Settings extends Master {
                 if (containsClass(clickedBtn, 'edit')) {
                     this.assistiveModalActionParser(
                         event, 
-                        `/api/callbacks/edit?modal=true&clickedId=${clickedId}&targetApp=${targetApp}`, 
+                        `/api/settings/edit?modal=true&clickedId=${clickedId}&targetApp=${targetApp}`, 
                         'GET',
                         [ 
                             { callback: this.editApiSettingRes, params: [clickedId, targetApp] }, 
@@ -155,7 +155,7 @@ class Settings extends Master {
     }
     
     editApiSettingRes(clickedId, targetApp) {  
-        let btns = this.editUpdateSettingBtn;
+        let btns = document.querySelectorAll('.edit-setting-submit-btn');
 
         btns.forEach(btn => { 
             if (!documentContains(btn)) return;
@@ -175,9 +175,10 @@ class Settings extends Master {
                 fetch(formRouteParser(form), {
                     method: form.method,
                     headers: { 
+                        'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: data
+                    body: jsonifyFormData(data)
                 })
                 .then(async res => {
                     let response;

@@ -252,7 +252,7 @@ class SettingsUtil extends Util {
         }
     }
 
-    async updateApiSettingQuery(data) {
+    async updateApiSettingQuery(data, redis) {
         try {
             const colId = data.type;
             const targetApp = data.targetApp || 'yohpal';
@@ -350,7 +350,10 @@ class SettingsUtil extends Util {
                 ...extras, 
             };
             
-            await settingsRef.update(payload);
+            let query = await settingsRef.update(payload);
+
+            const cacheKey = `yp:applicationSetting:${data?.targetApp}:${data?.id}`;  
+            if (query && redis) await redis.deleteFunc(cacheKey);
 
             return { id: settingId, ...payload };
         } catch (error) {
