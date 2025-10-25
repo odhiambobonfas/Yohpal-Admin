@@ -27,6 +27,7 @@ import Util from '@utils/Util';
 import Setting from '@models/Setting'
 import Leave from '@models/Leave';
 import Application from '@models/Application';
+import Transaction from '@models/Transaction';
 import SettingsUtil from '@utils/SettingsUtil';
 import PayrollUtil from '@utils/PayrollUtil';
 import AccountUtil from '@utils/AccountUtil';
@@ -54,34 +55,33 @@ class AccountsController {
 
                         if (hasPermission(user?.permissions || [], 'accounts.edit')) {
                             actions += `<a class="btn btn-sm dropdown-item edit-account" href="javascript:void(0)" data-id="${id}">
-                                <i class="fas fa-edit me-1"></i> Edit
-                            </a>`;
-                        }
-
-                        if (hasPermission(user?.permissions || [], 'accounts.deposit')) {
-                            actions += `<a class="dropdown-item deposit" href="javascript:void(0)" data-id="${id}">
-                                <i class="fas fa-coins me-1 text-success"></i> Deposit Amount
-                            </a>`;
-                        }
-
-                        if (hasPermission(user?.permissions || [], 'accounts.transfer')) {
-                            actions += `<a class="dropdown-item transfer" href="javascript:void(0)" data-id="${id}">
-                                <i class="fas fa-exchange-alt me-1 text-warning"></i> Transfer Amount
+                                <i class="fas fa-edit me-1 text-dark"></i> Edit
                             </a>`;
                         }
 
                         if (hasPermission(user?.permissions || [], 'accounts.view')) {
-                            actions += `<a class="dropdown-item view-account" href="/accounts/${id}">
+                            actions += `<a class="dropdown-item btn-sm view-account" href="/accounts/${id}">
                                 <i class="fas fa-eye me-1 text-info"></i> View
                             </a>`;
                         }
 
                         if (hasPermission(user?.permissions || [], 'accounts.delete')) {
-                            actions += `<a class="dropdown-item delete-account text-danger" href="javascript:void(0)" data-id="${id}">
+                            actions += `<a class="dropdown-item btn-sm delete-account text-danger" href="javascript:void(0)" data-id="${id}">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </a>`;
                         }
 
+                        if (hasPermission(user?.permissions || [], 'accounts.deposit')) {
+                            actions += `<a class="dropdown-item btn-sm deposit" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-coins me-1 text-success"></i> Deposit Amount
+                            </a>`;
+                        }
+
+                        if (hasPermission(user?.permissions || [], 'accounts.transfer')) {
+                            actions += `<a class="dropdown-item btn-sm transfer" href="javascript:void(0)" data-id="${id}">
+                                <i class="fas fa-exchange-alt me-1 text-warning"></i> Transfer Amount
+                            </a>`;
+                        }
                         return `
                             <div class="dropdown">
                                 <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="actionDropdown-${id}"
@@ -89,7 +89,7 @@ class AccountsController {
                                     Actions
                                 </button>
                                 <div class="dropdown-menu action-btns" aria-labelledby="actionDropdown-${id}">
-                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                                    ${actions || '<span class="dropdown-item btn-sm text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -140,12 +140,17 @@ class AccountsController {
 
         let ypApplications = await Application.ypApplications();
         let categories = await AccountUtil.getAllAccountCategories(req?.redis, req.query);
+        let paymentMethods = await Transaction.paymentMethods();
+        let pmsForDropdown = await Transaction.paymentMethodsForDropdown();
 
         return res.render("crm/accounts/index", {
             title: `${ config.APP.APP_NAME } || Accounts Management`,
             user: req.session.user, 
             categories: categories,
-            applications: ypApplications
+            applications: ypApplications,
+            paymentMethods: paymentMethods,
+            paymentMethodsForDropdown: pmsForDropdown,
+
         });
     }
 
@@ -181,7 +186,7 @@ class AccountsController {
                                     Actions
                                 </button>
                                 <div class="dropdown-menu action-btns" aria-labelledby="triggerId-${id}">
-                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                                    ${actions || '<span class="dropdown-item btn-sm text-muted">No Actions</span>'}
                                 </div>
                             </div>
                         `;
@@ -329,6 +334,24 @@ class AccountsController {
                 );
             }
 
+            if (post.applicationName && post.applicationName.length > 30) {
+                throw new Exception(
+                    201,
+                    "APPLICATION_NAME_REQUIRED",
+                    LANG_EN.req.application_name_required,
+                    "Application name is missing"
+                );
+            }
+
+            if (post.openingBalance && !post.paymentMethod?.length) {
+                throw new Exception(
+                    201,
+                    "PAYMENT_METHOD_REQUIRED",
+                    LANG_EN.req.payment_method_required,
+                    "Payment error"
+                );
+            }
+
             if (post.accountDescription && post.accountDescription.length > 500) {
                 throw new Exception(
                     201,
@@ -344,7 +367,7 @@ class AccountsController {
                 ...post
             };
             
-            const result = await AccountUtil.createAccountQuery(finalPayload);
+            const result = await AccountUtil.createAccountQuery(finalPayload, req?.redis);
             if (!result) {
                 throw new Exception(
                     500,

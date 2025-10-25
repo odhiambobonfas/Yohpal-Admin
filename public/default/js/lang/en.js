@@ -1,6 +1,9 @@
 const LANG_EN = {
     // Request errors
     req: {
+        // Generic errors 
+        application_name_required: "Application name is required!",
+        
         // api errors
         request_denied: "Your request has been denied.",
         invalid_csrf_token: "Invalid CSRF token. Please refresh the page and try again.",
@@ -272,7 +275,10 @@ const LANG_EN = {
         callback_registration_failed: "Callback registration failed. Please try again later!",
 
         // API Settings
-        update_provider_query_failed: "Your request to update API provider settings failed!"
+        update_provider_query_failed: "Your request to update API provider settings failed!",
+
+        // Payments
+        payment_method_required: "Payment method is required when opening balance is set"
     },
 
     // New role/authentication errors

@@ -5,7 +5,7 @@ import AppModel from '@models/AppModel';
 class Transaction extends AppModel {
     static table = ''; 
 
-    static collection = 'yohpal_transactions';
+    static collection = 'yohpalTransactions';
 
     static fields = {};
 
@@ -20,6 +20,28 @@ class Transaction extends AppModel {
      */
     static associate(models) {
         // Define all associations here
+    }
+
+    static async paymentMethods() {
+        let paymentMethods = [
+            { slug: 'mpesa', name: 'M-Pesa', description: '' },
+            { slug: 'cash', name: 'Cash', description: '' },
+            { slug: 'bank-transfer', name: 'Bank Transfer', description: '' },
+            { slug: 'card', name: 'Credit/Debit Card', description: '' }
+        ];
+
+        return paymentMethods;
+    }
+
+    static async paymentMethodsForDropdown() {
+        let html = '';
+        let paymentMethods = await Transaction.paymentMethods();
+
+        paymentMethods.forEach(method => {
+            html += `<option value="${method.slug}">${method.name}</option>`;
+        });
+        
+        return html;
     }
 }
 

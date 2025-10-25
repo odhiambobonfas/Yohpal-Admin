@@ -13,3 +13,6 @@ public/store/sessions/*.json
 public/store/images/avatars/*
 public/store/images/logos/*
 projects.code-workspace
+
+# tests to exclude
+tests/integration/simulateTransaction.js

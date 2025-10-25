@@ -6,6 +6,7 @@ import User from '@models/User';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import Department from '@models/Department';
 import PaymentAccount from '@models/PaymentAccount';
+import AccountTransaction from '@models/AccountTransaction';
 import PaymentAccountCategory from '@models/PaymentAccountCategory';
 import EmployeeDesignation from '@models/EmployeeDesignation';
 import Role from '@models/Role';
@@ -99,7 +100,7 @@ class AccountsUtil extends Util {
         return data;
     }
 
-    async createAccountQuery(data) {
+    async createAccountQuery(data, redis) {
         let accountQuery = await FirestoreDatabase.runTransaction(async (trans) => {
             let accountCol = FirestoreDatabase.collection(PaymentAccount.collection);
             let accountRef = accountCol.doc();
@@ -137,11 +138,15 @@ class AccountsUtil extends Util {
                 userLoggedInUserName: data?.userLoggedInUserName
             });
         
+            
+            const openingBalance = parseFloat(data?.openingBalance) || 0;
+
             // Create the account first 
             const accountData = {
                 accountName: data.accountName.trim(),
                 accountNumber: data.accountNumber?.trim() || "",
-                accountCategory: FirestoreDatabase.collection(PaymentAccountCategory.collection).doc(data.accountCategory),
+                accountCategory: data.accountCategory.trim(),
+                accountCategoryRef: FirestoreDatabase.collection(PaymentAccountCategory.collection).doc(data.accountCategory.trim()),
                 ownerName: data.ownerName || "",
                 bankDetails: { 
                     bankName: data.bankName || "",
@@ -153,13 +158,14 @@ class AccountsUtil extends Util {
                 ownerContactNumber: data.ownerContactNumber || "",
                 accountDescription: data.accountDescription?.trim() || "",
                 accountStatus: data.accountStatus || 'inactive',
+                applicationName: data?.applicationName || 'yohpal',
+                accountBalance: openingBalance || 0,
                 ...extras
             };
             
             trans.set(accountRef, accountData);
 
             // If opening balance exists, record a transaction
-            const openingBalance = parseFloat(data.openingBalance) || 0;
             if (openingBalance > 0) { 
                 let transRef = FirestoreDatabase.collection(Transaction.collection).doc();
                 const transactionPayload = {
@@ -168,15 +174,43 @@ class AccountsUtil extends Util {
                     type: "CREDIT",
                     amount: openingBalance,
                     description: "Opening Balance",
-                    reference: `OPEN-${accountRef.id.toUpperCase().slice(0, 8)}`,
+                    reference: data.referenceNumber || `OPEN-${accountRef.id.toUpperCase().slice(0, 8)}`,
+                    metadata: {
+                        tag: "opening_balance"
+                    },
+                    status: 'success',
+                    paymentMethod: data?.paymentMethod || 'other',
+                    applicationName: data?.applicationName || 'yohpal',
                     ...extras
                 };
 
                 trans.set(transRef, transactionPayload);
+
+                let accountTransRef = FirestoreDatabase.collection(AccountTransaction.collection).doc();
+                const accountTransactionPayload = {
+                    transactionRef: FirestoreDatabase.collection(Transaction.collection).doc(transRef.id),
+                    accountId: accountRef.id,
+                    accountRef:  FirestoreDatabase.collection(PaymentAccount.collection).doc(accountRef.id),
+                    applicationName: data?.applicationName || 'yohpal',
+                    type: "CREDIT",
+                    amount: openingBalance,
+                    balanceBefore: 0,
+                    balanceAfter: openingBalance, 
+                    description: "Opening Balance",
+                    reference: data.referenceNumber || `OPEN-${accountRef.id.toUpperCase().slice(0, 8)}`, 
+                    ...extras
+                };
+
+                trans.set(accountTransRef, accountTransactionPayload);
             }
 
             return { id: accountRef.id, ...accountData, openingBalance };
         });
+
+        if (accountQuery && redis) {
+            const cacheKey = 'yp:paymentAccounts:filtered';
+            await redis.deleteFunc(cacheKey);
+        }
 
         return accountQuery;
     }

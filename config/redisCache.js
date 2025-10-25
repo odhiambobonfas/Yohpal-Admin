@@ -133,7 +133,7 @@ class RedisCache {
      */
 	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600) {
 		const cached = await this.getFunc(key); 
-		if (cached) return cached;
+		if (cached && cached?.length) return cached;
 		const new_cache = await fetchCallback();
 		if (new_cache) {
 			await this.setFunc(key, new_cache, expiryTimeInSeconds);

@@ -57,22 +57,43 @@
                                 <% }) %>
                             </select>
                         </div>
+                    </div>  
 
+                    <div class="row g-3 mb-2">  
+                        <!-- Opening Balance -->
+                        <div class="col-md-4">
+                            <label for="openingBalance" class="form-label fw-semibold">Opening Balance (Optional)</label>
+                            <input type="number" name="openingBalance" id="openingBalance" class="form-control form-control-sm" placeholder="e.g. 15000" step="0.01">
+                        </div>
+
+                        <!-- Payment method -->
+                        <div class="col-md-4">
+                            <label for="paymentMethod" class="form-label fw-semibold">Payment Method <span class="text-danger">*</span></label>
+                            <select name="paymentMethod" id="paymentMethod" class="form-select form-select-sm" required>
+                                <% paymentMethods.forEach(method => { %>
+                                    <option value="<%= method.slug %>"><%= method.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <!-- Opening Balance Transaction reference Number -->
+                        <div class="col-md-4">
+                            <label for="referenceNumber" class="form-label fw-semibold">Reference Number (Optional)</label>
+                            <input type="text" name="referenceNumber" id="referenceNumber" class="form-control form-control-sm" placeholder="e.g. REF-0001">
+                            <small>Leave empty for autogeneration...</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3"> 
                         <!-- Account status -->
                         <div class="col-md-6">
-                            <label for="accountStatus" class="form-label fw-semibold">Account Category <span class="text-danger">*</span></label>
+                            <label for="accountStatus" class="form-label fw-semibold">Account Status <span class="text-danger">*</span></label>
                             <select name="accountStatus" id="accountStatus" class="form-select form-select-sm" required> 
                                 <option value="active">active</option>
                                 <option selected value="inactive">Inactive</option>
                             </select>
                         </div>
-
-                        <!-- Opening Balance -->
-                        <div class="col-md-6">
-                            <label for="openingBalance" class="form-label fw-semibold">Opening Balance (Optional)</label>
-                            <input type="number" name="openingBalance" id="openingBalance" class="form-control form-control-sm" placeholder="e.g. 15000" step="0.01">
-                        </div>
-                    </div> 
+                    </div>
 
                     <div class="row g-3 mb-3"> 
                         <!-- Description -->
