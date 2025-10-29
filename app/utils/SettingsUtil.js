@@ -197,11 +197,18 @@ class SettingsUtil extends Util {
                     userLoggedInUserName: data?.userLoggedInUserName
                 });
             
-                data['settings']['consumerKey'] = await this.encodeMessage(data['settings']['consumerKey']);
-                data['settings']['consumerSecret'] = await this.encodeMessage(data['settings']['consumerSecret']); 
-                data['settings']['passKey'] = await this.encodeMessage(data['settings']['passKey']);
-                data['settings']['callbackUrl']['confirmation'] = await this.encodeMessage(data['settings']['callbackUrl']['confirmation']);
-                data['settings']['callbackUrl']['validation'] = await this.encodeMessage(data['settings']['callbackUrl']['validation']); 
+                if (data.settings.shortCode) 
+                    data.settings.shortCode = data?.settings?.shortCode ? Number(data?.settings?.shortCode) : 0;
+                if (data.settings.consumerKey)
+                    data.settings.consumerKey = await this.encodeMessage(data?.settings.consumerKey);
+                if (data.settings.consumerSecret)
+                    data.settings.consumerSecret = await this.encodeMessage(data?.settings.consumerSecret); 
+                if (data.settings.passKey)
+                    data.settings.passKey = await this.encodeMessage(data?.settings.passKey);
+                if (data.settings.callbackUrl?.confirmation)
+                    data.settings.callbackUrl.confirmation = await this.encodeMessage(data?.settings.callbackUrl.confirmation);
+                if (data.settings.callbackUrl?.validation)
+                    data.settings.callbackUrl.validation = await this.encodeMessage(data?.settings.callbackUrl.validation);
                 input = data;
                 
                 payload = {
@@ -211,8 +218,12 @@ class SettingsUtil extends Util {
                 
                 await settingsRef.add(payload);
 
-                const cacheKey = 'yp:appApiSettings:filtered';  
-                if (query && redis) await redis.deleteFunc(cacheKey);
+                const cacheKeyA = 'yp:appApiSettings:filtered';  
+                const cacheKeyB = `yp:appApiSettings:${data?.targetApp}:${data?.settings?.shortCode}`;  
+                if (query && redis) {
+                    await redis.deleteFunc(cacheKeyA);
+                    await redis.deleteFunc(cacheKeyB);
+                }
             }
 
             if (['generalsettings'].includes(data.type)) { 
@@ -335,6 +346,8 @@ class SettingsUtil extends Util {
 
             const settings = { ...data.settings };
 
+            if (settings.shortCode) 
+                settings.shortCode = data?.settings?.shortCode ? Number(data?.settings?.shortCode) : 0;
             if (settings.consumerKey)
                 settings.consumerKey = await this.encodeMessage(settings.consumerKey);
             if (settings.consumerSecret)
