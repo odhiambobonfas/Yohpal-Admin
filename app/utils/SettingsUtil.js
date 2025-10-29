@@ -147,7 +147,7 @@ class SettingsUtil extends Util {
         }
     }
 
-    async createSettingQuery(data) {
+    async createSettingQuery(data, redis) {
         try { 
             const colId = data.type;
             const targetApp = data.targetApp || 'yohpal';
@@ -210,6 +210,9 @@ class SettingsUtil extends Util {
                 };
                 
                 await settingsRef.add(payload);
+
+                const cacheKey = 'yp:appApiSettings:filtered';  
+                if (query && redis) await redis.deleteFunc(cacheKey);
             }
 
             if (['generalsettings'].includes(data.type)) { 
@@ -241,6 +244,9 @@ class SettingsUtil extends Util {
                 allInsertPromises.forEach(res => {
                     Object.assign(payload, res);
                 });
+                
+                const cacheKey = `yp:applicationSetting:filtered`; 
+                if (query && redis) await redis.deleteFunc(cacheKey);
             } 
 
             return { id: colId, ...payload };
@@ -348,7 +354,7 @@ class SettingsUtil extends Util {
             
             let query = await settingsRef.update(payload);
 
-            const cacheKey = `yp:applicationSetting:${data?.targetApp}:${data?.id}`;  
+            const cacheKey = 'yp:appApiSettings:filtered';
             if (query && redis) await redis.deleteFunc(cacheKey);
 
             return { id: settingId, ...payload };

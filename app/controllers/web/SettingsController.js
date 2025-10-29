@@ -419,7 +419,7 @@ class SettingsController {
                 ...payload
             } 
             
-            const query = await SettingsUtil.createSettingQuery(finalPayload);
+            const query = await SettingsUtil.createSettingQuery(finalPayload, req?.redis);
 
             if (!query) {
                 throw new Exception(
