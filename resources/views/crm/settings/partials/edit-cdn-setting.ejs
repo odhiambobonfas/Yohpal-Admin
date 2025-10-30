@@ -1,7 +1,7 @@
 <!-- Edit CDN Setting Modal -->
 <div class="modal-dialog modal-lg">
     <form id="editCdnSettingForm" 
-          action="/settings/cdn/edit" 
+          action="/settings/cdn/edit/<%= setting?.id %>" 
           method="POST" 
           enctype="multipart/form-data" 
           class="modal-content">
@@ -12,10 +12,7 @@
         </div>
 
         <div class="modal-body">
-            <div class="row g-3">
-                <!-- Hidden ID Field -->
-                <input type="hidden" id="id" name="id" value="<%= setting?.id %>">
-
+            <div class="row g-3"> 
                 <div class="col-md-6">
                     <label for="code" class="form-label">Code Identifier (UNIQUE)</label>
                     <input type="text" 

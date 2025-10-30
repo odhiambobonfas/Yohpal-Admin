@@ -991,13 +991,15 @@ class SettingsController {
 
     static async updateCdnSettingsList(req, res) {
         try { 
-            let user = req.session.user; 
             let post = req.query;
+            let { id } = req?.params;
+            let user = req.session.user; 
+            
             if (post.modal) { 
                 let ypApplications = await Application.ypApplications(req?.redis);
 
                 const data = {
-                    id: post.clickedId,
+                    id: id,
                     targetApp: post.targetApp,
                     settingType: "cdnSettings",
                     flushCache: post?.flushCache ? true : false
@@ -1011,11 +1013,10 @@ class SettingsController {
                 }); 
             } 
 
-            
-            if (!post.modal) { 
-                let { id } = user.uid;
-                post = qs.parse(req.body);
+            post = qs.parse(req.body);
+            post.id = id;
 
+            if (!post.modal) {    
                 if (!user?.uid) {
                     throw new Exception(
                         403,

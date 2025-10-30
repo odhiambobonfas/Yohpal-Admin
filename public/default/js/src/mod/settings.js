@@ -415,7 +415,7 @@ class Settings extends Master {
                 if (containsClass(clickedBtn, 'edit')) {
                     this.assistiveModalActionParser(
                         event, 
-                        `/settings/cdn/edit?modal=true&clickedId=${clickedId}&targetApp=${targetApp}`, 
+                        `/settings/cdn/edit/${clickedId}?modal=true&targetApp=${targetApp}`, 
                         'GET',
                         [ 
                             { callback: this.editCdnSettingRes, params: [clickedId, targetApp] }, 
@@ -440,8 +440,7 @@ class Settings extends Master {
 
                 let form = btn.closest('form');
                 let data = new FormData(form);
-                data.append('type', form.getAttribute('id'));
-                data.append('clickedId', clickedId);
+                data.append('type', form.getAttribute('id')); 
                 data.append('targetApp', targetApp);
 
                 fetch(formRouteParser(form), {

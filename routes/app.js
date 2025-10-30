@@ -125,7 +125,7 @@ router.post('/api/settings/edit/:id', authMiddleware, SettingsController.editApi
 router.get('/cdn-settings', authMiddleware, SettingsController.getCdnSettingsList);
 router.post('/settings/cdn/create', authMiddleware, SettingsController.createCdnSettingsList);
 
-router.route('/settings/cdn/edit')
+router.route('/settings/cdn/edit/:id')
     .get(authMiddleware, SettingsController.updateCdnSettingsList)
     .post(authMiddleware, SettingsController.updateCdnSettingsList);
 
