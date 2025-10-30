@@ -236,7 +236,7 @@ class UsersController {
                 data.userLoggedInUserName = user.name;
                 data.userLoggedInUid = user.uid;
 
-                let create = await UsersUtil.createUser(data);
+                let create = await UsersUtil.createUser(data, req?.redis);
                 
                 let route;
                 if (!data.stayHere) {
@@ -356,7 +356,7 @@ class UsersController {
                 data.userLoggedInUserName = user.name;
                 data.userLoggedInUid = user.uid;
 
-                let create = await UsersUtil.updateUser(uid, data);
+                let create = await UsersUtil.updateUser(uid, data, req?.redis);
                 
                 let route;
                 if (!data.stayHere) {
@@ -437,7 +437,7 @@ class UsersController {
             data.userLoggedInUserName = user.name;
             data.userLoggedInUid = user.uid;
             
-            let create = await UsersUtil.updateUserStatus(data); 
+            let create = await UsersUtil.updateUserStatus(data, req?.redis); 
 
             return res.status(200).json({
                 status: 'success',
@@ -472,7 +472,7 @@ class UsersController {
                 throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.user_not_found, "User Not Found!");
             }  
             
-            let create = await UsersUtil.deleteUser(uid); 
+            let create = await UsersUtil.deleteUser(uid, req?.redis); 
 
             return res.status(200).json({
                 status: 'success',

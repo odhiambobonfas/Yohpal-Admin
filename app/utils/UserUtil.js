@@ -255,7 +255,7 @@ class UserUtil extends Util {
         }
     }    
 
-    async createUser(data) { 
+    async createUser(data, redis) { 
         try {  
             // check if email or username already exists
             const existingUsersRef = FirestoreDatabase.collection(User.collection);
@@ -356,6 +356,11 @@ class UserUtil extends Util {
             if (!userRef) {
                 throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
             }
+
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
             
             return newUser;
         } catch (error) {
@@ -364,7 +369,7 @@ class UserUtil extends Util {
         }
     }
 
-    async updateUser(uid, data) {
+    async updateUser(uid, data, redis) {
         try {
             if (!uid) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.req.invalid_request, "Invalid input data");
@@ -504,6 +509,11 @@ class UserUtil extends Util {
 
             await usersRef.doc(userDoc.id).update({...updatedData, ...hrmInformation}); // fixed doc reference
 
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
+
             return true;
         } catch (error) {
             console.error('Error updating user:', error);
@@ -511,7 +521,7 @@ class UserUtil extends Util {
         }
     }
 
-    async updateUserStatus(data) {
+    async updateUserStatus(data, redis) {
         let { uid, status, userLoggedInUserName, userLoggedInUid } = data; 
         
         try {
@@ -535,6 +545,11 @@ class UserUtil extends Util {
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             });
 
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
+
             return true;
         } catch (error) {
             console.error('Error updating user status:', error);
@@ -542,7 +557,7 @@ class UserUtil extends Util {
         }
     }
 
-    async deleteUser(uid) {
+    async deleteUser(uid, redis) {
         try {
             if (!uid) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.req.invalid_request, "Invalid input data");
@@ -562,6 +577,11 @@ class UserUtil extends Util {
 
             // Delete user document from Firestore
             await usersRef.doc(userDoc.id).delete();
+
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
 
             return true;
         } catch (error) {
