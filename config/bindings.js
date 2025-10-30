@@ -225,6 +225,11 @@ const bindings = {
             deactivate_api_settings: "settings.api.deactivate", 
             suspend_api_settings: "settings.api.suspend", 
             update_status_api_settings: "settings.api.statusUpdate",  
+            edit_cdn_settings: "settings.cdn.edit",  
+            delete_cdn_settings: "settings.cdn.delete",  
+            activate_cdn_settings: "settings.cdn.activate",  
+            deactivate_cdn_settings: "settings.cdn.deactivate",  
+            suspend_cdn_settings: "settings.cdn.suspend",  
             register_mpesa_callbacks: "settings.mpesa.register_endpoint",  
         },
 

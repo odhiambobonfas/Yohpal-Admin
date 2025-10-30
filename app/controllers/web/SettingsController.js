@@ -15,6 +15,7 @@ import {
     ucfirst,
     ucwords,
     handleFileUploads,
+    dateToISO8601Formatter,
     jsonParser,
     reduceToObj
 } from '@config/utils';
@@ -37,7 +38,7 @@ class SettingsController {
         let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
         let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
 
-        let ypApplications = await Application.ypApplications();
+        let ypApplications = await Application.ypApplications(req?.redis);
 
         return res.render("crm/settings/index", {
             title: `${ config.APP.APP_NAME } || App Settings`,
@@ -582,7 +583,7 @@ class SettingsController {
         try { 
             let post = req.query;
             if (post.modal) { 
-                let ypApplications = await Application.ypApplications();
+                let ypApplications = await Application.ypApplications(req?.redis);
 
                 const data = {
                     id: post.clickedId,
@@ -740,6 +741,394 @@ class SettingsController {
                 });
             }
 
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async createCdnSettingsList(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user;
+            
+            if (!post.cdnProvider || post.cdnProvider.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CDN_PROVIDER_REQUIRED",
+                    LANG_EN.req.cdn_provider_required,
+                    "CDN provider is required"
+                );
+            }
+
+            if (!post.code || post.code.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CDN_CODE_REQUIRED",
+                    LANG_EN.req.cdn_code_required,
+                    "CODE is required"
+                );
+            }
+
+            if (!post.targetApp || post.targetApp.trim() === "") {
+                throw new Exception(
+                    201,
+                    "TARGET_APP_REQUIRED",
+                    LANG_EN.req.target_app_required,
+                    "Target application name is required"
+                );
+            }
+
+            if (!post.cdnUrl || post.cdnUrl.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CDN_URL_REQUIRED",
+                    LANG_EN.req.cdn_url_required,
+                    "CDN base URL is required"
+                );
+            }
+
+            if (post.cdnUrl && post.cdnUrl.length > 255) {
+                throw new Exception(
+                    201,
+                    "CDN_URL_TOO_LONG",
+                    LANG_EN.req.cdn_url_too_long,
+                    "CDN base URL exceeds maximum length"
+                );
+            }
+
+            if (!post.cdnZoneId || post.cdnZoneId.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CDN_ZONE_ID_REQUIRED",
+                    LANG_EN.req.cdn_zone_id_required,
+                    "CDN Zone / Distribution ID is required"
+                );
+            }
+
+            if (post.cacheDuration && (isNaN(post.cacheDuration) || post.cacheDuration < 0)) {
+                throw new Exception(
+                    201,
+                    "INVALID_CACHE_DURATION",
+                    LANG_EN.req.invalid_cache_duration,
+                    "Cache duration must be a valid positive number"
+                );
+            }
+
+            if (!post.cdnStatus || !["enabled", "disabled"].includes(post.cdnStatus.toLowerCase())) {
+                throw new Exception(
+                    201,
+                    "INVALID_CDN_STATUS",
+                    LANG_EN.req.invalid_cdn_status,
+                    "CDN status must be either 'enabled' or 'disabled'"
+                );
+            }
+
+            if (post.cdnModule && post.cdnModule.length > 100) {
+                throw new Exception(
+                    201,
+                    "CDN_MODULE_TOO_LONG",
+                    LANG_EN.req.cdn_module_too_long,
+                    "CDN module name exceeds maximum length"
+                );
+            }
+            
+            const finalPayload = {
+                userLoggedInUid: user?.uid,
+                userLoggedInUserName: user?.name,
+                ...post,
+            };
+            
+            const result = await SettingsUtil.createCdnSettingQuery(finalPayload, req?.redis);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "CDN_SETTING_CREATE_FAILED",
+                    LANG_EN.error.cdn_setting_creation_failed,
+                    "Database error while creating CDN setting"
+                );
+            }
+            
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.cdn_setting_created,
+                data: result,
+            });
+
+        } catch (error) {
+            console.log(error.message);
+
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
+    static async getCdnSettingsList(req, res) { 
+        try {  
+            const user = req.session.user; 
+            let ypApplications = await Application.ypApplications(req?.redis);
+            let cdnSettings = await SettingsUtil.getAllCdnSettings(req.redis, req.query);
+
+            const mex = new mexDtParser(cdnSettings);
+            cdnSettings = mex
+                .addColumn('actions', (col) => {
+                    let actions = '';
+                    const id = col.uid || col.id;
+                    const status = col.status || 'unset';
+                    let targetApp = col['targetApp'] || 'yohpal'; 
+
+                    if (hasPermission(user?.permissions || [], 'settings.cdn.edit')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" data-id="${id}" target-modal=".editCdnSettingModal" data-target="${targetApp}" data-id="${id}">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                    }
+                    
+                    if (hasPermission(user?.permissions || [], 'settings.cdn.delete')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                    }
+                    
+                    if (hasPermission(user?.permissions || [], 'settings.cdn.activate') && ['enabled', 'disabled', 'unset'].includes(status)) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item activate" href="javascript:void(0) data-target="${targetApp}"" data-id="${id}" data-status="active">
+                                <i class="fas fa-check-circle me-1"></i> Activate
+                            </a>`;
+                    }
+                    
+                    if (hasPermission(user?.permissions || [], 'settings.cdn.deactivate') && ['enabled', 'unset'].includes(status)) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="disabled">
+                                <i class="fas fa-times-circle me-1"></i> Deactivate
+                            </a>`;
+                    }
+                    
+                    if (hasPermission(user?.permissions || [], 'settings.cdn.suspend') && ['enabled', 'disabled', 'unset'].includes(status)) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-target="${targetApp}" data-id="${id}" data-status="suspended">
+                                <i class="fas fa-user-slash me-1"></i> Suspend
+                            </a>`;
+                    }
+
+                    const actionDropdown = `
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" id="triggerId" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu action-btns" aria-labelledby="triggerId">
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                            </div>
+                        </div>
+                    `;
+                    return actionDropdown;
+                })
+                .editColumn('provider', (col) => { 
+                    return ucwords(col || 'N/A'); 
+                })
+                .editColumn('baseUrl', (col) => col || 'N/A')
+                .editColumn('zoneId', (col) => col || 'N/A')
+                .editColumn('cacheDuration', (col) => col ? `${col} hrs` : 'N/A')
+                .editColumn('module', (col) => ucwords(col || 'N/A'))
+                .addColumn('linkedTo', (col) => {
+                    const linkedSlug = col.targetApp || 'N/A';
+                    const matchedApp = ypApplications.find(app => app.slug === linkedSlug);  
+                    return `<span>${matchedApp?.name}</span>`;
+                })
+                .editColumn('status', (col) => {
+                    col = col ? col.toLowerCase() : 'disabled';
+                    if (col === 'enabled') {
+                        return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
+                    } else if (col === 'disabled') {
+                        return `<span class="badge text-dark bg-warning">${ucfirst(col)}</span>`;
+                    } else if (col === 'suspended') {
+                        return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
+                    } else {
+                        return `<span class="badge text-dark bg-secondary">Unknown</span>`;
+                    }
+                })
+                .editColumn('createdAt', (col) =>{
+                    return dateToISO8601Formatter(col?.toDate?.() || col || '');
+                })
+                .make();
+
+            return res.status(200).json({
+                status: 'success', 
+                data: cdnSettings
+            });
+
+        } catch (error) {
+            console.log(error);
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: 'error', 
+                code: error.code || 'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        }
+    } 
+
+    static async updateCdnSettingsList(req, res) {
+        try { 
+            let post = req.query;
+            let { id } = req?.params;
+            let user = req.session.user; 
+            
+            if (post.modal) { 
+                let ypApplications = await Application.ypApplications(req?.redis);
+
+                const data = {
+                    id: id,
+                    targetApp: post.targetApp,
+                    settingType: "cdnSettings",
+                    flushCache: post?.flushCache ? true : false
+                };
+
+                let cdnSet = await SettingsUtil.getCdnSettingById(req?.redis, data);  
+                return res.render('views/crm/settings/partials/edit-cdn-setting', { 
+                    user: req.session.user,
+                    applications: ypApplications,
+                    setting: cdnSet
+                }); 
+            } 
+
+            post = qs.parse(req.body);
+            post.id = id;
+
+            if (!post.modal) {    
+                if (!user?.uid) {
+                    throw new Exception(
+                        403,
+                        "AUTHENTICATION_ERROR_EXCEPTION",
+                        LANG_EN.req.authentication_error_exception,
+                        "Authentication Error"
+                    );
+                } 
+
+                if (!post.cdnProvider || post.cdnProvider.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CDN_PROVIDER_REQUIRED",
+                        LANG_EN.req.cdn_provider_required,
+                        "CDN provider is required"
+                    );
+                }
+
+                if (!post.code || post.code.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CDN_CODE_REQUIRED",
+                        LANG_EN.req.cdn_code_required,
+                        "CODE is required"
+                    );
+                }
+
+                if (!post.targetApp || post.targetApp.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "TARGET_APP_REQUIRED",
+                        LANG_EN.req.target_app_required,
+                        "Target application name is required"
+                    );
+                }
+
+                if (!post.cdnUrl || post.cdnUrl.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CDN_URL_REQUIRED",
+                        LANG_EN.req.cdn_url_required,
+                        "CDN base URL is required"
+                    );
+                }
+
+                if (post.cdnUrl && post.cdnUrl.length > 255) {
+                    throw new Exception(
+                        201,
+                        "CDN_URL_TOO_LONG",
+                        LANG_EN.req.cdn_url_too_long,
+                        "CDN base URL exceeds maximum length"
+                    );
+                }
+
+                if (!post.cdnZoneId || post.cdnZoneId.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CDN_ZONE_ID_REQUIRED",
+                        LANG_EN.req.cdn_zone_id_required,
+                        "CDN Zone / Distribution ID is required"
+                    );
+                }
+
+                if (post.cacheDuration && (isNaN(post.cacheDuration) || post.cacheDuration < 0)) {
+                    throw new Exception(
+                        201,
+                        "INVALID_CACHE_DURATION",
+                        LANG_EN.req.invalid_cache_duration,
+                        "Cache duration must be a valid positive number"
+                    );
+                }
+
+                if (!post.cdnStatus || !["enabled", "disabled"].includes(post.cdnStatus.toLowerCase())) {
+                    throw new Exception(
+                        201,
+                        "INVALID_CDN_STATUS",
+                        LANG_EN.req.invalid_cdn_status,
+                        "CDN status must be either 'enabled' or 'disabled'"
+                    );
+                }
+
+                if (post.cdnModule && post.cdnModule.length > 100) {
+                    throw new Exception(
+                        201,
+                        "CDN_MODULE_TOO_LONG",
+                        LANG_EN.req.cdn_module_too_long,
+                        "CDN module name exceeds maximum length"
+                    );
+                }
+                
+                const finalPayload = {
+                    userLoggedInUid: user?.uid,
+                    userLoggedInUserName: user?.name,
+                    ...post,
+                };
+                
+                const result = await SettingsUtil.updateCdnSettingQuery(finalPayload, req?.redis);
+                if (!result) {
+                    throw new Exception(
+                        500,
+                        "CDN_SETTING_CREATE_FAILED",
+                        LANG_EN.error.cdn_setting_update_failed,
+                        "Database error while creating CDN setting"
+                    );
+                }
+                
+                return res.status(200).json({
+                    status: "success",
+                    message: LANG_EN.success.cdn_setting_updated,
+                    data: result,
+                }); 
+            }
         } catch (error) {
             console.log(error.message);
             if (error instanceof Exception && config.APP.APP_DEBUG) {

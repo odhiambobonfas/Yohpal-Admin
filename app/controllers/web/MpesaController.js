@@ -33,7 +33,7 @@ class MpesaController {
         try { 
             let post = req.query;
             if (post.modal) { 
-                let ypApplications = await Application.ypApplications();
+                let ypApplications = await Application.ypApplications(req?.redis);
 
                 const data = {
                     id: post.clickedId,

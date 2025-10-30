@@ -113,9 +113,9 @@ class AccountsController {
                         const phone = col?.ownerContactNumber ? `<br><small class="text-muted">${col?.ownerContactNumber}</small>` : '';
                         return `${name}${phone}`;
                     })
-                    .addColumn('createdAt', (col) =>
-                        dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '')
-                    )
+                    .addColumn('createdAt', (col) => {
+                        return dateToISO8601Formatter(col.createdAt?.toDate?.() || col.createdAt || '');
+                    })
                     .make();
 
                 return res.status(200).json({
@@ -138,7 +138,7 @@ class AccountsController {
             } 
         } 
 
-        let ypApplications = await Application.ypApplications();
+        let ypApplications = await Application.ypApplications(req?.redis);
         let categories = await AccountUtil.getAllAccountCategories(req?.redis, req.query);
         let paymentMethods = await Transaction.paymentMethods();
         let pmsForDropdown = await Transaction.paymentMethodsForDropdown();
