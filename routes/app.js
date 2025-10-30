@@ -122,6 +122,12 @@ router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
 router.get('/api/settings/edit', authMiddleware, SettingsController.editApiSettingRes);
 router.post('/api/settings/edit/:id', authMiddleware, SettingsController.editApiSettingRes);
+router.get('/cdn-settings', authMiddleware, SettingsController.getCdnSettingsList);
+router.post('/settings/cdn/create', authMiddleware, SettingsController.createCdnSettingsList);
+
+router.route('/settings/cdn/edit')
+    .get(authMiddleware, SettingsController.updateCdnSettingsList)
+    .post(authMiddleware, SettingsController.updateCdnSettingsList);
 
 // Settings CRUD Operations
 router.route('/callbacks/register')

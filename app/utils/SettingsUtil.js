@@ -50,6 +50,241 @@ class SettingsUtil extends Util {
         }
     }
 
+    async createCdnSettingQuery(data, redis) {
+        try { 
+            const {
+                code,
+                targetApp,
+                cdnProvider,
+                cdnUrl,
+                cdnZoneId,
+                cacheDuration,
+                cdnStatus,
+                cdnModule,
+                userLoggedInUid,
+                userLoggedInUserName
+            } = data;
+
+            const extras = payloadExtras({ 
+                userLoggedInUid: userLoggedInUid,
+                userLoggedInUserName: userLoggedInUserName
+            });
+            
+            const cdnPayload = {
+                code: code.trim(),
+                targetApp: targetApp.trim(),
+                provider: cdnProvider.trim(),
+                baseUrl: cdnUrl.trim(),
+                zoneId: cdnZoneId.trim(),
+                cacheDuration: parseInt(cacheDuration) || 0,
+                status: cdnStatus.toLowerCase(),
+                module: cdnModule?.trim() || "General", 
+                ...extras
+            };
+            
+            const query = FirestoreDatabase.collection(Setting.collection)
+                .doc(targetApp)
+                .collection("cdnSettings");
+
+            const existingEntry = await query.where("code", "==", code).get();
+            if (!existingEntry.empty) {
+                throw new Exception(
+                    409,
+                    "SETTING_CODE_EXISTS",
+                    LANG_EN.error.setting_with_given_code_exists,
+                    `Duplicate code for target: ${targetApp} and of type: ${cdnModule}`
+                );
+            }
+
+            const cdnDoc = await query.add(cdnPayload);
+            
+            if (redis) {
+                const cacheKey = `yp:cdnSetting:${cdnDoc.id}`;
+                await redis.setFunc(cacheKey, {
+                    id: cdnDoc.id,
+                    ...cdnPayload
+                });
+            }
+            
+            if (redis) {
+                await redis.deleteFunc('yp:appCdnSettings:filtered'); 
+            }
+            
+            return {
+                id: cdnDoc.id,
+                ...cdnPayload
+            };
+
+        } catch (error) { 
+            throw new Exception(
+                error.status || 201,
+                error.code || "INTERNAL_SERVER_ERROR",
+                error.message || "Something went wrong. Please try again later.",
+                error.title || "Unexpected Error",
+            );
+        }
+    }
+
+    async updateCdnSettingQuery(data, redis) {
+        try { 
+            const {
+                id,
+                code,
+                targetApp,
+                cdnProvider,
+                cdnUrl,
+                cdnZoneId,
+                cacheDuration,
+                cdnStatus,
+                cdnModule,
+                userLoggedInUid,
+                userLoggedInUserName
+            } = data;
+
+            if (!id) {
+                throw new Exception(
+                    201,
+                    "CDN_ID_REQUIRED",
+                    LANG_EN.req.cdn_id_required,
+                    "CDN setting ID is required for update"
+                );
+            }
+
+            const extras = payloadExtras({
+                userLoggedInUid,
+                userLoggedInUserName
+            });
+
+            const cdnPayload = {
+                code: code.trim(),
+                targetApp: targetApp.trim(),
+                provider: cdnProvider.trim(),
+                baseUrl: cdnUrl.trim(),
+                zoneId: cdnZoneId.trim(),
+                cacheDuration: parseInt(cacheDuration) || 0,
+                status: cdnStatus.toLowerCase(),
+                module: cdnModule?.trim() || "General",
+                ...extras
+            };
+
+            const query = FirestoreDatabase.collection(Setting.collection)
+                .doc(targetApp)
+                .collection("cdnSettings");
+                
+            const existingEntry = await query
+                .where("code", "==", code)
+                .get();
+
+            if (!existingEntry.empty) {
+                const duplicate = existingEntry.docs.find(doc => doc.id !== id);
+                if (duplicate) {
+                    throw new Exception(
+                        409,
+                        "SETTING_CODE_EXISTS",
+                        LANG_EN.error.setting_with_given_code_exists,
+                        `Another record with code, ${code}, already exists for target '${targetApp}'`
+                    );
+                }
+            }
+
+            const cdnDocRef = query.doc(id);
+            const docSnapshot = await cdnDocRef.get();
+
+            if (!docSnapshot.exists) {
+                throw new Exception(
+                    404,
+                    "SETTING_NOT_FOUND",
+                    LANG_EN.error.cdn_setting_not_found,
+                    `No CDN setting found for targetApp: ${targetApp}`
+                );
+            }
+
+            await cdnDocRef.update(cdnPayload);
+            
+            if (redis) {
+                const cacheKey = `yp:cdnSetting:${id}`;
+                await redis.setFunc(cacheKey, { id, ...cdnPayload });
+                await redis.deleteFunc('yp:appCdnSettings:filtered');
+            }
+
+            return {
+                id,
+                ...cdnPayload
+            };
+
+        } catch (error) {
+            throw new Exception(
+                error.status || 500,
+                error.code || "INTERNAL_SERVER_ERROR",
+                error.message || "Something went wrong while updating CDN setting.",
+                error.title || "Unexpected Error"
+            );
+        }
+    }
+
+    async getAllCdnSettings(redis, filters={}) { 
+        try { 
+            const filtersKey = 'yp:appCdnSettings:filters';
+            const cacheKey = 'yp:appCdnSettings:filtered';
+            filters.docId = filters.targetApp || 'yohpal';
+            await redis.deleteFunc(cacheKey);
+            let ref = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
+                .collection('cdnSettings');
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }   
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => { 
+                    let collection = await ref.get();
+                    let data = fbCollectionParser(collection);
+                    
+                    return data;
+                },
+                300
+            );
+
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+    
+    async getCdnSettingById(redis, cdn) {
+        try { 
+            const cacheKey = `yp:applicationSetting:${cdn?.targetApp}:${cdn?.id}`;  
+            let settingsRef = FirestoreDatabase.collection(Setting.collection)
+                    .doc(cdn?.targetApp)
+                    .collection(cdn?.settingType || "cdnSettings")
+                    .doc(cdn?.id);
+
+            if (cdn?.flushCache && cdn.flushCache) {
+                await redis.deleteFunc(cacheKey);
+            }
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => {   
+                    const snap = await settingsRef.get(); 
+                    return snap.exists ? { id: snap.id, ...snap.data() } : null;
+                },
+                3600
+            ); 
+
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+
     async getSettingByDocType(filters) {
         const query = await FirestoreDatabase
             .collection(Setting.collection)

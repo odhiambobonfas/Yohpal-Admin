@@ -70,7 +70,7 @@ const LANG_EN = {
         create_provider_query_failed: "The API setting could not be created.",
         provider_created_success: "API setting created successfully!",
 
-        // settings 
+        // CDN settings 
         company_name_required: "Company name is required.",
         company_name_limit: "Company name cannot exceed 100 characters.",
         company_email_required: "Company email address is required.",
@@ -163,6 +163,17 @@ const LANG_EN = {
         // API Callbacks
         validation_url_required: "Validation URL is required!",
         confirmation_url_required: "Confirmation URL is required!",
+        
+        // CDN 
+        cdn_provider_required: "Please provide the CDN provider name.",
+        target_app_required: "Target application name is required.",
+        cdn_code_required: "CDN unique code is required.",
+        cdn_url_required: "CDN base URL is required.",
+        cdn_url_too_long: "CDN base URL exceeds maximum allowed length (255 characters).",
+        cdn_zone_id_required: "CDN Zone / Distribution ID is required.",
+        invalid_cache_duration: "Cache duration must be a valid positive number.",
+        invalid_cdn_status: "CDN status must be either 'enabled' or 'disabled'.",
+        cdn_module_too_long: "CDN module name exceeds maximum allowed length (100 characters)."
     }, 
      // // response errors and statements
     res: {
@@ -211,7 +222,11 @@ const LANG_EN = {
         api_callbacks_registered_successfully: "API Callbacks registered successfully!", 
 
         // API Settings
-        provider_update_success: "API settings updated successfully!"
+        provider_update_success: "API settings updated successfully!",
+
+        // CDN 
+        cdn_setting_created: "CDN setting has been successfully created.",
+        cdn_setting_updated: "CDN setting has been successfully updated."
     },
 
     error: {
@@ -278,7 +293,16 @@ const LANG_EN = {
         update_provider_query_failed: "Your request to update API provider settings failed!",
 
         // Payments
-        payment_method_required: "Payment method is required when opening balance is set"
+        payment_method_required: "Payment method is required when opening balance is set",
+
+        // CDN
+        cdn_setting_creation_failed: "Failed to create CDN setting due to an internal server error.",
+        internal_server_error: "An unexpected error occurred while processing your request.",
+        
+        // CDN settings
+        setting_with_given_code_exists: "A setting with the given code and for the target application you tried to add, already exists!",
+        cdn_setting_update_failed: "CDN setting update failed. Please try again later!",
+        cdn_setting_not_found: "CDN setting you tried to edit, Not found. Please seek assistance from the administrator!"
     },
 
     // New role/authentication errors
