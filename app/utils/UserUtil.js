@@ -233,7 +233,7 @@ class UserUtil extends Util {
         };
     }
     
-    async getAllUsersCount(redis) { 
+    async getAllUsersCount(redis, filters={}) { 
         try {
             const filtersKey = 'yp:users:count:filters'; 
             const cacheKey = 'yp:users:count'; 
