@@ -61,10 +61,12 @@ class Dashboard extends Master {
 
     async getCardStats() { 
         this.addlOadingStateToGraphicalElements(true);
-        const res = await fetch('/dashboard/card/stats', {
+        const filters = filtersParser('.dashboardFilters');
+        const queryString = new URLSearchParams(filters).toString();
+        const res = await fetch(`/dashboard/card/stats?${queryString}`, {
             credentials: 'include',
             method: 'GET',
-            data: filtersParser('.dashboardFilters'),
+            data: filters,
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -92,9 +94,9 @@ class Dashboard extends Master {
 
     async getDemographicStats() {
         this.addlOadingStateToGraphicalElements(true);
-        const filters = filtersParser('.dashboardFilters');
-        console.log(filters);
-        const res = await fetch('/dashboard/graphical/stats', {
+        const filters = filtersParser('.dashboardFilters'); 
+        const queryString = new URLSearchParams(filters).toString();
+        const res = await fetch(`/dashboard/graphical/stats?${queryString}`, {
             credentials: 'include',
             method: 'GET',
             data: filters,

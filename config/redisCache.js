@@ -76,12 +76,7 @@ class RedisCache {
      */
 	async getFunc(key) {
 		try {
-			const data = await Promise.race([
-				this.client.get(key),
-				new Promise((_, reject) =>
-					setTimeout(() => reject(new Error("Redis GET timeout")), 500)
-				),
-			]);
+			const data = await this.client.get(key);
 			return data ? JSON.parse(data) : null;
 		} catch (err) {
 			console.error(`Redis GET Error: ${key}: `, err);
@@ -96,7 +91,7 @@ class RedisCache {
      * @param {any} value  A value to dump as the cache values(s)
      * @param {number} expiryTimeInSeconds
      */
-	async setFunc(key, value, expiryTimeInSeconds = 3600) {
+	async setFunc(key, value, expiryTimeInSeconds = '') {
 		try {
 			let payload = typeof value === "string" ? value : JSON.stringify(value);
 
@@ -131,7 +126,7 @@ class RedisCache {
      * @param {Function} fetchCallback - function that returns new cache data. Well, logically, pass a DB Callback to get the new data or otherwise.
      * @param {number} expiryTimeInSeconds - Time the cache should take before expiry
      */
-	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600) {
+	async cacheParser(key, fetchCallback, expiryTimeInSeconds = '') {
 		const cached = await this.getFunc(key); 
 		if (cached && cached?.length) return cached;
 		const new_cache = await fetchCallback();

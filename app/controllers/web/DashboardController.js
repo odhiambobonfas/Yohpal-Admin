@@ -3,6 +3,7 @@ import config from '@config/config';
 import User from '@models/User';
 import UsersUtil from '@utils/UserUtil';
 import StatsUtil from '@utils/StatsUtil';
+import VideosUtil from '@utils/VideosUtil';
 import mexDtParser from '@config/mexDtParser'; 
 import Exception from '@config/exceptions';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
@@ -10,12 +11,13 @@ import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 class DashboardController {
     static async index(req, res) {  
         if (isAjaxRequest(req)) {
-            let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis);
+            const filters = req?.query || req?.params
+            let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis, filters);
             let totalPromotedAccounts = null;
             let totalApplications = null;
             let totalDepositedAmount = null;
             let totalYpReviews = null;
-            let totalUploadedVideos = null;
+            let totalUploadedVideos = await VideosUtil.getAllVideosCount(req?.redis, filters);
             let totalYpTransactions = null;
 
             const response = [
