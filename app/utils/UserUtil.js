@@ -71,7 +71,7 @@ class UserUtil extends Util {
                     } 
 
                     if (filters?.createdAt?.length || filters?.daterange?.length) {
-                        let createdAt = parseDateRange(filters?.createdAt || filters?.daterange?.length, true); 
+                        let createdAt = parseDateRange(filters?.createdAt || filters?.daterange, true); 
                         if (createdAt.start && createdAt.end) { 
                             query = query.where("createdAt", ">=", createdAt.start);
                             query = query.where("createdAt", "<=", createdAt.end);
@@ -235,14 +235,35 @@ class UserUtil extends Util {
     
     async getAllUsersCount(redis) { 
         try {
+            const filtersKey = 'yp:users:count:filters'; 
             const cacheKey = 'yp:users:count'; 
     
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
+            // If filters changed, have to invalidate the cache
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+            
+            let query = FirestoreDatabase.collection(User.collection);
+
+            if (filters?.daterange?.length) {
+                let daterange = parseDateRange(filters.daterange, true);   
+                if (daterange.start && daterange.end) { 
+                    query = query.where("timestamp", ">=", daterange.start);
+                    query = query.where("timestamp", "<=", daterange.end);
+                }
+            }
+
             const count = await redis.cacheParser(
                 cacheKey,
                 async () => {
-                    const usersRef = FirestoreDatabase.collection(User.collection);
-                    const snapshot = await usersRef.count().get();
-    
+                    const snapshot = await query.count().get();
                     return snapshot.data().count;
                 },
                 300
