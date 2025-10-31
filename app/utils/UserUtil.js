@@ -70,8 +70,8 @@ class UserUtil extends Util {
                         query = query.where("roleId", "==", filters.roleId);
                     } 
 
-                    if (filters?.createdAt?.length) {
-                        let createdAt = parseDateRange(filters.createdAt, true); 
+                    if (filters?.createdAt?.length || filters?.daterange?.length) {
+                        let createdAt = parseDateRange(filters?.createdAt || filters?.daterange?.length, true); 
                         if (createdAt.start && createdAt.end) { 
                             query = query.where("createdAt", ">=", createdAt.start);
                             query = query.where("createdAt", "<=", createdAt.end);
@@ -114,7 +114,7 @@ class UserUtil extends Util {
 
                     return fetched;
                 },
-                300
+                7200
             );
 
             return users;
