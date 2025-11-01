@@ -60,7 +60,8 @@ class Dashboard extends Master {
     }
 
     async getCardStats() { 
-        this.addlOadingStateToGraphicalElements(true);
+        this.setUpDashboardUI();
+        this.addlOadingStateToGraphicalElements(true);  
         const filters = filtersParser('.dashboardFilters');
         const queryString = new URLSearchParams(filters).toString();
         const res = await fetch(`/dashboard/card/stats?${queryString}`, {
@@ -92,8 +93,7 @@ class Dashboard extends Master {
         });
     }
 
-    async getDemographicStats() {
-        this.addlOadingStateToGraphicalElements(true);
+    async getDemographicStats() { 
         const filters = filtersParser('.dashboardFilters'); 
         const queryString = new URLSearchParams(filters).toString();
         const res = await fetch(`/dashboard/graphical/stats?${queryString}`, {
@@ -344,13 +344,15 @@ class Dashboard extends Master {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const inst = new Dashboard();
     inst.setUpDashboardUI();
-    await inst.getCardStats();
-    await inst.getDemographicStats();
+    inst.getCardStats();
+    inst.getDemographicStats();
     inst.getListOfTopOfFollowedUsers();
     inst.getListOfPromotedUsersAccounts();
-    watchFilterChanges('.dashboardFilters', inst.getCardStats.bind(inst));
-    watchFilterChanges('.dashboardFilters', inst.getDemographicStats.bind(inst));
+    watchFilterChanges('.dashboardFilters', () => {
+        inst.getCardStats();
+        inst.getDemographicStats();
+    }); 
 });

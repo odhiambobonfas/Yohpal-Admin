@@ -35,8 +35,7 @@ class UserUtil extends Util {
                 await redis.deleteFunc(cacheKey);
 
                 await redis.cacheParser(filtersKey, async () => filters, 2000);
-            }
-            
+            } 
             let users = await redis?.cacheParser(
                 cacheKey,
                 async () => {  

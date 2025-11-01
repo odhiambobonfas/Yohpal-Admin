@@ -58,8 +58,9 @@ class DashboardController {
     } 
 
     static async graphicalStats(req, res) {
-        try {
-            let users = await UsersUtil.getAllUsers(req?.redis);  
+        try { 
+            const filters = req?.query || req?.params
+            let users = await UsersUtil.getAllUsers(req?.redis, filters);  
             let marketSizeGrowth = await StatsUtil.computeMarketSizeGrowth(users);
             let ageDemographics = await StatsUtil.computeAgeDemographics(users);
             
