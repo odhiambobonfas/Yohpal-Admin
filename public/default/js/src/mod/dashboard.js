@@ -290,8 +290,7 @@ class Dashboard extends Master {
         }
     }
 
-
-    getListOfTopOfFollowedUsers() { 
+    getFollowerRankings() { 
         $('.followed-users-table').DataTable({
             destroy: true,
             paging: true,
@@ -299,15 +298,20 @@ class Dashboard extends Master {
             ordering: true,
             info: true,
             lengthChange: true,
-            // ajax: ajaxDtParser(
-            //     'GET', 
-            //     '/followers/top/followed', 
-            //     filtersParser('.followedUsersFilters')
-            // ), 
+            ajax: ajaxDtParser(
+                'GET', 
+                '/followers/top/followed', 
+                filtersParser('.followedUsersFilters')
+            ), 
+            columns: [
+                { data: 'profile' },
+                { data: 'count' },
+                { data: 'status' }
+            ],
             fnDrawCallback: () => {
                 const inst = new Dashboard();
                 inst.actionOnFollowedUsersRes();
-                watchFilterChanges('.followed-users-filters', inst.getListOfTopOfFollowedUsers.bind(inst));
+                watchFilterChanges('.followed-users-filters', inst.getFollowerRankings.bind(inst));
             },
             language: getDataTableLanguage(),
         });
@@ -341,7 +345,7 @@ class Dashboard extends Master {
 
     actionOnpromotedUsersAccountsRes() {
         // ...
-    }
+    } 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -349,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.setUpDashboardUI();
     inst.getCardStats();
     inst.getDemographicStats();
-    inst.getListOfTopOfFollowedUsers();
+    inst.getFollowerRankings();
     inst.getListOfPromotedUsersAccounts();
     watchFilterChanges('.dashboardFilters', () => {
         inst.getCardStats();
