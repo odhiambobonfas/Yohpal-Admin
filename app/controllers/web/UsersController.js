@@ -16,6 +16,7 @@ import LANG_EN from '@lang/en';
 import { departments, designations, employees } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
 import Attendance from "@models/Attendance";
+import Application from '@models/Application';
 import PaymentComponent from '@models/PaymentComponent';
 
 class UsersController {
@@ -279,6 +280,9 @@ class UsersController {
 
         // components For Dropdown
         const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis);
+        
+        // countries for dropdown!
+        const countriesForDropdown = await Application.countriesForDropdown(req?.redis);
 
         return res.render("crm/users/create", { 
             title: `${ config.APP.APP_NAME } || Create User(s)`,
@@ -288,6 +292,7 @@ class UsersController {
             designations: designationsData,
             shifts: shiftsData,
             employees: employeesData,
+            countriesForDropdown: countriesForDropdown,
             componentsForDropdown: componentsForDropdown
         });
     }
@@ -390,7 +395,7 @@ class UsersController {
             }
         } 
 
-        let { user, role, departmentDesignationData, linkedPayComponents } = await UsersUtil.getUserByUid(uid);    
+        let { user, role, departmentDesignationData, linkedPayComponents } = await UsersUtil.getUserByUid(req?.redis, uid);    
         if (!user || !user.uid) { 
             return res.redirect('/users');
         }
@@ -407,8 +412,10 @@ class UsersController {
         const employeesData = await employees(req.redis);
 
         // components For Dropdown 
-        const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis, linkedPayComponents); 
+        const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis, linkedPayComponents);
         
+        const countriesForDropdown = await Application.countriesForDropdown(req?.redis, user?.country);
+
         return res.render("crm/users/update", { 
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
@@ -419,7 +426,8 @@ class UsersController {
             departments: departmentsData,
             designations: designationsData,
             shifts: shiftsData,
-            employees: employeesData, 
+            employees: employeesData,
+            countriesForDropdown: countriesForDropdown,
             linkedPayComponents: linkedPayComponents,
             componentsForDropdown: componentsForDropdown
         });

@@ -93,8 +93,10 @@
                                 </div>
                                 <div class="col-6 mb-3">
                                     <label for="country" class="form-label">Country</label>
-                                    <input type="text" class="form-control" id="country" name="country"
-                                        value="<%= userData?.country %>" placeholder="Enter country">
+                                    <select class="form-select searchSelect" name="country" id="country">
+                                        <option value="">Select country</option>  
+                                        <%- countriesForDropdown %>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -250,7 +252,7 @@
 									<label for="payComponents">Pay Components:</label> 
 									<select class="form-select searchSelect" multiple name="paymentComponents" id="paymentComponents">
 										<option value="">Select pay components</option>  
-                                        <%- componentsForDropdown %>
+										<%- componentsForDropdown %>
 									</select>
 								</div> 
 							</div>
