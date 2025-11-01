@@ -22,20 +22,26 @@ class Transaction extends AppModel {
         // Define all associations here
     }
 
-    static async paymentMethods() {
-        let paymentMethods = [
-            { slug: 'mpesa', name: 'M-Pesa', description: '' },
-            { slug: 'cash', name: 'Cash', description: '' },
-            { slug: 'bank-transfer', name: 'Bank Transfer', description: '' },
-            { slug: 'card', name: 'Credit/Debit Card', description: '' }
-        ];
+    static async paymentMethods(redis) { 
+        const cacheKey = `yp:paymentMethods`;
+        const paymentMethods = redis.cacheParser(
+            cacheKey,
+            () => {
+                return [
+                    { slug: 'mpesa', name: 'M-Pesa', description: '' },
+                    { slug: 'cash', name: 'Cash', description: '' },
+                    { slug: 'bank-transfer', name: 'Bank Transfer', description: '' },
+                    { slug: 'card', name: 'Credit/Debit Card', description: '' }
+                ]; 
+            }
+        );
 
-        return paymentMethods;
+        return paymentMethods
     }
 
-    static async paymentMethodsForDropdown() {
+    static async paymentMethodsForDropdown(redis) {
         let html = '';
-        let paymentMethods = await Transaction.paymentMethods();
+        let paymentMethods = await Transaction.paymentMethods(redis);
 
         paymentMethods.forEach(method => {
             html += `<option value="${method.slug}">${method.name}</option>`;

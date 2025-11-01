@@ -156,9 +156,8 @@ class UserUtil extends Util {
             }
         }
         
-        
-
-        let departmentDesignationData = {}; 
+        let linkedPayComponents = [];
+        let departmentDesignationData = {};  
 
         // Fetch department and designation details if user is an employee
         if (user.isEmployee) {
@@ -184,6 +183,20 @@ class UserUtil extends Util {
                     departmentDesignationData[pair.departmentCode] = {departmentData, designationData};
                 }
             }
+
+            if (user?.paymentComponentRefs?.length) {
+                for (const componentRef of user.paymentComponentRefs) {
+                    let componentData = {};
+                    if (componentRef && componentRef?.get) {
+                        const component = await componentRef.get();
+                        if (component.exists) {
+                            componentData = component.data();
+                        }
+                    }
+
+                    linkedPayComponents.push(componentData);
+                }
+            }
         }
 
         departmentDesignationData = Object.entries(departmentDesignationData);
@@ -192,7 +205,8 @@ class UserUtil extends Util {
             user,
             role,
             permissions, 
-            departmentDesignationData
+            departmentDesignationData,
+            linkedPayComponents
         };
     }
 

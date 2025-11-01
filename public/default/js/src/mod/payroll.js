@@ -37,6 +37,7 @@ class Payroll extends HRM {
                     console.log(response);
                     if (response?.status === 'success') {
                         resetFormAndCloseModal(form);
+                        this.paymentComponentsListing();
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error); 
                         return;
                     }
@@ -125,6 +126,7 @@ class Payroll extends HRM {
                     console.log(response);
                     if (response?.status === 'success') {
                         resetFormAndCloseModal(form);
+                        this.bracketScopesListing();
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error); 
                         return;
                     }
@@ -203,6 +205,7 @@ class Payroll extends HRM {
                     console.log(response);
                     if (response?.status === 'success') {
                         resetFormAndCloseModal(form);
+                        this.tierScopesListing();
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error); 
                         return;
                     }
