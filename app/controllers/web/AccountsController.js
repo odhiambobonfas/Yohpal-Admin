@@ -140,7 +140,7 @@ class AccountsController {
 
         let ypApplications = await Application.ypApplications(req?.redis);
         let categories = await AccountUtil.getAllAccountCategories(req?.redis, req.query);
-        let paymentMethods = await Transaction.paymentMethods();
+        let paymentMethods = await Transaction.paymentMethods(req?.redis);
         let pmsForDropdown = await Transaction.paymentMethodsForDropdown(req?.redis);
 
         return res.render("crm/accounts/index", {
