@@ -877,21 +877,38 @@ function filtersParser(selector) {
  * @param {string} selector - The CSS selector for the filters container.
  * @param {Array|Function} callback - The function|Array of Functions, to call when any input changes.
  */
-function watchFilterChanges(selector, callback) {
-    const container = document.querySelector(selector);
+function watchFilterChanges(selector, callback) { 
+    let container = document.querySelector(selector);  
     if (!documentContains(container)) return;
 
-    const inputs = container.querySelectorAll('input, select, textarea');
+    const inputs = container.querySelectorAll('input, select, textarea'); 
+    const dropdownItems = container.querySelectorAll('.dropdown-item'); 
 
     inputs.forEach(input => {
-        input = cloneNodeElement(input);
+        input = cloneNodeElement(input); 
         input.addEventListener('change', (event) => {
             if (Array.isArray(callback)) {
                 callback.forEach(func => {
                     func();
                 });
             } else {
-                callback();
+                callback(event, input);
+            }
+        });
+    });
+
+    dropdownItems.forEach(item => { 
+        item.addEventListener('click', (event) => {
+            event.preventDefault();   
+            const input = container.querySelector('.daterange');
+            if (input) { 
+                input.dispatchEvent(new Event('change')); 
+            }
+            
+            if (Array.isArray(callback)) {
+                callback.forEach(func => func(event, item));
+            } else {
+                callback(event, item);
             }
         });
     });

@@ -35,8 +35,7 @@ class UserUtil extends Util {
                 await redis.deleteFunc(cacheKey);
 
                 await redis.cacheParser(filtersKey, async () => filters, 2000);
-            }
-            
+            } 
             let users = await redis?.cacheParser(
                 cacheKey,
                 async () => {  
@@ -78,8 +77,8 @@ class UserUtil extends Util {
                         }
                     }
                     
-                    if (filters.orderBy) {
-                        query = query.orderBy(filters.orderBy, filters.orderBy); 
+                    if (filters.orderBy && filters.orderByDirection) {
+                        query = query.orderBy(filters.orderBy, filters.orderByDirection); 
                     }
 
                     if (filters.limit) {
@@ -125,76 +124,100 @@ class UserUtil extends Util {
         return [];
     }
     
-    async getUserByUid(uid) {
-        const usersRef = FirestoreDatabase.collection(User.collection)
-            .where("uid", "==", uid);
-
-        const snapshot = await usersRef.get();
-
-        if (snapshot.empty) {
-            return {};
-        }
-
-        const userDoc = snapshot.docs[0];
-        let user = userDoc.data() ?? {};
-
+    async getUserByUid(redis, uid) { 
+        let user = {};
         let role = {};
         let permissions = {};
+        let departmentDesignationData = {};
+        let linkedPayComponents = {};
 
-        // if user has a role reference
-        if (user.roleRef && user.roleRef.get) {
-            const roleSnap = await user.roleRef.get();
-            if (roleSnap.exists) {
-                role = roleSnap.data();
+        const usersRef = FirestoreDatabase.collection(User.collection)
+            .where("uid", "==", uid);
+        
+        const cacheKey = `yp:user:filtered:${uid}`;
 
-                // if role has a permissions reference
-                if (role.refPermissions && role.refPermissions.get) {
-                    const permSnap = await role.refPermissions.get();
-                    if (permSnap.exists) {
-                        permissions = permSnap.data();
+        let userResult = await redis?.cacheParser(
+            cacheKey,
+            async () => { 
+                const snapshot = await usersRef.get();
+                if (snapshot.empty) {
+                    return {};
+                }
+
+                const userDoc = snapshot.docs[0];
+                user = userDoc.data() ?? {};
+                
+                // if user has a role reference
+                if (user.roleRef && user.roleRef.get) {
+                    const roleSnap = await user.roleRef.get();
+                    if (roleSnap.exists) {
+                        role = roleSnap.data();
+
+                        // if role has a permissions reference
+                        if (role.refPermissions && role.refPermissions.get) {
+                            const permSnap = await role.refPermissions.get();
+                            if (permSnap.exists) {
+                                permissions = permSnap.data();
+                            }
+                        }
                     }
                 }
-            }
-        }
-        
-        
+                
+                linkedPayComponents = [];
+                departmentDesignationData = {};  
 
-        let departmentDesignationData = {}; 
+                // Fetch department and designation details if user is an employee
+                if (user.isEmployee) {
+                    if (user?.departmentDesignationPairs?.length) { 
+                        for (let pair of user.departmentDesignationPairs) {
+                            let departmentData = {};
+                            let designationData = {};
+                            if (pair?.departmentRef && pair.departmentRef.get) {
+                                const deptSnap = await pair.departmentRef.get();
+                                if (deptSnap.exists) { 
+                                    departmentData = deptSnap.data();
+                                }
+                            }
 
-        // Fetch department and designation details if user is an employee
-        if (user.isEmployee) {
-            if (user?.departmentDesignationPairs?.length) { 
-                for (let pair of user.departmentDesignationPairs) {
-                    let departmentData = {};
-                    let designationData = {};
-                    if (pair?.departmentRef && pair.departmentRef.get) {
-                        const deptSnap = await pair.departmentRef.get();
-                        if (deptSnap.exists) { 
-                            departmentData = deptSnap.data();
+                            if (pair?.designationRef && pair.designationRef.get) {
+                                const desgSnap = await pair.designationRef.get();
+                                if (desgSnap.exists) {
+                                    designationData = desgSnap.data();
+                                }
+                            }   
+                            
+                            // push pair to departmentDesignationData object
+                            departmentDesignationData[pair.departmentCode] = {departmentData, designationData};
                         }
                     }
 
-                    if (pair?.designationRef && pair.designationRef.get) {
-                        const desgSnap = await pair.designationRef.get();
-                        if (desgSnap.exists) {
-                            designationData = desgSnap.data();
-                        }
-                    }   
-                    
-                    // push pair to departmentDesignationData object
-                    departmentDesignationData[pair.departmentCode] = {departmentData, designationData};
-                }
-            }
-        }
+                    if (user?.paymentComponentRefs?.length) {
+                        for (const componentRef of user.paymentComponentRefs) {
+                            let componentData = {};
+                            if (componentRef && componentRef?.get) {
+                                const component = await componentRef.get();
+                                if (component.exists) {
+                                    componentData = component.data();
+                                }
+                            }
 
-        departmentDesignationData = Object.entries(departmentDesignationData);
-        
-        return {
-            user,
-            role,
-            permissions, 
-            departmentDesignationData
-        };
+                            linkedPayComponents.push(componentData);
+                        }
+                    }
+                }
+
+                departmentDesignationData = Object.entries(departmentDesignationData);
+                return {
+                    user,
+                    role,
+                    permissions, 
+                    departmentDesignationData,
+                    linkedPayComponents
+                }; 
+            }
+        );
+
+        return userResult; 
     }
 
     async getUserByDocid(uid) {  
@@ -339,7 +362,7 @@ class UserUtil extends Util {
                 isEmployee: data.isEmployee ? true : false,
                 employeeId: data.employeeId || '', 
                 email: data.email.toLowerCase() || "", 
-                Country: data.country || "",
+                country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
                 roleRef: data.roleId ? FirestoreDatabase.collection(Role.collection).doc(data.roleId) : null,
                 refPermissions: data.permissionId ? FirestoreDatabase.collection(Permission.collection).doc(data.permissionId) : null,
@@ -347,7 +370,7 @@ class UserUtil extends Util {
                 profilePictureLocalPath: data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg',
                 profilePictureFbPath: data.profilePictureFbPath,
                 address: data.address || "",
-                bio: data.bio || "",
+                bio: (data?.bio && data?.bio?.length) ? data.bio.trim() : "",
                 status: data.status || "active", 
 
                 // HRM information 
@@ -479,7 +502,7 @@ class UserUtil extends Util {
             }
 
             if (data.bio) {
-                updatedData.bio = data.bio;
+                updatedData.bio = (data?.bio && data?.bio?.length) ? data.bio.trim() : "";
             }
 
             if (data.status) {
@@ -533,6 +556,11 @@ class UserUtil extends Util {
             if (redis) {
                 await redis.deleteFunc('yp:users:filtered');
                 await redis.deleteFunc('yp:users:count');
+            }
+            
+            const cacheKey = `yp:user:filtered:${uid}`;
+            if (redis) {
+                await redis.deleteFunc(cacheKey);
             }
 
             return true;

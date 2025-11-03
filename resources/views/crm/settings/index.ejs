@@ -46,6 +46,7 @@
 											<li class="list-group-item" data-id="privacy">Privacy Settings</li>
 											<li class="list-group-item" data-id="website">Website Settings</li>
 											<li class="list-group-item" data-id="notifications">Notifications</li>
+											<li class="list-group-item" data-id="cpanel">CPANEL Settings</li>
 										</ul>
 									</div>
 								</div>
@@ -72,6 +73,9 @@
 										<div class="content d-none" id="privacy">Privacy Settings Content</div>
 										<div class="content d-none" id="website">Website Settings Content</div>
 										<div class="content d-none" id="notifications">Notifications Content</div>
+										<div class="content d-none" id="cpanel">
+											<%- include('settings/partials/cpanel-settings') %>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -89,6 +93,9 @@
 
 <%- include('partials/create-cdn-setting') %>
 <div class="modal fade editCdnSettingModal" id="editCdnSettingModal" tabindex="-1" aria-labelledby="editCdnSettingModalLabel" aria-hidden="true"></div>
+
+<%- include('partials/create-cpanel-setting') %>
+<div class="modal fade editCpanelSettingModal" id="editCpanelSettingModal" tabindex="-1" aria-labelledby="editCpanelSettingModalLabel" aria-hidden="true"></div>
 
 <div class="modal fade registerApiCallbackModal" id="registerApiCallbackModal" tabindex="-1" aria-labelledby="registerApiCallbackModalLabel" aria-hidden="true"></div>
 <!-- /modal  -->

@@ -1280,7 +1280,7 @@ class HRMController {
                 ...post
             }
             
-            const result = await PayrollUtil.createPaymentComponentQuery(finalPayload);
+            const result = await PayrollUtil.createPaymentComponentQuery(finalPayload, req?.redis);
             if (!result) {
                 throw new Exception(
                     500,
@@ -1399,7 +1399,7 @@ class HRMController {
                 ...post
             }
             
-            const result = await PayrollUtil.createPaymentBracketQuery(finalPayload);
+            const result = await PayrollUtil.createPaymentBracketQuery(finalPayload, req?.redis);
             if (!result) {
                 throw new Exception(
                     500,
@@ -1513,7 +1513,7 @@ class HRMController {
                 ...post
             };
 
-            const result = await PayrollUtil.createPaymentTierQuery(finalPayload);
+            const result = await PayrollUtil.createPaymentTierQuery(finalPayload, req?.redis);
             if (!result) {
                 throw new Exception(
                     500,

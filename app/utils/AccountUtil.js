@@ -171,13 +171,10 @@ class AccountsUtil extends Util {
                 const transactionPayload = {
                     accountId: accountRef.id,
                     accountRef: FirestoreDatabase.collection(PaymentAccount.collection).doc(accountRef.id),
-                    type: "CREDIT",
+                    type: "openingBalance",
                     amount: openingBalance,
                     description: "Opening Balance",
-                    reference: data.referenceNumber || `OPEN-${accountRef.id.toUpperCase().slice(0, 8)}`,
-                    metadata: {
-                        tag: "opening_balance"
-                    },
+                    reference: data.referenceNumber || `OPEN-${accountRef.id.toUpperCase().slice(0, 8)}`, 
                     status: 'success',
                     paymentMethod: data?.paymentMethod || 'other',
                     applicationName: data?.applicationName || 'yohpal',

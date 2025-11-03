@@ -68,8 +68,8 @@ export function fbCollectionParser(snapshot = {}) {
             dateToISO8601Formatter(doc.updateTime?.toDate());
 
         return {
-            id: doc.id,
-            ...data,
+            id: doc.id, 
+            ...data, 
             createdAt,
             updatedAt,
         };

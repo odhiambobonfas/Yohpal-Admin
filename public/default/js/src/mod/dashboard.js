@@ -60,7 +60,8 @@ class Dashboard extends Master {
     }
 
     async getCardStats() { 
-        this.addlOadingStateToGraphicalElements(true);
+        this.setUpDashboardUI();
+        this.addlOadingStateToGraphicalElements(true);  
         const filters = filtersParser('.dashboardFilters');
         const queryString = new URLSearchParams(filters).toString();
         const res = await fetch(`/dashboard/card/stats?${queryString}`, {
@@ -92,8 +93,7 @@ class Dashboard extends Master {
         });
     }
 
-    async getDemographicStats() {
-        this.addlOadingStateToGraphicalElements(true);
+    async getDemographicStats() { 
         const filters = filtersParser('.dashboardFilters'); 
         const queryString = new URLSearchParams(filters).toString();
         const res = await fetch(`/dashboard/graphical/stats?${queryString}`, {
@@ -290,24 +290,27 @@ class Dashboard extends Master {
         }
     }
 
-
-    getListOfTopOfFollowedUsers() { 
+    getFollowerRankings() { 
         $('.followed-users-table').DataTable({
             destroy: true,
             paging: true,
             searching: true,
-            ordering: true,
+            ordering: false,
             info: true,
             lengthChange: true,
-            // ajax: ajaxDtParser(
-            //     'GET', 
-            //     '/followers/top/followed', 
-            //     filtersParser('.followedUsersFilters')
-            // ), 
+            ajax: ajaxDtParser(
+                'GET', 
+                '/followers/top/followed', 
+                filtersParser('.followedUsersFilters')
+            ), 
+            columns: [
+                { data: 'profile' },
+                { data: 'count' }, 
+            ],
             fnDrawCallback: () => {
                 const inst = new Dashboard();
                 inst.actionOnFollowedUsersRes();
-                watchFilterChanges('.followed-users-filters', inst.getListOfTopOfFollowedUsers.bind(inst));
+                watchFilterChanges('.followed-users-filters', inst.getFollowerRankings.bind(inst));
             },
             language: getDataTableLanguage(),
         });
@@ -341,16 +344,18 @@ class Dashboard extends Master {
 
     actionOnpromotedUsersAccountsRes() {
         // ...
-    }
+    } 
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const inst = new Dashboard();
     inst.setUpDashboardUI();
-    await inst.getCardStats();
-    await inst.getDemographicStats();
-    inst.getListOfTopOfFollowedUsers();
+    inst.getCardStats();
+    inst.getDemographicStats();
+    inst.getFollowerRankings();
     inst.getListOfPromotedUsersAccounts();
-    watchFilterChanges('.dashboardFilters', inst.getCardStats.bind(inst));
-    watchFilterChanges('.dashboardFilters', inst.getDemographicStats.bind(inst));
+    watchFilterChanges('.dashboardFilters', () => {
+        inst.getCardStats();
+        inst.getDemographicStats();
+    }); 
 });

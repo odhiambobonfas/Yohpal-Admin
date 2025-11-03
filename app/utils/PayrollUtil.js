@@ -23,7 +23,7 @@ class PayrollUtil extends Util {
         super();
     }
 
-    async createPaymentComponentQuery(data) { 
+    async createPaymentComponentQuery(data, redis) { 
         const db = FirestoreDatabase.collection(PaymentComponent.collection)
 
         const nameSnap = await db.where("componentName", "==", data.componentName).get(); 
@@ -63,9 +63,14 @@ class PayrollUtil extends Util {
             ...extras
         };
 
-        const result = await db.add(payload); 
+        const docRef = db.doc(data.componentCode);
+        await docRef.set(payload); 
 
-        return result; 
+        if (redis) {
+            await redis.deleteFunc('yp:paymentComponents:filtered'); 
+        }
+
+        return docRef; 
     }
 
     async getAllPaymentComponents(redis, filters = {}) {
@@ -94,7 +99,7 @@ class PayrollUtil extends Util {
 
                     return data;
                 },
-                300
+                7200
             );
             
             return data;
@@ -103,7 +108,7 @@ class PayrollUtil extends Util {
         }
     }
 
-    async createPaymentBracketQuery(data) { 
+    async createPaymentBracketQuery(data, redis) { 
         const db = FirestoreDatabase.collection(ComponentEssential.collection);
 
         const nameSnap = await db.where("bracketName", "==", data.bracketName).get(); 
@@ -147,10 +152,14 @@ class PayrollUtil extends Util {
 
         const result = await db.add(payload); 
 
+        if (redis) {
+            await redis.deleteFunc('yp:componentBrackets:filtered'); 
+        }
+
         return result; 
     }
 
-    async createPaymentTierQuery(data) {
+    async createPaymentTierQuery(data, redis) {
         const db = FirestoreDatabase.collection(ComponentEssential.collection);
 
         const nameSnap = await db.where("tierName", "==", data.tierName).get();
@@ -198,6 +207,14 @@ class PayrollUtil extends Util {
         };
 
         const result = await db.add(payload);
+
+        if (redis) {
+            const cacheKey = 'yp:componentBrackets:filtered';
+            if (filters?.scope && filters?.scope == 'tier') { 
+                cacheKey = 'yp:componentTiers:filtered';
+            }
+            await redis.deleteFunc(cacheKey); 
+        }
 
         return result;
     } 
@@ -247,7 +264,7 @@ class PayrollUtil extends Util {
                     
                     return data;
                 },
-                300
+                7200
             );
             
             return data;

@@ -486,6 +486,29 @@ class Settings extends Master {
             }); 
         });
     }
+
+    // CDN SETTINGS
+    getCpanelSettingsList() {
+        $('.cpanel-settings-table').DataTable({
+            destroy: true,
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            lengthChange: true,
+            // ajax: ajaxDtParser(
+            //     'GET',
+            //     '/cpanel-settings',
+            //     filtersParser('.cpanelSettingsFilters')
+            // ), 
+            fnDrawCallback: () => {
+                const inst = new Settings();
+                inst.actionOnCdnSettingsRes();
+                watchFilterChanges('.cpanel-settings-filters', inst.getCpanelSettingsList.bind(inst));
+            },
+            language: getDataTableLanguage(),
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -496,4 +519,5 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.editApiSettingRes();
     inst.getCdnSettingsList();
     inst.createCdnSetting();
+    inst.getCpanelSettingsList();
 });

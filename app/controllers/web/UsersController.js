@@ -10,10 +10,14 @@ import mexDtParser from '@config/mexDtParser';
 import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, reduceToObj, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil';  
+import HRMUtil from '@utils/HRMUtil';  
+import PayrollUtil from '@utils/PayrollUtil';
 import LANG_EN from '@lang/en'; 
 import { departments, designations, employees } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
 import Attendance from "@models/Attendance";
+import Application from '@models/Application';
+import PaymentComponent from '@models/PaymentComponent';
 
 class UsersController {
     static async index(req, res) {
@@ -274,6 +278,12 @@ class UsersController {
         // users
         const employeesData = await employees(req.redis); 
 
+        // components For Dropdown
+        const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis);
+        
+        // countries for dropdown!
+        const countriesForDropdown = await Application.countriesForDropdown(req?.redis);
+
         return res.render("crm/users/create", { 
             title: `${ config.APP.APP_NAME } || Create User(s)`,
             user: req.session.user,
@@ -281,7 +291,9 @@ class UsersController {
             departments: departmentsData,
             designations: designationsData,
             shifts: shiftsData,
-            employees: employeesData
+            employees: employeesData,
+            countriesForDropdown: countriesForDropdown,
+            componentsForDropdown: componentsForDropdown
         });
     }
 
@@ -383,8 +395,7 @@ class UsersController {
             }
         } 
 
-        let {user, role, departmentDesignationData} = await UsersUtil.getUserByUid(uid);   
-
+        let { user, role, departmentDesignationData, linkedPayComponents } = await UsersUtil.getUserByUid(req?.redis, uid);    
         if (!user || !user.uid) { 
             return res.redirect('/users');
         }
@@ -400,6 +411,11 @@ class UsersController {
         // users
         const employeesData = await employees(req.redis);
 
+        // components For Dropdown 
+        const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis, linkedPayComponents);
+        
+        const countriesForDropdown = await Application.countriesForDropdown(req?.redis, user?.country);
+
         return res.render("crm/users/update", { 
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
@@ -410,7 +426,10 @@ class UsersController {
             departments: departmentsData,
             designations: designationsData,
             shifts: shiftsData,
-            employees: employeesData
+            employees: employeesData,
+            countriesForDropdown: countriesForDropdown,
+            linkedPayComponents: linkedPayComponents,
+            componentsForDropdown: componentsForDropdown
         });
     }
 
