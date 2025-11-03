@@ -77,7 +77,7 @@ class UserUtil extends Util {
                         }
                     }
                     
-                    if (filters.orderBy) {
+                    if (filters.orderBy && filters.orderByDirection) {
                         query = query.orderBy(filters.orderBy, filters.orderByDirection); 
                     }
 

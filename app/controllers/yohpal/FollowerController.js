@@ -9,7 +9,7 @@ import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
 import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, reduceToObj, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
-import UsersUtil from '@utils/UserUtil';  
+import StatsUtil from '@utils/StatsUtil';
 import HRMUtil from '@utils/HRMUtil';  
 import PayrollUtil from '@utils/PayrollUtil';
 import LANG_EN from '@lang/en'; 
@@ -18,16 +18,39 @@ import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
 import Attendance from "@models/Attendance"; 
 
 class FollowerController {
+    async bubbleSortUsers(arr) {
+        let n = arr.length;
+        let swapped;
+      
+        do {
+          swapped = false;
+          for (let i = 0; i < n - 1; i++) {
+            const current = arr[i].followersCount || 0;
+            const next = arr[i + 1].followersCount || 0;
+      
+            // Sort descending (largest first)
+            if (current < next) {
+              [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+              swapped = true;
+            }
+          }
+          n--; // optimization: ignore the last sorted element
+        } while (swapped);
+      
+        return arr;
+    }
+      
     static async getTopFollowersListing(req, res) {
+        let user = req.session.user; 
         if (isAjaxRequest(req)) {
             let users = [];
-            let user = req.session.user; 
             try {  
                 req.query.roleExists = true;
                 req.query.orderBy = 'followersCount';
-                req.query.orderByDirection = 'asc';
-                users = await UsersUtil.getAllUsers(req?.redis, req.query); 
-                
+                req.query.orderByDirection = 'desc';
+                req.query.limit = 10;
+                users = await StatsUtil.getFollowersStats(req?.redis, req.query); 
+
                 let mex = new mexDtParser(users);
                 users = mex.addColumn('profile', (col) => {  
                     let fullName = 'N/A';
@@ -71,7 +94,7 @@ class FollowerController {
                     } 
                 })
                 .make();
-
+                
                 return res.status(200).json({
                     status: 'success',
                     message: 'Users retrieved successfully.',

@@ -295,7 +295,7 @@ class Dashboard extends Master {
             destroy: true,
             paging: true,
             searching: true,
-            ordering: true,
+            ordering: false,
             info: true,
             lengthChange: true,
             ajax: ajaxDtParser(
@@ -305,8 +305,7 @@ class Dashboard extends Master {
             ), 
             columns: [
                 { data: 'profile' },
-                { data: 'count' },
-                { data: 'status' }
+                { data: 'count' }, 
             ],
             fnDrawCallback: () => {
                 const inst = new Dashboard();
