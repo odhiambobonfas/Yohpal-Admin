@@ -173,7 +173,16 @@ const LANG_EN = {
         cdn_zone_id_required: "CDN Zone / Distribution ID is required.",
         invalid_cache_duration: "Cache duration must be a valid positive number.",
         invalid_cdn_status: "CDN status must be either 'enabled' or 'disabled'.",
-        cdn_module_too_long: "CDN module name exceeds maximum allowed length (100 characters)."
+        cdn_module_too_long: "CDN module name exceeds maximum allowed length (100 characters).",
+        
+        // CPANEL Settings 
+        cpanel_host_required: "CPanel host URL is required.",
+        cpanel_username_required: "CPanel username is required.",
+        cpanel_password_required: "CPanel password is required.",
+        cpanel_api_token_too_long: "API token exceeds maximum length (255 characters).",
+        linked_domain_required: "Linked domain is required.",
+        linked_domain_too_long: "Linked domain exceeds maximum length (255 characters).",
+        invalid_is_default: "Invalid value for default server option.",
     }, 
      // // response errors and statements
     res: {
@@ -226,7 +235,12 @@ const LANG_EN = {
 
         // CDN 
         cdn_setting_created: "CDN setting has been successfully created.",
-        cdn_setting_updated: "CDN setting has been successfully updated."
+        cdn_setting_updated: "CDN setting has been successfully updated.",
+
+        // CPANEL settings
+        cpanel_setting_created: "CPanel setting created successfully.",
+        cpanel_setting_updated: "CPanel setting has been updated successfully.", 
+        cpanel_setting_deleted: "CPanel setting deleted successfully.", 
     },
 
     error: {
@@ -302,7 +316,15 @@ const LANG_EN = {
         // CDN settings
         setting_with_given_code_exists: "A setting with the given code and for the target application you tried to add, already exists!",
         cdn_setting_update_failed: "CDN setting update failed. Please try again later!",
-        cdn_setting_not_found: "CDN setting you tried to edit, Not found. Please seek assistance from the administrator!"
+        cdn_setting_not_found: "CDN setting you tried to edit, Not found. Please seek assistance from the administrator!",
+
+        // CPANEL Settings
+        cpanel_setting_creation_failed: "Failed to create new CPanel setting. Please try again later.", 
+        cpanel_settings_fetch_failed: "Unable to retrieve CPanel settings at the moment.",
+        cpanel_setting_update_failed: "Failed to update CPanel setting.",
+        cpanel_setting_delete_failed: "Failed to delete CPanel setting.",
+        cpanel_setting_not_found: "The specified CPanel setting could not be found.", 
+        cpanel_setting_exists: "A CPanel setting with the given host and domain already exists.",
     },
 
     // New role/authentication errors

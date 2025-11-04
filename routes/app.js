@@ -125,10 +125,14 @@ router.get('/api/settings/edit', authMiddleware, SettingsController.editApiSetti
 router.post('/api/settings/edit/:id', authMiddleware, SettingsController.editApiSettingRes);
 router.get('/cdn-settings', authMiddleware, SettingsController.getCdnSettingsList);
 router.post('/settings/cdn/create', authMiddleware, SettingsController.createCdnSettingsList);
-
 router.route('/settings/cdn/edit/:id')
     .get(authMiddleware, SettingsController.updateCdnSettingsList)
     .post(authMiddleware, SettingsController.updateCdnSettingsList);
+router.post('/settings/cpanel/create', authMiddleware, SettingsController.createCpanelSettingsList);
+router.get('/cpanel-settings', authMiddleware, SettingsController.getCpanelSettingsList);
+router.route('/settings/cpanel/edit/:id')
+    .get(authMiddleware, SettingsController.updateCpanelSettingsList)
+    .post(authMiddleware, SettingsController.updateCpanelSettingsList);
 
 // Folowers/Following
 router.get('/followers/top/followed', authMiddleware, FollowerController.getTopFollowersListing);

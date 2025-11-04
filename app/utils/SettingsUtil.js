@@ -630,6 +630,257 @@ class SettingsUtil extends Util {
 
         return { ...payload };
     }
+
+    async createCpanelSettingQuery(data, redis) {
+        try {
+            let {
+                cpanelCode,
+                cpanelHost,
+                cpanelUsername,
+                cpanelPassword,
+                cpanelApiToken,
+                linkedDomain,
+                cpanelStatus,
+                isDefault,
+                userLoggedInUid,
+                userLoggedInUserName
+            } = data;
+
+            cpanelHost = await this.encodeMessage(cpanelHost);
+            cpanelUsername = await this.encodeMessage(cpanelUsername);
+            cpanelPassword = await this.encodeMessage(cpanelPassword);
+            cpanelApiToken = await this.encodeMessage(cpanelApiToken);
+
+            const extras = payloadExtras({
+                userLoggedInUid: userLoggedInUid,
+                userLoggedInUserName: userLoggedInUserName
+            }); 
+
+            const cpanelPayload = {
+                code: cpanelCode.trim(),
+                host: cpanelHost.trim(),
+                username: cpanelUsername.trim(),
+                password: cpanelPassword.trim(),
+                apiToken: cpanelApiToken?.trim() || null,
+                linkedDomain: linkedDomain.trim(),
+                cpanelStatus: cpanelStatus || 'disabled',
+                isDefault: isDefault ? true : false,
+                ...extras
+            };
+
+            const query = FirestoreDatabase.collection(Setting.collection)
+                .doc('yohpal')
+                .collection("cpanelSettings");
+                
+            const existingEntry = await query
+                .where("linkedDomain", "==", linkedDomain.trim())
+                .where("host", "==", cpanelHost.trim())
+                .get();
+
+            if (!existingEntry.empty) {
+                throw new Exception(
+                    409,
+                    "CPANEL_SETTING_EXISTS",
+                    LANG_EN.error.setting_with_given_code_exists,
+                    `A setting for domain: ${linkedDomain} and host: ${cpanelHost} already exists`
+                );
+            }
+
+            const cpanelDoc = await query.doc(cpanelCode).set(cpanelPayload); 
+
+            if (redis) {
+                await redis.deleteFunc("yp:cpanelSettings:filtered");
+                await redis.deleteFunc(`yp:cpanelSettings:${cpanelDoc.id}`);
+            }
+
+            return {
+                id: cpanelDoc.id,
+                ...cpanelPayload
+            };
+
+        } catch (error) {
+            throw new Exception(
+                error.status || 201,
+                error.code || "INTERNAL_SERVER_ERROR",
+                error.message || "Something went wrong. Please try again later.",
+                error.title || "Unexpected Error"
+            );
+        }
+    }
+
+    async getAllCpanelSettings(redis, filters = {}) {
+        try {
+            const filtersKey = 'yp:appCpanelSettings:filters';
+            const cacheKey = 'yp:appCpanelSettings:filtered';
+            
+            filters.docId = filters.targetApp || 'yohpal';
+            
+            await redis.deleteFunc(cacheKey);
+
+            let ref = FirestoreDatabase.collection(Setting.collection)
+                .doc(filters.docId)
+                .collection('cpanelSettings');
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+            
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    const collection = await ref.get();
+                    const data = fbCollectionParser(collection); 
+                    return data;
+                },
+                3600
+            );
+
+            if (data && data?.length) { 
+                data = await Promise.all(data.map(async (col) => {
+                    return {
+                        ...col,
+                        cpanelHost: col?.host ? await this.decodeMessage(col.host) : null,
+                        cpanelUsername: col?.username ? await this.decodeMessage(col.username) : null,
+                        cpanelPassword: col?.password ? await this.decodeMessage(col.password) : null,
+                        cpanelApiToken: col?.apiToken ? await this.decodeMessage(col.apiToken) : null,
+                    };
+                })); 
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Error fetching CPanel settings:", error);
+            return [];
+        }
+    }
+
+    async getCpanelSettingById(redis, filters) {
+        try {
+            const cacheKey = `yp:cpanelSettings:${filters?.id}`;
+
+            const settingsRef = FirestoreDatabase.collection(Setting.collection)
+                .doc('yohpal')
+                .collection(filters?.settingType || "cpanelSettings")
+                .doc(filters?.id);
+                await redis.deleteFunc(cacheKey);
+            if (filters?.flushCache && filters.flushCache) {
+                await redis.deleteFunc(cacheKey);
+            }
+
+            let data = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    const snap = await settingsRef.get();
+                    let data = snap.data();
+                    return snap.exists ? { id: snap.id, ...data } : null;
+                },
+                3600
+            );
+            
+            if (data?.host)
+                data.host = await this.decodeMessage(data?.host);
+            if (data?.username)
+                data.username = await this.decodeMessage(data?.username);
+            if (data?.password)
+                data.password = await this.decodeMessage(data?.password);
+            if (data?.apiToken)
+                data.apiToken = await this.decodeMessage(data?.apiToken);
+
+            return data;
+        } catch (error) {
+            return [];
+        }
+    }
+    
+    async updateCpanelSettingQuery(data, redis) {
+        try {
+            let {
+                id,
+                cpanelCode,
+                cpanelHost,
+                cpanelUsername,
+                cpanelPassword,
+                cpanelApiToken,
+                linkedDomain,
+                cpanelStatus,
+                isDefault,
+                userLoggedInUid,
+                userLoggedInUserName
+            } = data;
+
+            if (!id) {
+                throw new Exception(
+                    400,
+                    "NO_ID_SPECIFIED",
+                    "No ID specified for updating the CPanel Setting.",
+                    "Missing Identifier"
+                );
+            }
+
+            const docRef = FirestoreDatabase.collection(Setting.collection)
+                .doc('yohpal')
+                .collection("cpanelSettings")
+                .doc(id);
+
+            const existingDoc = await docRef.get();
+            if (!existingDoc.exists) {
+                throw new Exception(
+                    404,
+                    "SETTING_NOT_FOUND",
+                    "The specified CPanel setting does not exist.",
+                    "Not Found"
+                );
+            }
+            
+            cpanelHost = await this.encodeMessage(cpanelHost);
+            cpanelUsername = await this.encodeMessage(cpanelUsername);
+            cpanelPassword = await this.encodeMessage(cpanelPassword);
+            cpanelApiToken = await this.encodeMessage(cpanelApiToken);
+
+            const extras = payloadExtras({
+                userLoggedInUid: userLoggedInUid,
+                userLoggedInUserName: userLoggedInUserName
+            });
+
+            const updatePayload = {
+                code: cpanelCode.trim(),
+                host: cpanelHost.trim(),
+                username: cpanelUsername.trim(),
+                password: cpanelPassword.trim(),
+                apiToken: cpanelApiToken?.trim() || null,
+                linkedDomain: linkedDomain.trim(),
+                cpanelStatus: cpanelStatus || 'disabled',
+                isDefault: isDefault ? true : false, 
+                ...extras
+            };
+
+            await docRef.update(updatePayload);
+
+            if (redis) {
+                await redis.deleteFunc(`yp:cpanelSettings:${id}`);
+                await redis.deleteFunc("yp:cpanelSettings:filtered");
+            }
+
+            return {
+                id,
+                ...updatePayload
+            };
+
+        } catch (error) {
+            throw new Exception(
+                error.status || 500,
+                error.code || "INTERNAL_SERVER_ERROR",
+                error.message || "Failed to update CPanel Setting.",
+                error.title || "Unexpected Error"
+            );
+        }
+    } 
 }
 
 export default new SettingsUtil();

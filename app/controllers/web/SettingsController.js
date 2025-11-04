@@ -1143,6 +1143,344 @@ class SettingsController {
             });
         }
     }
+
+    static async createCpanelSettingsList(req, res) {
+        try {
+            const post = req.body;
+            const user = req.session.user;
+
+            if (!post.cpanelHost || post.cpanelHost.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CPANEL_HOST_REQUIRED",
+                    LANG_EN.req.cpanel_host_required,
+                    "CPanel host URL is required"
+                );
+            }
+
+            if (!post.cpanelUsername || post.cpanelUsername.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CPANEL_USERNAME_REQUIRED",
+                    LANG_EN.req.cpanel_username_required,
+                    "CPanel username is required"
+                );
+            }
+
+            if (!post.cpanelPassword || post.cpanelPassword.trim() === "") {
+                throw new Exception(
+                    201,
+                    "CPANEL_PASSWORD_REQUIRED",
+                    LANG_EN.req.cpanel_password_required,
+                    "CPanel password is required"
+                );
+            }
+
+            if (post.cpanelApiToken && post.cpanelApiToken.length > 255) {
+                throw new Exception(
+                    201,
+                    "CPANEL_API_TOKEN_TOO_LONG",
+                    LANG_EN.req.cpanel_api_token_too_long,
+                    "API Token exceeds maximum length"
+                );
+            }
+
+            if (!post.linkedDomain || post.linkedDomain.trim() === "") {
+                throw new Exception(
+                    201,
+                    "LINKED_DOMAIN_REQUIRED",
+                    LANG_EN.req.linked_domain_required,
+                    "Linked domain is required"
+                );
+            }
+
+            if (post.linkedDomain && post.linkedDomain.length > 255) {
+                throw new Exception(
+                    201,
+                    "LINKED_DOMAIN_TOO_LONG",
+                    LANG_EN.req.linked_domain_too_long,
+                    "Linked domain exceeds maximum length"
+                );
+            }
+
+            if (post.isDefault && ![0, 1, "0", "1", true, false].includes(post.isDefault)) {
+                throw new Exception(
+                    201,
+                    "INVALID_IS_DEFAULT",
+                    LANG_EN.req.invalid_is_default,
+                    "Invalid value for default server option"
+                );
+            }
+
+            const finalPayload = {
+                userLoggedInUid: user?.uid,
+                userLoggedInUserName: user?.name,
+                ...post,
+            }; 
+
+            const result = await SettingsUtil.createCpanelSettingQuery(finalPayload, req?.redis);
+            if (!result) {
+                throw new Exception(
+                    500,
+                    "CPANEL_SETTING_CREATE_FAILED",
+                    LANG_EN.error.cpanel_setting_creation_failed,
+                    "Database error while creating CPanel setting"
+                );
+            }
+
+            return res.status(200).json({
+                status: "success",
+                message: LANG_EN.success.cpanel_setting_created,
+                data: result,
+            });
+
+        } catch (error) {
+            console.log(error.message);
+
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+    
+    static async getCpanelSettingsList(req, res) {
+        try {
+            const user = req.session.user; 
+            let ypApplications = await Application.ypApplications(req?.redis);
+            let cpanelSettings = await SettingsUtil.getAllCpanelSettings(req.redis, req.query);
+
+            const mex = new mexDtParser(cpanelSettings);
+            cpanelSettings = mex
+                .addColumn('actions', (col) => {
+                    let actions = '';
+                    const id = col.uid || col.id;
+                    const status = col.status || 'disabled';
+                    const targetApp = col.targetApp || 'yohpal'; 
+
+                    if (hasPermission(user?.permissions || [], 'settings.cpanel.edit')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" 
+                                data-id="${id}" target-modal=".editCpanelSettingModal">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>`;
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'settings.cpanel.delete')) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" 
+                                data-id="${id}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </a>`;
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'settings.cpanel.activate') && ['disabled'].includes(status)) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" 
+                                data-id="${id}" data-status="enabled">
+                                <i class="fas fa-check-circle me-1"></i> Activate
+                            </a>`;
+                    }
+
+                    if (hasPermission(user?.permissions || [], 'settings.cpanel.deactivate') && ['enabled'].includes(status)) {
+                        actions += `
+                            <a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" 
+                                data-id="${id}" data-status="disabled">
+                                <i class="fas fa-times-circle me-1"></i> Deactivate
+                            </a>`;
+                    }
+
+                    const actionDropdown = `
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu action-btns">
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                            </div>
+                        </div>`;
+                    return actionDropdown;
+                })
+                .editColumn('cpanelHost', (col) => col || 'N/A')
+                .editColumn('cpanelUsername', (col) => col || 'N/A')
+                .editColumn('cpanelApiToken', (col) => col ? `${col.slice(0, 10)}...` : '<em>Not Set</em>')
+                .editColumn('linkedDomain', (col) => col || 'N/A')
+                .addColumn('status', (col) => {
+                    col = col?.cpanelStatus?.toLowerCase();
+                    if (col === 'enabled') {
+                        return `<span class="badge text-dark bg-success">${ucfirst(col)}</span>`;
+                    } else if (col === 'disabled') {
+                        return `<span class="badge text-dark bg-warning">${ucfirst(col)}</span>`;
+                    } else if (col === 'suspended') {
+                        return `<span class="badge text-dark bg-danger">${ucfirst(col)}</span>`;
+                    }
+                    return `<span class="badge text-dark bg-secondary">Unknown</span>`;
+                })
+                .editColumn('createdAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
+                .make();
+
+            return res.status(200).json({
+                status: 'success',
+                data: cpanelSettings
+            });
+
+        } catch (error) {
+            console.log(error);
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: 'error',
+                code: error.code || 'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
+        }
+    }
+
+    static async updateCpanelSettingsList(req, res) {
+        try {
+            let post = req.query;
+            let { id } = req?.params;
+            let user = req.session.user;
+
+            if (post.modal) {
+                let ypApplications = await Application.ypApplications(req?.redis);
+
+                const data = {
+                    id: id,
+                    targetApp: post.targetApp,
+                    settingType: "cpanelSettings",
+                    flushCache: post?.flushCache ? true : false
+                };
+
+                let cpanelSet = await SettingsUtil.getCpanelSettingById(req?.redis, data);
+                return res.render('views/crm/settings/partials/edit-cpanel-setting', {
+                    user: req.session.user,
+                    applications: ypApplications,
+                    setting: cpanelSet
+                });
+            }
+
+            post = qs.parse(req.body);
+            post.id = id;
+
+            if (!post.modal) {
+                if (!user?.uid) {
+                    throw new Exception(
+                        403,
+                        "AUTHENTICATION_ERROR_EXCEPTION",
+                        LANG_EN.req.authentication_error_exception,
+                        "Authentication Error"
+                    );
+                }
+
+                if (!post.cpanelHost || post.cpanelHost.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CPANEL_HOST_REQUIRED",
+                        LANG_EN.req.cpanel_host_required,
+                        "CPanel host address is required"
+                    );
+                }
+
+                if (!post.cpanelUsername || post.cpanelUsername.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CPANEL_USERNAME_REQUIRED",
+                        LANG_EN.req.cpanel_username_required,
+                        "CPanel username is required"
+                    );
+                }
+
+                if (!post.cpanelPassword || post.cpanelPassword.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CPANEL_PASSWORD_REQUIRED",
+                        LANG_EN.req.cpanel_password_required,
+                        "CPanel password is required"
+                    );
+                }
+
+                if (!post.cpanelApiToken || post.cpanelApiToken.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CPANEL_API_TOKEN_REQUIRED",
+                        LANG_EN.req.cpanel_api_token_required,
+                        "CPanel API token is required"
+                    );
+                }
+
+                if (!post.targetApp || post.targetApp.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "TARGET_APP_REQUIRED",
+                        LANG_EN.req.target_app_required,
+                        "Target application name is required"
+                    );
+                }
+
+                if (post.cpanelHost && post.cpanelHost.length > 255) {
+                    throw new Exception(
+                        201,
+                        "CPANEL_HOST_TOO_LONG",
+                        LANG_EN.req.cpanel_host_too_long,
+                        "CPanel host exceeds maximum length"
+                    );
+                }
+
+                if (post.cpanelModule && post.cpanelModule.length > 100) {
+                    throw new Exception(
+                        201,
+                        "CPANEL_MODULE_TOO_LONG",
+                        LANG_EN.req.cpanel_module_too_long,
+                        "CPanel module name exceeds maximum length"
+                    );
+                }
+
+                const finalPayload = {
+                    userLoggedInUid: user?.uid,
+                    userLoggedInUserName: user?.name,
+                    ...post,
+                };
+
+                const result = await SettingsUtil.updateCpanelSettingQuery(finalPayload, req?.redis);
+                if (!result) {
+                    throw new Exception(
+                        500,
+                        "CPANEL_SETTING_UPDATE_FAILED",
+                        LANG_EN.error.cpanel_setting_update_failed,
+                        "Database error while updating CPanel setting"
+                    );
+                }
+
+                return res.status(200).json({
+                    status: "success",
+                    message: LANG_EN.success.cpanel_setting_updated,
+                    data: result,
+                });
+            }
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                message: error.message || "Something went wrong. Please try again later.",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
+
 }
 
 export default SettingsController;

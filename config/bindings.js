@@ -230,8 +230,16 @@ const bindings = {
             activate_cdn_settings: "settings.cdn.activate",  
             deactivate_cdn_settings: "settings.cdn.deactivate",  
             suspend_cdn_settings: "settings.cdn.suspend",  
-            register_mpesa_callbacks: "settings.mpesa.register_endpoint",  
-        },
+            register_mpesa_callbacks: "settings.mpesa.register_endpoint",
+            access_cpanel_setting: 'edit',
+            delete_cpanel_setting: 'delete',
+            activate_cpanel_setting: 'activate',
+            deactivate_cpanel_setting: 'deactivate',
+            access_cpanel_setting: 'settings.cpanel.edit',
+            delete_cpanel_setting: 'settings.cpanel.delete',
+            activate_cpanel_setting: 'settings.cpanel.activate',
+            deactivate_cpanel_setting: 'settings.cpanel.deactivate',
+        }, 
 
         // Developer
         developer: {
