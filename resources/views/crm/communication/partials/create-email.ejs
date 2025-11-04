@@ -1,0 +1,87 @@
+<!-- Create Email Setting Modal -->
+<div class="modal fade" id="createEmailSettingModal" tabindex="-1" aria-labelledby="createEmailSettingModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form id="createCpanelSettingForm" action="/settings/cpanel/create" method="POST" enctype="multipart/form-data">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="createEmailSettingModalLabel">
+                        <i class="bi bi-envelope-plus"></i> Create Email Setting
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="emailName" class="form-label">Email Name</label>
+                            <input type="text" class="form-control" id="emailName" name="emailName"
+                                placeholder="e.g. Support Email" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="emailAddress" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="emailAddress" name="emailAddress"
+                                placeholder="e.g. support@example.com" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="shareToEmail" class="form-label">Share Settings To (Emails):</label>
+                            <input type="email" class="form-control" id="shareToEmail" name="shareToEmail"
+                                placeholder="e.g. support@gnamil.com, support@hotmail.com" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="smtpHost" class="form-label">SMTP Host</label>
+                            <input type="text" class="form-control" id="smtpHost" name="smtpHost"
+                                placeholder="smtp.example.com" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="smtpPort" class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" id="smtpPort" name="smtpPort" placeholder="587"
+                                required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="smtpUser" class="form-label">SMTP Username</label>
+                            <input type="text" class="form-control" id="smtpUser" name="smtpUser"
+                                placeholder="username@example.com" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="smtpPassword" class="form-label">SMTP Password</label>
+                            <input type="password" class="form-control" id="smtpPassword" name="smtpPassword"
+                                placeholder="••••••••" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="encryption" class="form-label">Encryption Type</label>
+                            <select class="form-select" id="encryption" name="encryption" required>
+                                <option value="">Select Encryption</option>
+                                <option value="ssl">SSL</option>
+                                <option value="tls">TLS</option>
+                                <option value="none">None</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-save"></i> Save Setting
+                    </button>
+                </div>
+            </div>
+    </div>
+</div>
+</div>

@@ -1,0 +1,99 @@
+<%- include('crm/partials/header') %>
+<%- include('crm/partials/navbar') %>
+
+<div class="container-fluid gx-0 px-0">
+    <div class="row gap-0 gx-0">
+        <div class="col-md-3">
+            <%- include('crm/partials/sidebar') %>
+        </div>
+
+        <div class="col-md-9 mt-2 content-body">
+            <!-- Header -->
+            <div class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="fa fa-envelope me-2 text-danger"></i> Email Management</h4>
+                <div class="badge-span d-flex justify-content-center align-items-center gap-2">
+                    <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
+                    <span>|</span>
+                    <a href="#" class="text-decoration-line-none" data-bs-toggle="modal"
+                        data-bs-target="#createEmailSettingModal">
+                        <span class="badge bg-danger text-light rounded-4"><i class="fa fa-plus-circle me-1"></i> Add
+                            Email</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card-header bg-white shadow-sm d-flex justify-content-between align-items-center p-1">
+                <button
+                    class="btn btn-sm btn-lg btn-link w-100 text-start text-dark d-flex align-items-center gap-3 text-decoration-line-none"
+                    type="button" data-bs-toggle="collapse" data-bs-target="#emailFilters" aria-expanded="false"
+                    aria-controls="emailFilters">
+                    <i class="fas fa-filter fa-2x"></i> <span>Toggle Filters</span>
+                </button>
+            </div>
+
+            <!-- Collapsible Filters Section -->
+            <div class="container-fluid col-12 collapse mb-3 emailsFilters shadow-sm" id="emailFilters">
+                <div class="col-12 mt-3 row g-3">
+                    <div class="col-md-4 mb-2">
+                        <label class="mb-2" for="searchEmail">Email Address</label>
+                        <input type="text" name="searchEmail" id="searchEmail" class="form-control searchEmail"
+                            placeholder="Search by email address...">
+                    </div>
+
+                    <div class="col-md-4 mb-2">
+                        <label class="mb-2" for="serverSelect">Server (cPanel)</label>
+                        <select name="serverSelect" id="serverSelect" class="form-control searchSelect">
+                            <option value="">All Servers</option>
+                            <% cpanelServers?.forEach((srv) => { %>
+                            <option value="<%= srv.code %>"><%= srv.linkedDomain %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-2">
+                        <label class="mb-2" for="emailStatus">Email Status</label>
+                        <select name="emailStatus" id="emailStatus" class="form-select">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Emails Table -->
+            <div class="container-fluid col-12 p-0">
+                <div class="table-responsive m-1">
+                    <table class="table emails-table" id="emails-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Email Address</th>
+                                <th>Domain</th>
+                                <th>Server</th>
+                                <th>Status</th>
+                                <th>Added By</th>
+                                <th>Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic email rows populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<%- include('communication/partials/create-email') %>
+<!-- /Modals -->
+
+<%- include('crm/partials/footer') %>
+<script type="text/javascript" src="/default/js/src/mod/communication.js"></script>
+<%- include('crm/partials/closure') %>

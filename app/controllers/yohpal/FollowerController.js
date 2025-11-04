@@ -17,29 +17,7 @@ import { departments, designations, employees } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
 import Attendance from "@models/Attendance"; 
 
-class FollowerController {
-    async bubbleSortUsers(arr) {
-        let n = arr.length;
-        let swapped;
-      
-        do {
-          swapped = false;
-          for (let i = 0; i < n - 1; i++) {
-            const current = arr[i].followersCount || 0;
-            const next = arr[i + 1].followersCount || 0;
-      
-            // Sort descending (largest first)
-            if (current < next) {
-              [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-              swapped = true;
-            }
-          }
-          n--; // optimization: ignore the last sorted element
-        } while (swapped);
-      
-        return arr;
-    }
-      
+class FollowerController { 
     static async getTopFollowersListing(req, res) {
         let user = req.session.user; 
         if (isAjaxRequest(req)) {

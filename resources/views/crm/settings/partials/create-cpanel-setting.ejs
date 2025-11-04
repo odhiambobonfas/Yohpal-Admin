@@ -1,38 +1,61 @@
 <div class="modal fade" id="createCpanelSettingModal" tabindex="-1" aria-labelledby="createCpanelSettingModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="createCpanelSettingModalLabel">Add CPanel Setting</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<form id="createCpanelSettingForm" action="/settings/cpanel/create" method="POST" enctype="multipart/form-data">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="createCpanelSettingModalLabel">Add CPanel Setting</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body"> 
+					<div class="row w-100">
+						<div class="col-6 mb-3">
+							<label for="cpanelCode" class="form-label">Code</label>
+							<input type="text" class="form-control" id="cpanelCode" name="cpanelCode" placeholder="e.g., CP001">
+						</div>
+						<div class="col-6 mb-3">
+							<label for="cpanelHost" class="form-label">Host</label>
+							<input type="text" class="form-control" id="cpanelHost" name="cpanelHost" placeholder="e.g., https://yourdomain.com:2083">
+						</div>
+						<div class="col-6 mb-3">
+							<label for="cpanelUsername" class="form-label">Username</label>
+							<input type="text" class="form-control" id="cpanelUsername" name="cpanelUsername" placeholder="CPanel username">
+						</div>
+						<div class="col-6 mb-3">
+							<label for="cpanelPassword" class="form-label">Password</label>
+							<input type="password" class="form-control" id="cpanelPassword" name="cpanelPassword" placeholder="CPanel password">
+						</div>
+						<div class="col-6 mb-3">
+							<label for="cpanelApiToken" class="form-label">API Token</label>
+							<input type="text" class="form-control" id="cpanelApiToken" name="cpanelApiToken" placeholder="Optional API token for automation">
+						</div>
+						<div class="col-6 mb-3">
+							<label for="linkedDomain" class="form-label">Linked Domain</label>
+							<input type="text" class="form-control" id="linkedDomain" name="linkedDomain" placeholder="e.g., example.com">
+						</div>
+						<div class="col-6 mb-3">
+							<label for="cpanelStatus" class="form-label">Status</label>
+							<select name="cpanelStatus" id="cpanelStatus" class="form-select">
+								<option value="enabled">Enabled</option>
+								<option value="disabled" selected>Disabled</option>
+							</select>
+						</div>
+						<div class="col-6 mb-3 mt-3">
+							<div class="form-check form-check-inline">
+								<label class="form-check-label">
+									<input class="form-check-input isDefault" type="checkbox" name="isDefault" id="isDefault" value="1" />
+									Make this a default server(For Yohpal)
+								</label>
+							</div>  
+						</div>  
+					</div>  
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-sm btn-danger create-cpanel-setting-submit-btn" id="createSubmitBtn">
+						<i class="fa fa-plus-square" aria-hidden="true"></i> Save Setting
+					</button>
+				</div>
 			</div>
-			<div class="modal-body">
-				<form id="createCpanelSettingForm">
-					<div class="mb-3">
-						<label for="cpanelHost" class="form-label">Host</label>
-						<input type="text" class="form-control" id="cpanelHost" name="cpanelHost" placeholder="e.g., https://yourdomain.com:2083">
-					</div>
-					<div class="mb-3">
-						<label for="cpanelUsername" class="form-label">Username</label>
-						<input type="text" class="form-control" id="cpanelUsername" name="cpanelUsername" placeholder="CPanel username">
-					</div>
-					<div class="mb-3">
-						<label for="cpanelPassword" class="form-label">Password</label>
-						<input type="password" class="form-control" id="cpanelPassword" name="cpanelPassword" placeholder="CPanel password">
-					</div>
-					<div class="mb-3">
-						<label for="cpanelApiToken" class="form-label">API Token</label>
-						<input type="text" class="form-control" id="cpanelApiToken" name="cpanelApiToken" placeholder="Optional API token for automation">
-					</div>
-					<div class="mb-3">
-						<label for="linkedDomain" class="form-label">Linked Domain</label>
-						<input type="text" class="form-control" id="linkedDomain" name="linkedDomain" placeholder="e.g., example.com">
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
-				<button type="submit" form="createCpanelSettingForm" class="btn btn-sm btn-danger"><i class="fa fa-plus-square" aria-hidden="true"></i> Save Setting</button>
-			</div>
-		</div>
+		</form>
 	</div>
 </div>

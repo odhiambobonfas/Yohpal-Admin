@@ -4,6 +4,7 @@ class Settings extends Master {
         this.editUpdateSettingBtn;
         this.createupdatesettingBtn = document.querySelectorAll('.create-setting-submit-btn');
         this.createCdnSettingSubmitBtn = document.querySelectorAll('.create-cdn-setting-submit-btn');
+        this.createCpanelSettingSubmitBtn = document.querySelectorAll('.create-cpanel-setting-submit-btn');
     }
 
     initializePageSetup() {
@@ -488,6 +489,66 @@ class Settings extends Master {
     }
 
     // CDN SETTINGS
+    createCpanelSetting() {
+        let btns = this.createCpanelSettingSubmitBtn
+
+        btns.forEach(btn => {
+            if (!documentContains(btn)) return;
+            btn = cloneNodeElement(btn); // avoid race conditions
+
+            btn.addEventListener('click', event => {
+                event.preventDefault();
+                toggleButtonContent(btn);
+                disableElement(btn);
+
+                let form = btn.closest('form');
+                let data = new FormData(form);  
+                data.append('settingType', 'cpanelSettings');
+
+                fetch(formRouteParser(form), {
+                    method: form.method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: jsonifyFormData(data)
+                })
+                .then(async res => {
+                    let response;
+                    try {
+                        response = await res.json();
+                    } catch (e) {
+                        throw new Error(LANG_EN.res.invalid_json_exception);
+                    }
+
+                    console.log(response);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+
+                    if (response && response.status === 'success') {
+                        resetFormAndCloseModal(form);
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        (new Settings()).getCpanelSettingsList(); 
+                        return;
+                    }
+
+                    if (response && response.status === 'error') {
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        return;
+                    }
+
+                    toast('error', 5000, LANG_EN.undefined_error);
+                })
+                .catch(error => {
+                    console.error(error.message || error);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+                    toast('error', 5000, LANG_EN.undefined_error);
+                });
+            }); 
+        });
+    }
+
     getCpanelSettingsList() {
         $('.cpanel-settings-table').DataTable({
             destroy: true,
@@ -496,17 +557,132 @@ class Settings extends Master {
             ordering: true,
             info: true,
             lengthChange: true,
-            // ajax: ajaxDtParser(
-            //     'GET',
-            //     '/cpanel-settings',
-            //     filtersParser('.cpanelSettingsFilters')
-            // ), 
+            ajax: ajaxDtParser(
+                'GET',
+                '/cpanel-settings',
+                filtersParser('.cpanelSettingsFilters')
+            ), 
+            columns: [
+                {
+                    data: 'actions',
+                    title: 'Action',
+                    orderable: false,
+                    searchable: false
+                }, 
+                { 
+                    data: 'cpanelHost', 
+                    title: 'Host', 
+                    render: (data) => data || 'N/A' 
+                },
+                { 
+                    data: 'cpanelUsername', 
+                    title: 'Username', 
+                    render: (data) => data || 'N/A' 
+                },
+                { 
+                    data: 'cpanelApiToken', 
+                    title: 'API Token'
+                },
+                { 
+                    data: 'linkedDomain', 
+                    title: 'Linked Domain', 
+                    render: (data) => data || 'N/A' 
+                }, 
+                { 
+                    data: 'status', 
+                    title: 'Server Status',  
+                }, 
+            ],
             fnDrawCallback: () => {
                 const inst = new Settings();
-                inst.actionOnCdnSettingsRes();
+                inst.actionOnCpanelSettingsRes();
                 watchFilterChanges('.cpanel-settings-filters', inst.getCpanelSettingsList.bind(inst));
             },
             language: getDataTableLanguage(),
+        });
+    }
+
+    actionOnCpanelSettingsRes() {
+        const btns = document.querySelectorAll('.cpanel-settings-table .action-btns');
+        btns.forEach(btn => {
+            if (!documentContains(btn)) return;
+            btn = cloneNodeElement(btn);
+            btn.addEventListener('click', (event) => { 
+                toggleLoadingOverlay(true);
+                let clickedBtn = event.target;
+                let clickedId = clickedBtn.getAttribute('data-id');  
+
+                if (containsClass(clickedBtn, 'edit')) {
+                    this.assistiveModalActionParser(
+                        event, 
+                        `/settings/cpanel/edit/${clickedId}?modal=true&`, 
+                        'GET',
+                        [ 
+                            { callback: this.editCpanelSettingRes, params: [clickedId] }, 
+                        ]
+                    );
+                } 
+            });
+        })
+    }
+
+    editCpanelSettingRes(clickedId) {
+        let btns = document.querySelectorAll('.edit-cpanel-setting-submit-btn'); 
+        btns.forEach(btn => { 
+            if (!documentContains(btn)) return;
+            btn = cloneNodeElement(btn); // avoid race conditions
+
+            btn.addEventListener('click', event => {
+                event.preventDefault();
+                toggleButtonContent(btn);
+                disableElement(btn);
+
+                let form = btn.closest('form');
+                let data = new FormData(form);
+                data.append('type', form.getAttribute('id')); 
+                data.append('targetApp', targetApp);
+
+                fetch(formRouteParser(form), {
+                    method: form.method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: jsonifyFormData(data)
+                })
+                .then(async res => {
+                    let response;
+                    try {
+                        response = await res.json();
+                    } catch (e) {
+                        throw new Error(LANG_EN.res.invalid_json_exception);
+                    }
+
+                    console.log(response);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+
+                    if (response && response.status === 'success') {
+                        resetFormAndCloseModal(form);
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        (new Settings()).getCpanelSettingsList();
+                        return;
+                    }
+
+                    if (response && response.status === 'error') {
+                        toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                        return;
+                    }
+
+                    toast('error', 5000, LANG_EN.undefined_error);
+                })
+                .catch(error => {
+                    console.error(error.message || error);
+                    toggleButtonContent(btn, '', true);
+                    enableElement(btn);
+                    toast('error', 5000, LANG_EN.undefined_error);
+                });
+            }); 
         });
     }
 }
@@ -519,5 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.editApiSettingRes();
     inst.getCdnSettingsList();
     inst.createCdnSetting();
+    inst.createCpanelSetting();
     inst.getCpanelSettingsList();
 });

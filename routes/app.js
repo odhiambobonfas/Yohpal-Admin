@@ -23,6 +23,7 @@ import UsersController from "@app/controllers/web/UsersController";
 import HRMController from "@app/controllers/web/HRMController";
 import AccountsController from "@app/controllers/web/AccountsController";
 import MpesaController from "@app/controllers/web/MpesaController";
+import CommunicationController from "@app/controllers/web/CommunicationController";
 import FollowerController from "@app/controllers/yohpal/FollowerController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
@@ -125,10 +126,14 @@ router.get('/api/settings/edit', authMiddleware, SettingsController.editApiSetti
 router.post('/api/settings/edit/:id', authMiddleware, SettingsController.editApiSettingRes);
 router.get('/cdn-settings', authMiddleware, SettingsController.getCdnSettingsList);
 router.post('/settings/cdn/create', authMiddleware, SettingsController.createCdnSettingsList);
-
 router.route('/settings/cdn/edit/:id')
     .get(authMiddleware, SettingsController.updateCdnSettingsList)
     .post(authMiddleware, SettingsController.updateCdnSettingsList);
+router.post('/settings/cpanel/create', authMiddleware, SettingsController.createCpanelSettingsList);
+router.get('/cpanel-settings', authMiddleware, SettingsController.getCpanelSettingsList);
+router.route('/settings/cpanel/edit/:id')
+    .get(authMiddleware, SettingsController.updateCpanelSettingsList)
+    .post(authMiddleware, SettingsController.updateCpanelSettingsList);
 
 // Folowers/Following
 router.get('/followers/top/followed', authMiddleware, FollowerController.getTopFollowersListing);
@@ -137,5 +142,9 @@ router.get('/followers/top/followed', authMiddleware, FollowerController.getTopF
 router.route('/callbacks/register')
     .get(authMiddleware, MpesaController.registerEndpoint)
     .post(authMiddleware, MpesaController.registerEndpoint);
+
+// Communication Routes
+router.get('/communication', authMiddleware, CommunicationController.mailBox);
+router.get('/communication/emails/list', authMiddleware, CommunicationController.emailsList);
 
 export default router;

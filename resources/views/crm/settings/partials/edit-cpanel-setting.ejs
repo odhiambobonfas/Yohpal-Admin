@@ -1,0 +1,79 @@
+<div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+        <form id="editCpanelSettingForm" action="/settings/cpanel/edit/<%= setting?.id %>" method="POST" enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCpanelSettingModalLabel">Edit CPanel Setting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"> 
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="cpanelCode" class="form-label">Code</label>
+                        <input type="text" class="form-control" id="cpanelCode" name="cpanelCode"
+                            value="<%= setting?.code || '' %>"
+                            placeholder="e.g., CP001">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="cpanelHost" class="form-label">Host</label>
+                        <input type="text" class="form-control" id="cpanelHost" name="cpanelHost"
+                            value="<%= setting?.host || '' %>"
+                            placeholder="e.g., https://yourdomain.com:2083">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="cpanelUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="cpanelUsername" name="cpanelUsername"
+                            value="<%= setting?.username || '' %>"
+                            placeholder="CPanel username">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="cpanelPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="cpanelPassword" name="cpanelPassword"
+                            value="<%= setting?.password || '' %>"
+                            placeholder="CPanel password">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="cpanelApiToken" class="form-label">API Token</label>
+                        <input type="text" class="form-control" id="cpanelApiToken" name="cpanelApiToken"
+                            value="<%= setting?.apiToken || '' %>"
+                            placeholder="Optional API token for automation">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="linkedDomain" class="form-label">Linked Domain</label>
+                        <input type="text" class="form-control" id="linkedDomain" name="linkedDomain"
+                            value="<%= setting?.linkedDomain || '' %>"
+                            placeholder="e.g., example.com">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="cpanelStatus" class="form-label">Status</label>
+                        <select name="cpanelStatus" id="cpanelStatus" class="form-select">
+                            <option value="enabled" <%= setting?.cpanelStatus === 'enabled' ? 'selected' : '' %>>Enabled</option>
+                            <option value="disabled" <%= setting?.cpanelStatus === 'disabled' ? 'selected' : '' %>>Disabled</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 mb-3 mt-3">
+                        <div class="form-check form-check-inline">
+                            <label class="form-check-label">
+                                <input class="form-check-input isDefault" type="checkbox" name="isDefault" id="isDefault" value="1"
+                                    <%= setting?.isDefault ? 'checked' : '' %> />
+                                Make this a default server (For Yohpal)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-danger edit-cpanel-setting-submit-btn" id="editSubmitBtn">
+                    <i class="fa fa-pencil-square" aria-hidden="true"></i> Save Setting
+                </button>
+            </div>
+        </form>
+    </div>
+</div> 

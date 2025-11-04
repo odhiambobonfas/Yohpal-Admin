@@ -74,13 +74,12 @@ const bindings = {
         
         // Communication Panel (merged with chat)
         communication: {
-            access: 'communication.access',
-            access_chat: 'communication.chat.access',
-            chat: 'communication.chat',
-            announcements: 'communication.announcements',
-            messages: 'communication.messages',
-            emails: 'communication.emails',
-            broadcasts: 'communication.broadcasts',
+            access_module: 'communication.access',
+            access_chat: 'communication.chat.access', 
+            announcements: 'communication.announcements',  
+            access_email_mangement: 'communication.emails.access',
+            access_mails_inbox: 'communication.mails.access',
+            access_bulk_messaging: 'communication.bulkMessaging.access',
         },
 
         chat: {
@@ -230,8 +229,16 @@ const bindings = {
             activate_cdn_settings: "settings.cdn.activate",  
             deactivate_cdn_settings: "settings.cdn.deactivate",  
             suspend_cdn_settings: "settings.cdn.suspend",  
-            register_mpesa_callbacks: "settings.mpesa.register_endpoint",  
-        },
+            register_mpesa_callbacks: "settings.mpesa.register_endpoint",
+            access_cpanel_setting: 'edit',
+            delete_cpanel_setting: 'delete',
+            activate_cpanel_setting: 'activate',
+            deactivate_cpanel_setting: 'deactivate',
+            access_cpanel_setting: 'settings.cpanel.edit',
+            delete_cpanel_setting: 'settings.cpanel.delete',
+            activate_cpanel_setting: 'settings.cpanel.activate',
+            deactivate_cpanel_setting: 'settings.cpanel.deactivate',
+        }, 
 
         // Developer
         developer: {
