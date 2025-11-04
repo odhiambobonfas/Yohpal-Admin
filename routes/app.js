@@ -23,6 +23,7 @@ import UsersController from "@app/controllers/web/UsersController";
 import HRMController from "@app/controllers/web/HRMController";
 import AccountsController from "@app/controllers/web/AccountsController";
 import MpesaController from "@app/controllers/web/MpesaController";
+import CommunicationController from "@app/controllers/web/CommunicationController";
 import FollowerController from "@app/controllers/yohpal/FollowerController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
@@ -141,5 +142,9 @@ router.get('/followers/top/followed', authMiddleware, FollowerController.getTopF
 router.route('/callbacks/register')
     .get(authMiddleware, MpesaController.registerEndpoint)
     .post(authMiddleware, MpesaController.registerEndpoint);
+
+// Communication Routes
+router.get('/communication', authMiddleware, CommunicationController.mailBox);
+router.get('/communication/emails/list', authMiddleware, CommunicationController.emailsList);
 
 export default router;

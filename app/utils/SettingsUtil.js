@@ -715,8 +715,6 @@ class SettingsUtil extends Util {
             
             filters.docId = filters.targetApp || 'yohpal';
             
-            await redis.deleteFunc(cacheKey);
-
             let ref = FirestoreDatabase.collection(Setting.collection)
                 .doc(filters.docId)
                 .collection('cpanelSettings');
@@ -768,7 +766,7 @@ class SettingsUtil extends Util {
                 .doc('yohpal')
                 .collection(filters?.settingType || "cpanelSettings")
                 .doc(filters?.id);
-                await redis.deleteFunc(cacheKey);
+            
             if (filters?.flushCache && filters.flushCache) {
                 await redis.deleteFunc(cacheKey);
             }

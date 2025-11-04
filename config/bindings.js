@@ -74,13 +74,12 @@ const bindings = {
         
         // Communication Panel (merged with chat)
         communication: {
-            access: 'communication.access',
-            access_chat: 'communication.chat.access',
-            chat: 'communication.chat',
-            announcements: 'communication.announcements',
-            messages: 'communication.messages',
-            emails: 'communication.emails',
-            broadcasts: 'communication.broadcasts',
+            access_module: 'communication.access',
+            access_chat: 'communication.chat.access', 
+            announcements: 'communication.announcements',  
+            access_email_mangement: 'communication.emails.access',
+            access_mails_inbox: 'communication.mails.access',
+            access_bulk_messaging: 'communication.bulkMessaging.access',
         },
 
         chat: {
