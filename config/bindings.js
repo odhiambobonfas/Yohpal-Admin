@@ -16,8 +16,15 @@ const bindings = {
         // Mpesa endpoints bindings
         registerCallbacks: {
             method: "POST",
-            route: 'https://yohpal-microservices-v1.onrender.com/v1/callbacks/register',
+            route: 'https://msv1.yohpal.com/v1/callbacks/register',
             action: 'Callback registration happens via this endpoint!'
+        },
+
+        // Communication bindings
+        createEmail: {
+            method: "POST",
+            route: 'http://127.0.0.1:4000/v1/api/email/create',
+            action: 'Email creation happens via this endpoint!'
         },
     },
 

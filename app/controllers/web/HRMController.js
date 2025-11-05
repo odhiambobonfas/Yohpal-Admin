@@ -1303,8 +1303,8 @@ class HRMController {
 
             return res.status(error.status || 500).json({
                 status: "error",
-                message: error.message || "Something went wrong. Please try again later.",
                 code: error.code || "INTERNAL_SERVER_ERROR",
+                message: error.message || "Something went wrong. Please try again later.",
                 title: error.title || "Unexpected Error",
             });
         }
@@ -1423,8 +1423,8 @@ class HRMController {
 
             return res.status(error.status || 500).json({
                 status: "error",
-                message: error.message || "Something went wrong. Please try again later.",
                 code: error.code || "INTERNAL_SERVER_ERROR",
+                message: error.message || "Something went wrong. Please try again later.",
                 title: error.title || "Unexpected Error",
             });
         }
@@ -1537,8 +1537,8 @@ class HRMController {
 
             return res.status(error.status || 500).json({
                 status: "error",
-                message: error.message || "Something went wrong. Please try again later.",
                 code: error.code || "INTERNAL_SERVER_ERROR",
+                message: error.message || "Something went wrong. Please try again later.",
                 title: error.title || "Unexpected Error",
             });
         }

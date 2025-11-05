@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '@config/config';
 import AppModel from '@models/AppModel';  
+import SettingsUtil from '@utils/SettingsUtil';
 
 class Transaction extends AppModel {
     static table = ''; 
@@ -258,6 +259,20 @@ class Transaction extends AppModel {
         countries.forEach(method => {
             const isSelected = (linkedCountry == method.slug) ? 'selected' : '';       
             html += `<option value="${method.slug}" ${isSelected}>${method.name}</option>`;
+        });
+
+        return html;
+    }
+    
+    static async cpanelsListForDropdown(redis) {
+        let html = '';
+        let cpanelsList = await SettingsUtil.getAllCpanelSettings(redis);
+
+        cpanelsList.forEach(cpanel => {  
+            const linkedDomain = cpanel.linkedDomain;
+            let domain = new URL(linkedDomain).hostname; 
+            domain = domain.replace(/^www\./, '');     
+            html += `<option value="${cpanel.id}">${domain}</option>`;
         });
 
         return html;
