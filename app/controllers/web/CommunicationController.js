@@ -132,17 +132,21 @@ class CommunicationController {
                     .addColumn('emailExtras', (col) => {
                         const domain = col?.domain || 'N/A';
                         const quota = col?.diskQuota ? `${col.diskQuota} MB` : 'Unlimited';
-                        const suspendedLogin = col?.suspended_login === 1 
+                        const suspendedLogin = col?.suspended_login == 1 
                             ? '<span class="badge bg-danger text-light">Login Suspended</span>' 
                             : '<span class="badge bg-success text-light">Login Active</span>';
-                        const suspendedIncoming = col?.suspended_incoming === 1 
+                        const suspendedIncoming = col?.suspended_incoming == 1 
                             ? '<span class="badge bg-danger text-light">Incoming Suspended</span>' 
                             : '<span class="badge bg-success text-light">Incoming Active</span>';
+                        const suspendedOutgoing = col?.suspended_outgoing == 1
+                            ? '<span class="badge bg-danger text-light">Outgoing Suspended</span>' 
+                            : '<span class="badge bg-success text-light">Outgoing Active</span>';
 
                         return `
                             <div class="d-flex flex-column">
                                 <span><strong>Login:</strong> ${suspendedLogin}</span>
                                 <span><strong>Incoming:</strong> ${suspendedIncoming}</span>
+                                <span><strong>Outgoing:</strong> ${suspendedOutgoing}</span>
                                 <span><strong>Disk Quota:</strong> ${quota}</span>
                                 <span><strong>Domain:</strong> ${domain}</span>
                             </div>

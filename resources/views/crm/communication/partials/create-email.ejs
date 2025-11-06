@@ -14,7 +14,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-12 mb-3">
-                            <label for="emailUsername" class="form-label">Email Address</label>
+                            <label for="emailUsername" class="form-label fw-bold">Email Address:</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                                 <input type="text" class="form-control" id="emailUsername" name="emailUsername" placeholder="e.g. support" required>
@@ -26,43 +26,43 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="emailName" class="form-label">Email Name</label>
+                            <label for="emailName" class="form-label fw-bold">Email Name:</label>
                             <input type="text" class="form-control" id="emailName" name="emailName"
                                 placeholder="e.g. Support Email" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="smtpHost" class="form-label">SMTP Host</label>
+                            <label for="smtpHost" class="form-label fw-bold">SMTP Host:</label>
                             <input type="text" class="form-control" id="smtpHost" name="smtpHost"
                                 placeholder="smtp.example.com" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="incomingSmtpPort" class="form-label">SMTP Port</label>
+                            <label for="incomingSmtpPort" class="form-label fw-bold">SMTP Port:</label>
                             <input type="number" class="form-control" id="incomingSmtpPort" name="incomingSmtpPort" placeholder="587"
                                 required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="outgoingSmtpPort" class="form-label">SMTP Port</label>
+                            <label for="outgoingSmtpPort" class="form-label fw-bold">SMTP Port:</label>
                             <input type="number" class="form-control" id="outgoingSmtpPort" name="outgoingSmtpPort" placeholder="993"
                                 required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="smtpUser" class="form-label">SMTP Username</label>
+                            <label for="smtpUser" class="form-label fw-bold">SMTP Username:</label>
                             <input type="text" class="form-control" id="smtpUser" name="smtpUser"
                                 placeholder="username@example.com" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="smtpPassword" class="form-label">SMTP Password</label>
+                            <label for="smtpPassword" class="form-label fw-bold">SMTP Password:</label>
                             <input type="password" class="form-control" id="smtpPassword" name="smtpPassword"
                                 placeholder="••••••••" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="encryption" class="form-label">Encryption Type</label>
+                            <label for="encryption" class="form-label fw-bold">Encryption Type:</label>
                             <select class="form-select" id="encryption" name="encryption" required>
                                 <option value="">Select Encryption</option>
                                 <option value="ssl">SSL</option>
@@ -71,21 +71,21 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="status" class="form-label">Status</label>
+                            <label for="status" class="form-label fw-bold">Status:</label>
                             <select class="form-select" id="status" name="status" required>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
                         
-                        <div class="col-md-12 mb-3">
-                            <label for="shareToEmail" class="form-label">Share Settings To (Emails):</label>
+                        <div class="col-md-6 mb-3">
+                            <label for="shareToEmail" class="form-label fw-bold">Share Settings To (Emails)::</label>
                             <input type="email" class="form-control" id="shareToEmail" name="shareToEmail"
                                 placeholder="e.g. support@gmail.com, support@hotmail.com" required>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="diskQuota" class="form-label">Disk Quota</label>
+                            <label for="diskQuota" class="form-label fw-bold">Disk Quota:</label>
                             <select class="form-select diskQuota" id="diskQuota" name="diskQuota" required>
                                 <option value="unlimited" selected>Unlimited</option>
                                 <option value="limited">Limited</option>
@@ -93,8 +93,24 @@
                         </div>
 
                         <div class="col-md-6 mb-3 quotaValueWrapper d-none" id="quotaValueWrapper">
-                            <label for="quotaValue" class="form-label">Enter Quota (MB)</label>
-                            <input type="number" class="form-control quotaValue" id="quotaValue" name="quotaValue" placeholder="e.g. 1024">
+                            <label for="quotaValue" class="form-label fw-bold">Enter Quota (MB):</label>
+                            <input type="number" class="form-control quotaValue" id="quotaValue" name="quotaValue" value="1024">
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Suspension Settings:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="suspendIncoming" name="suspendIncoming" value="1">
+                                <label class="form-check-label" for="suspendIncoming">Suspend Incoming Emails</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="suspendLogin" name="suspendLogin" value="1">
+                                <label class="form-check-label" for="suspendLogin">Suspend Login</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="suspendOutgoing" name="suspendOutgoing" value="1">
+                                <label class="form-check-label" for="suspendOutgoing">Suspend Outgoing Emails</label>
+                            </div>
                         </div>
                     </div>
 

@@ -25,7 +25,8 @@ class CommunicationUtil extends Util {
         const cachedFilters = await redis.getFunc(filtersKey);
         const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
         const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
-
+        
+        await redis.deleteFunc(cacheKey);
         if (savedFilters !== currentFilters) {
             await redis.deleteFunc(filtersKey);
             await redis.deleteFunc(cacheKey);
@@ -107,9 +108,10 @@ class CommunicationUtil extends Util {
                     settingSharedTo: Array.isArray(data.shareToEmail)
                         ? data.shareToEmail
                         : [],
-                    status: data.status || 'active',
-                    suspended_incoming: 0,
-                    suspended_login: 0,
+                    status: data.status || 'active', 
+                    suspended_incoming: data?.suspendIncoming ? parseInt(data.suspendIncoming) : 0,
+                    suspended_login: data?.suspendLogin ? parseInt(data.suspendLogin) : 0,
+                    suspended_outgoing: data?.suspendOutgoing ? parseInt(data.suspendOutgoing) : 0,
                     username: data.emailUsername,
                     ...extras
                 };
@@ -153,6 +155,9 @@ class CommunicationUtil extends Util {
                         quotaValue: emailDoc.diskQuota === 'limited'
                             ? emailDoc.quotaValue
                             : 0,
+                        suspended_incoming: emailDoc?.suspended_incoming || 0,
+                        suspended_login: emailDoc?.suspended_login || 0,
+                        suspended_outgoing: emailDoc?.suspended_outgoing || 0,
                         server: data?.serverSelect 
                     }),
                 });
