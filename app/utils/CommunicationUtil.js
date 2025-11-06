@@ -107,8 +107,7 @@ class CommunicationUtil extends Util {
                     host: mailHost,
                     settingSharedTo: Array.isArray(data.shareToEmail)
                         ? data.shareToEmail
-                        : [],
-                    status: data.status || 'active', 
+                        : [], 
                     suspended_incoming: data?.suspendIncoming ? parseInt(data.suspendIncoming) : 0,
                     suspended_login: data?.suspendLogin ? parseInt(data.suspendLogin) : 0,
                     suspended_outgoing: data?.suspendOutgoing ? parseInt(data.suspendOutgoing) : 0,

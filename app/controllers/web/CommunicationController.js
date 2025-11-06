@@ -131,10 +131,7 @@ class CommunicationController {
                     .editColumn('login', (col) => col || 'N/A')
                     .addColumn('emailExtras', (col) => {
                         const domain = col?.domain || 'N/A';
-                        const quota = col?.diskQuota ? `${col.diskQuota} MB` : 'Unlimited';
-                        const suspendedLogin = col?.suspended_login == 1 
-                            ? '<span class="badge bg-danger text-light">Login Suspended</span>' 
-                            : '<span class="badge bg-success text-light">Login Active</span>';
+                        const quota = col?.diskQuota ? `${col.diskQuota} MB` : 'Unlimited'; 
                         const suspendedIncoming = col?.suspended_incoming == 1 
                             ? '<span class="badge bg-danger text-light">Incoming Suspended</span>' 
                             : '<span class="badge bg-success text-light">Incoming Active</span>';
@@ -143,8 +140,7 @@ class CommunicationController {
                             : '<span class="badge bg-success text-light">Outgoing Active</span>';
 
                         return `
-                            <div class="d-flex flex-column">
-                                <span><strong>Login:</strong> ${suspendedLogin}</span>
+                            <div class="d-flex flex-column"> 
                                 <span><strong>Incoming:</strong> ${suspendedIncoming}</span>
                                 <span><strong>Outgoing:</strong> ${suspendedOutgoing}</span>
                                 <span><strong>Disk Quota:</strong> ${quota}</span>
@@ -152,45 +148,15 @@ class CommunicationController {
                             </div>
                         `;
                     })
-                    .editColumn('server', (col) => col || 'N/A')
-                    .editColumn('suspended_login', (col) => {
-                        if (col === 1) {
-                            return `<span class="badge bg-danger text-light">Suspended</span>`;
-                        } else {
-                            return `<span class="badge bg-success text-light">Active</span>`;
-                        }
-                    })
-                    .editColumn('suspended_incoming', (col) => {
-                        if (col === 1) {
-                            return `<span class="badge bg-danger text-light">Suspended</span>`;
-                        } else {
-                            return `<span class="badge bg-success text-light">Active</span>`;
-                        }
-                    })
-                    .addColumn('accessScope', (col) => {
-                        const suspendedLogin = col.suspended_login === 1;               
-                        const suspendedIncoming = col.suspended_incoming === 1;
-
-                        if (suspendedLogin && suspendedIncoming) {
-                            return `<span class="badge bg-danger text-light">Fully Suspended</span>`;
-                        } else if (suspendedLogin) {
-                            return `<span class="badge bg-warning text-dark">Login Suspended</span>`;
-                        } else if (suspendedIncoming) {
-                            return `<span class="badge bg-warning text-dark">Incoming Suspended</span>`;
-                        } else {
-                            return `<span class="badge bg-success text-light">Active</span>`;
-                        }
-                    }) 
-                    .editColumn('status', (col) => { 
-                        col = col ? col.toLowerCase() : 'inactive';
-                        if (col === 'active') {
-                            return `<span class="badge text-light bg-success">${ucfirst(col)}</span>`;
-                        } else if (col === 'inactive') {
-                            return `<span class="badge text-light bg-warning">${ucfirst(col)}</span>`;
+                    .editColumn('server', (col) => col || 'N/A') 
+                    .addColumn('status', (col) => { 
+                        col = col?.suspended_login == 0 ? 'active' : 'suspended';
+                        if (col == 'active') {
+                            return `<span class="badge text-light bg-success">Active</span>`; 
                         } else if (col === 'suspended') {
-                            return `<span class="badge text-light bg-danger">${ucfirst(col)}</span>`;
+                            return `<span class="badge text-light bg-danger">Suspended</span>`;
                         } else {
-                            return `<span class="badge text-light bg-warning">Inactive</span>`;
+                            return `<span class="badge text-light bg-danger">Suspended</span>`;
                         } 
                     })
                     .addColumn('timestamps', (col) => {
