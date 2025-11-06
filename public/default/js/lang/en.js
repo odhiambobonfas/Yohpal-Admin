@@ -349,6 +349,7 @@ const LANG_EN = {
         // EMails 
         account_creation_failed: "Failed to create account in the database.",
         email_create_failed: "Failed to create email setting in the database.",
+        email_address_already_exists: "Email you tried to create, already exists."
     },
 
     // New role/authentication errors

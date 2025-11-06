@@ -77,7 +77,8 @@ class CommunicationUtil extends Util {
     async createEmailAddressQuery(data, redis) { 
         try {
             const result = await FirestoreDatabase.runTransaction(async (transaction) => {  
-                const ref = FirestoreDatabase.collection(Email.collection).doc();
+                const col = FirestoreDatabase.collection(Email.collection);
+                const ref = col.doc();
                 let encryptedPassword = await this.encodeMessage(data.smtpPassword);
                 const extras = payloadExtras({
                     userLoggedInUid: data?.userLoggedInUid,
@@ -112,6 +113,16 @@ class CommunicationUtil extends Util {
                     username: data.emailUsername,
                     ...extras
                 };
+
+                const existing = await col.where("email", "==", emailDoc?.email).get();
+                if (!existing?.empty) {
+                    throw new Exception(
+                        201,
+                        "EMAIL_ADDRESS_DUPLICATE",
+                        LANG_EN.error.email_address_already_exists,
+                        "NEW email record duplicate exception!"
+                    );
+                }
                 
                 transaction.set(ref, emailDoc);
                         

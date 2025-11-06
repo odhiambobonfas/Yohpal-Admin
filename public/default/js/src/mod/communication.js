@@ -123,7 +123,7 @@ class Communication extends Master {
                     if (response && response.status === 'success') {
                         resetFormAndCloseModal(form);
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error);
-                        (new Settings()).getEmailsListing(); 
+                        (new Communication()).getEmailsListing(); 
                         return;
                     }
 
