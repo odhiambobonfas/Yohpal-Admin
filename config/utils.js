@@ -231,3 +231,15 @@ export function normalizeFilters(filters = {}) {
     delete clone._;
     return clone;
 }
+
+export function parseRoute(route, params = {}) {
+    if (!route) return null;
+
+    let url = route;
+    
+    for (const [key, value] of Object.entries(params)) {
+        url = url.replace(`{${key}}`, value);
+    }
+
+    return url;
+}
