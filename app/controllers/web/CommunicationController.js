@@ -86,7 +86,7 @@ class CommunicationController {
                         // suspend login
                         if (hasPermission(user?.permissions || [], 'communication.emails.suspend_login') && col['suspended_login'] === 0) {
                             actions += `
-                                <a class="btn btn-sm dropdown-item suspend-login" href="javascript:void(0)" data-id="${id}" data-type="login">
+                                <a class="btn btn-sm dropdown-item suspend-login" href="javascript:void(0)" data-id="${id}">
                                     <i class="fas fa-pause-circle me-1"></i> Suspend Login
                                 </a>`;
                         }
@@ -94,7 +94,7 @@ class CommunicationController {
                         // unsuspend login
                         if (hasPermission(user?.permissions || [], 'communication.emails.unsuspend_login') && col['suspended_login'] === 1) {
                             actions += `
-                                <a class="btn btn-sm dropdown-item unsuspend-login" href="javascript:void(0)" data-id="${id}" data-type="login">
+                                <a class="btn btn-sm dropdown-item unsuspend-login" href="javascript:void(0)" data-id="${id}">
                                     <i class="fas fa-play-circle me-1"></i> Unsuspend Login
                                 </a>`;
                         }
@@ -102,16 +102,32 @@ class CommunicationController {
                         // suspend incoming
                         if (hasPermission(user?.permissions || [], 'communication.emails.suspend_incoming') && col['suspended_incoming'] === 0) {
                             actions += `
-                                <a class="btn btn-sm dropdown-item suspend-incoming" href="javascript:void(0)" data-id="${id}" data-type="incoming">
-                                    <i class="fas fa-stop-circle me-1"></i> Suspend Incoming
+                                <a class="btn btn-sm dropdown-item suspend-incoming" href="javascript:void(0)" data-id="${id}">
+                                    <i class="fas fa-ban me-1 text-danger"></i> Suspend Incoming
                                 </a>`;
                         }
 
                         // unsuspend incoming
                         if (hasPermission(user?.permissions || [], 'communication.emails.unsuspend_incoming') && col['suspended_incoming'] === 1) {
                             actions += `
-                                <a class="btn btn-sm dropdown-item unsuspend-incoming" href="javascript:void(0)" data-id="${id}" data-type="incoming">
-                                    <i class="fas fa-envelope-open me-1"></i> Unsuspend Incoming
+                                <a class="btn btn-sm dropdown-item unsuspend-incoming" href="javascript:void(0)" data-id="${id}">
+                                    <i class="fas fa-check-circle me-1 text-success"></i> Unsuspend Incoming
+                                </a>`;
+                        }
+
+                        // suspend outgoing
+                        if (hasPermission(user?.permissions || [], 'communication.emails.suspend_outgoing') && col['suspended_outgoing'] === 0) {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item suspend-outgoing" href="javascript:void(0)" data-id="${id}">
+                                    <i class="fas fa-paper-plane-slash me-1 text-info"></i> Suspend Outgoing
+                                </a>`;
+                        }
+
+                        // unsuspend outgoing
+                        if (hasPermission(user?.permissions || [], 'communication.emails.unsuspend_outgoing') && col['suspended_outgoing'] === 1) {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item unsuspend-outgoing" href="javascript:void(0)" data-id="${id}">
+                                    <i class="fas fa-paper-plane me-1 text-success"></i> Unsuspend Outgoing
                                 </a>`;
                         }
 
