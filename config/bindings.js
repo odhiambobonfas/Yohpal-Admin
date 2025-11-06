@@ -16,8 +16,15 @@ const bindings = {
         // Mpesa endpoints bindings
         registerCallbacks: {
             method: "POST",
-            route: 'https://yohpal-microservices-v1.onrender.com/v1/callbacks/register',
+            route: 'https://msv1.yohpal.com/v1/callbacks/register',
             action: 'Callback registration happens via this endpoint!'
+        },
+
+        // Communication bindings
+        createEmail: {
+            method: "POST",
+            route: 'http://127.0.0.1:4000/v1/api/email/create',
+            action: 'Email creation happens via this endpoint!'
         },
     },
 
@@ -80,6 +87,14 @@ const bindings = {
             access_email_mangement: 'communication.emails.access',
             access_mails_inbox: 'communication.mails.access',
             access_bulk_messaging: 'communication.bulkMessaging.access',
+            edit_email_record: 'communication.emails.edit',
+            delete_email_record: 'communication.emails.delete',
+            suspend_login_email_record_status: 'communication.emails.suspend_login',
+            unsuspend_login_email_record_status: 'communication.emails.unsuspend_login',
+            suspend_incoming_email_record_status: 'communication.emails.suspend_incoming',
+            unsuspend_incoming_email_record_status: 'communication.emails.unsuspend_incoming',
+            suspend_outgoing_email_record_status: 'communication.emails.suspend_outgoing',
+            unsuspend_outgoing_email_record_status: 'communication.emails.unsuspend_outgoing',
         },
 
         chat: {

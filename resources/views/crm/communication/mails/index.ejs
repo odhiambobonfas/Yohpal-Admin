@@ -45,9 +45,7 @@
                         <label class="mb-2" for="serverSelect">Server (cPanel)</label>
                         <select name="serverSelect" id="serverSelect" class="form-control searchSelect">
                             <option value="">All Servers</option>
-                            <% cpanelServers?.forEach((srv) => { %>
-                            <option value="<%= srv.code %>"><%= srv.linkedDomain %></option>
-                            <% }) %>
+                            <%- cpanelServersForDropdown %>
                         </select>
                     </div>
 
@@ -73,11 +71,11 @@
                             <tr>
                                 <th>Action</th>
                                 <th>Email Address</th>
-                                <th>Domain</th>
-                                <th>Server</th>
+                                <th>Extras</th>
+                                <th>Server</th> 
                                 <th>Status</th>
                                 <th>Added By</th>
-                                <th>Created At</th>
+                                <th>Time Created</th>
                             </tr>
                         </thead>
                         <tbody>

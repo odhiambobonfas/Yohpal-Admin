@@ -183,6 +183,21 @@ const LANG_EN = {
         linked_domain_required: "Linked domain is required.",
         linked_domain_too_long: "Linked domain exceeds maximum length (255 characters).",
         invalid_is_default: "Invalid value for default server option.",
+
+        // Email
+        email_name_required: "Email name is required.",
+        email_address_required: "Email address is required.",
+        smtp_host_required: "SMTP host is required.",
+        smtp_port_invalid: "Please provide a valid SMTP port number.",
+        smtp_user_required: "SMTP username is required.",
+        smtp_password_required: "SMTP password is required.",
+        encryption_required: "Encryption type is required.",
+        encryption_invalid: "Encryption type must be SSL, TLS, or None.",
+        status_invalid: "Status must be Active or Inactive.",
+        disk_quota_invalid: "Disk quota must be Unlimited or Limited.",
+        quota_value_required: "Please enter a valid disk quota value (in MB).",
+        invalid_share_emails: "One or more shared email addresses are invalid.",
+        email_address_tag_invalid: "Please enter a valid email address tag format (e.g. name, support, etc...).",
     }, 
      // // response errors and statements
     res: {
@@ -241,6 +256,11 @@ const LANG_EN = {
         cpanel_setting_created: "CPanel setting created successfully.",
         cpanel_setting_updated: "CPanel setting has been updated successfully.", 
         cpanel_setting_deleted: "CPanel setting deleted successfully.", 
+
+        // EMails 
+        account_created: "Account created successfully.",
+        email_created: "Email setting created successfully.",
+        server_required: "Please select the server to link this email to.",
     },
 
     error: {
@@ -325,6 +345,11 @@ const LANG_EN = {
         cpanel_setting_delete_failed: "Failed to delete CPanel setting.",
         cpanel_setting_not_found: "The specified CPanel setting could not be found.", 
         cpanel_setting_exists: "A CPanel setting with the given host and domain already exists.",
+
+        // EMails 
+        account_creation_failed: "Failed to create account in the database.",
+        email_create_failed: "Failed to create email setting in the database.",
+        email_address_already_exists: "Email you tried to create, already exists."
     },
 
     // New role/authentication errors

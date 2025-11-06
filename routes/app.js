@@ -147,4 +147,7 @@ router.route('/callbacks/register')
 router.get('/communication', authMiddleware, CommunicationController.mailBox);
 router.get('/communication/emails/list', authMiddleware, CommunicationController.emailsList);
 
+// Email Handlers Routes
+router.post('/emails/create', authMiddleware, CommunicationController.createEmailAddress);
+
 export default router;
