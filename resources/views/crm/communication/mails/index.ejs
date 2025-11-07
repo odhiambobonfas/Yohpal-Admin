@@ -33,7 +33,7 @@
             </div>
 
             <!-- Collapsible Filters Section -->
-            <div class="container-fluid col-12 collapse mb-3 emailsFilters shadow-sm" id="emailFilters">
+            <div class="container-fluid col-12 collapse mb-3 emailFilters shadow-sm" id="emailFilters">
                 <div class="col-12 mt-3 row g-3">
                     <div class="col-md-4 mb-2">
                         <label class="mb-2" for="searchEmail">Email Address</label>
@@ -51,11 +51,10 @@
 
                     <div class="col-md-4 mb-2">
                         <label class="mb-2" for="emailStatus">Email Status</label>
-                        <select name="emailStatus" id="emailStatus" class="form-select">
+                        <select name="emailStatus" id="emailStatus" class="form-select searchSelect">
                             <option value="">All</option>
-                            <option value="active">Active</option>
-                            <option value="suspended">Suspended</option>
-                            <option value="disabled">Disabled</option>
+                            <option value="0">Active</option>
+                            <option value="1">Suspended</option> 
                         </select>
                     </div>
                 </div>
