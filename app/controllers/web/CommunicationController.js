@@ -56,7 +56,7 @@ class CommunicationController {
             if (isAjaxRequest(req)) {
                 let emails = [];
                 let user = req.session.user;  
-                let filters = req.body;
+                let filters = req.query;
 
                 emails = await CommunicationUtil.getAllEmails(req?.redis, filters);
 
@@ -200,7 +200,7 @@ class CommunicationController {
             const cpanelServersForDropdown = await Application.cpanelsListForDropdown(req?.redis);
             console.log("SERVER LIST: ", cpanelServersForDropdown);
             return res.render("crm/communication/mails/index", {
-                title: `${ config.APP.APP_NAME } || App Settings`,
+                title: `${ config.APP.APP_NAME } || Email Management`,
                 user: req.session.user, 
                 cpanelServersForDropdown: cpanelServersForDropdown
             }); 

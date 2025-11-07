@@ -23,16 +23,27 @@ class CommunicationUtil extends Util {
         let ref = FirestoreDatabase.collection(Email.collection);
 
         const cachedFilters = await redis.getFunc(filtersKey);
-        const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
-        const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+        const currentFilters = normalizeFilters(filters) || {};
+        const savedFilters = cachedFilters ? normalizeFilters(cachedFilters) : null;
         
-        await redis.deleteFunc(cacheKey);
         if (savedFilters !== currentFilters) {
             await redis.deleteFunc(filtersKey);
             await redis.deleteFunc(cacheKey);
             await redis.cacheParser(filtersKey, async () => filters, 2000);
         }
+        
+        if (currentFilters?.searchEmail) {
+            ref = ref.where("email", "==", currentFilters.searchEmail);
+        }
 
+        if (currentFilters?.serverSelect) {
+            ref = ref.where("server", "==", currentFilters.serverSelect);
+        }
+
+        if (currentFilters?.emailStatus) {
+            ref = ref.where("suspended_login", "==", parseInt(currentFilters.emailStatus));
+        }
+        
         let data = await redis.cacheParser(
             cacheKey,
             async () => {
