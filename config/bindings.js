@@ -218,13 +218,24 @@ const bindings = {
             edit: 'profile.edit',
         },
 
-        // Notifications
+        // Notifications Permissions
         notifications: {
             access: 'notifications.access',
-            all: 'notifications.view.all',
-            system: 'notifications.view.system',
-            emails: 'notifications.view.emails',
-            sms: 'notifications.view.sms',
+            view_all: 'notifications.view.all',
+            view_system: 'notifications.view.system',
+            view_emails: 'notifications.view.emails',
+            view_sms: 'notifications.view.sms',
+            view_whatsapp: 'notifications.view.whatsapp',
+            view_templates: 'notifications.view.templates',
+            view_categories: 'notifications.view.categories',
+            manage_templates: 'notifications.manage.templates',
+            manage_categories: 'notifications.manage.categories',
+            manage_send: 'notifications.manage.send',
+            manage_system: 'notifications.manage.system',
+            manage_emails: 'notifications.manage.emails',
+            manage_sms: 'notifications.manage.sms',
+            manage_whatsapp: 'notifications.manage.whatsapp',
+            settings: 'notifications.settings',
         },
 
         // Settings

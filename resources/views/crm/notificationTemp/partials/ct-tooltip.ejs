@@ -1,0 +1,33 @@
+<!-- Keywords Help Sub-Modal -->
+<div class="modal fade" id="keywordsHelpModal" tabindex="-1" aria-labelledby="keywordsHelpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="keywordsHelpModalLabel">
+                    <i class="fas fa-info-circle me-2"></i> Predefined Keywords
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Use the following keywords in your template content. They will be automatically replaced with real values when sending notifications. However, 
+                    for sms templates, All documents, image & video related resources like business logo will be ignored:
+                </p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><code>{Business_LOGO}</code> - Displays the business logo</li>
+                    <li class="list-group-item"><code>{User_NAME}</code> - Displays the recipient's User name</li>
+                    <li class="list-group-item"><code>{User_EMAIL}</code> - Displays the recipient's email</li>
+                    <li class="list-group-item"><code>{Opportunity_TITLE}</code> - Displays the opportunity title</li>
+                    <li class="list-group-item"><code>{Opportunity_DATE}</code> - Displays the opportunity date</li>
+                    <li class="list-group-item"><code>{App_NAME}</code> - Displays the app name in App Manager</li>
+                    <li class="list-group-item"><code>{Payment_AMOUNT}</code> - Displays the payment amount</li>
+                    <li class="list-group-item"><code>{System_ALERT}</code> - Displays system alert text</li>
+                </ul>
+                <p class="text-muted mt-2">Add any of these keywords in the template content to personalize notifications automatically.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

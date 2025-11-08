@@ -25,6 +25,7 @@ import AccountsController from "@app/controllers/web/AccountsController";
 import MpesaController from "@app/controllers/web/MpesaController";
 import CommunicationController from "@app/controllers/web/CommunicationController";
 import FollowerController from "@app/controllers/yohpal/FollowerController";
+import NotificationController from "@app/controllers/web/NotificationController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
 
@@ -149,5 +150,9 @@ router.get('/communication/emails/list', authMiddleware, CommunicationController
 
 // Email Handlers Routes
 router.post('/emails/create', authMiddleware, CommunicationController.createEmailAddress);
+
+// Notification Templates Handlers Routes
+router.get('/notification/templates', authMiddleware, NotificationController.index);
+router.post('/notification/template/create', authMiddleware, NotificationController.createNtTemplate);
 
 export default router;

@@ -198,6 +198,16 @@ const LANG_EN = {
         quota_value_required: "Please enter a valid disk quota value (in MB).",
         invalid_share_emails: "One or more shared email addresses are invalid.",
         email_address_tag_invalid: "Please enter a valid email address tag format (e.g. name, support, etc...).",
+ 
+        // Templatng module
+        template_name_required: "Template name is required.",
+        template_code_required: "Template code is required.",
+        template_channel_required: "Notification channel is required.",
+        template_category_required: "Template category is required.",
+        template_status_required: "Template status is required.", 
+        template_invalid_channel: "Invalid notification channel. Allowed values are email, sms, or whatsapp.",
+        template_description_too_long_or_too_short: "Template description cannot be less than 100 or exceed 1000 characters in total.",
+        template_invalid_status: "Invalid template status. Allowed values are active or inactive.",
     }, 
      // // response errors and statements
     res: {
@@ -261,6 +271,7 @@ const LANG_EN = {
         account_created: "Account created successfully.",
         email_created: "Email setting created successfully.",
         server_required: "Please select the server to link this email to.",
+        template_created: "Notification template has been created successfully."
     },
 
     error: {
@@ -349,7 +360,13 @@ const LANG_EN = {
         // EMails 
         account_creation_failed: "Failed to create account in the database.",
         email_create_failed: "Failed to create email setting in the database.",
-        email_address_already_exists: "Email you tried to create, already exists."
+        email_address_already_exists: "Email you tried to create, already exists.",
+
+        // Templatng module 
+        template_name_exists: "A notification template with the same name already exists in this category.",
+        template_code_exists: "A notification template with the same code already exists in this category.",
+        template_create_failed: "Failed to create the notification template. Please try again.",
+        invalid_payload: "Invalid request data. Please ensure all required fields are filled correctly.", 
     },
 
     // New role/authentication errors
