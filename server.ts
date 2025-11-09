@@ -34,9 +34,8 @@ import corsconfig from "@config/cors";
 
 import { hasPermission, hasAnyPermission } from "@funcs/permissions";
 import authentHelperFuncs from "@funcs/authentication";
-import globalFuncs from "@funcs/global_funcs";
-import { departments, designations } from "@funcs/hrm";
-import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+import globalFuncs from "@funcs/global_funcs"; 
+import { isAdmin, isSuperAdmin } from "@funcs/roles"; 
 
 import routes from "@routes/app";
 
@@ -124,7 +123,7 @@ const InitializeServer = async () => {
             domain: config.COOKIES.DOMAIN || undefined
         },
     })); 
-
+    
     // import everything to the views, custom functions i.e helper 
     // functions
     app.use(async(req, res, next) => { 
@@ -157,6 +156,7 @@ const InitializeServer = async () => {
         } 
 
         // expose user to views
+        res.locals.appSettings = (user as any).appSettings || {};
         res.locals.user = user;
 
         // global function helpers 
@@ -169,9 +169,6 @@ const InitializeServer = async () => {
         res.locals.hasAnyPermission = (keys) => hasAnyPermission(user['permissions'] || [], keys);
         res.locals.isAdmin = () => isAdmin(user['role']);
         res.locals.isSuperAdmin = () => isSuperAdmin(user['role']);
-        res.locals.allRoles = await getAllRoles(redis);
-        res.locals.departments = await departments(redis);
-        res.locals.designations = await designations(redis);
         
         next();
     });

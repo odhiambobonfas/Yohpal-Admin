@@ -78,8 +78,8 @@ body>.global-overlay {
     background-color: var(--bs-light-gray);
 }
 
-.text-decoration-line-none {
-    text-decoration-line: none;
+.text-decoration-line-none, .tdl-0 {
+    text-decoration-line: none !important;
 }
 
 .filter-dropdown .dropdown-toggle::after,

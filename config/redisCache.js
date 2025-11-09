@@ -19,10 +19,7 @@ class RedisCache {
 
 		let redisOptions;
 
-		if (
-			config.APP.APP_ENV?.trim() === "development" &&
-			config.CACHE.REDIS.USE_REDIS_LOCAL
-		) {
+		if (config.CACHE.REDIS.USE_REDIS_LOCAL == true || config.CACHE.REDIS.USE_REDIS_LOCAL === 'true') {
 			const host = config.CACHE.REDIS.REDIS_URL || "127.0.0.1";
 			const port = config.CACHE.REDIS.REDIS_PORT || 6379;
 
@@ -79,13 +76,21 @@ class RedisCache {
      */
 	async getFunc(key) {
 		try {
-			const data = await Promise.race([
-				this.client.get(key),
-				new Promise((_, reject) =>
-					setTimeout(() => reject(new Error("Redis GET timeout")), 500)
-				),
-			]);
-			return data ? JSON.parse(data) : null;
+			const keyType = await this.client.type(key);
+
+			if (keyType === 'list') {
+				const items = await this.client.lrange(key, 0, -1);
+				return items
+					.filter(item => item && item.trim() !== "")
+					.map(item => JSON.parse(item));
+			}
+			
+			if (keyType === 'string') {
+				const data = await this.client.get(key);
+				return data ? JSON.parse(data) : null;
+			}
+
+			return null;
 		} catch (err) {
 			console.error(`Redis GET Error: ${key}: `, err);
 			return null;
@@ -97,18 +102,30 @@ class RedisCache {
      * 
      * @param {string} key  A key to hold up the cache values(s)
      * @param {any} value  A value to dump as the cache values(s)
-     * @param {number} expiryTimeInSeconds
+     * @param {number} expiryTimeInSeconds expiry time in seconds
      */
 	async setFunc(key, value, expiryTimeInSeconds = 3600) {
 		try {
 			let payload = typeof value === "string" ? value : JSON.stringify(value);
+			await this.client.set(key, payload, "EX", expiryTimeInSeconds);
+		} catch (err) {
+			console.error(`Redis SET function Error ${key}:`, err.message);
+		}
+	}
 
-			await Promise.race([
-				this.client.set(key, payload, "EX", expiryTimeInSeconds),
-				new Promise((_, reject) =>
-					setTimeout(() => reject(new Error("Redis SET timeout")), 500)
-				),
-			]);
+    /**
+     * Sets/pushes data(list) into the redis cache
+     * 
+     * @param {string} key  A key to hold up the cache values(s)
+     * @param {any} value  A value to dump as the cache values(s)
+     * @param {number} expiryTimeInSeconds expiry time in seconds
+	 * @param {boolean} [useListPush=false] - Whether to push list items instead of setting
+     */
+	async pushListFunc(key, value, expiryTimeInSeconds = 3600) {
+		try {
+			let payload = typeof value === "string" ? value : JSON.stringify(value);
+			await this.client.lpush(key, payload); 
+			await this.client.expire(key, expiryTimeInSeconds);
 		} catch (err) {
 			console.error(`Redis SET function Error ${key}:`, err.message);
 		}
@@ -127,20 +144,48 @@ class RedisCache {
 		}
 	}
 
+	/**
+	 * Removes an item from a Redis list if it exists.
+	 *
+	 * @param {string} key - The Redis list key
+	 * @param {any} value - The value to remove (object or string)
+	 * @param {number} [count=0] - Number of occurrences to remove (0 = all)
+	 */
+	async removeFromListIfExists(key, value, count = 0) {
+		try {
+			const payload = typeof value === "string" ? value : JSON.stringify(value);
+			
+			const removedCount = await this.client.lrem(key, count, payload);
+
+			if (removedCount > 0) {
+				console.log(`Removed ${removedCount} occurrence(s) from list ${key}`);
+			} else {
+				console.log("PAYLOAD TO REMOVE: ", value);
+				console.log(`No matching entry found in list ${key}`);
+			}
+		} catch (err) {
+			console.error(`Redis LREM Error ${key}:`, err.message);
+		}
+	}
+
     /**
      * Cache parser - gets from cache, or setFunc if not present
      * 
      * @param {string} key A key to hold up the cache values(s)
      * @param {Function} fetchCallback - function that returns new cache data. Well, logically, pass a DB Callback to get the new data or otherwise.
-     * @param {number} expiryTimeInSeconds - Time the cache should take before expiry
+     * @param {number} expiryTimeInSeconds expiry time in seconds - Time the cache should take before expiry
      */
-	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600) {
+	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600, useListPush = false) {
 		const cached = await this.getFunc(key); 
-		if (cached) return cached;
+		if (cached && cached?.length) return cached; 
 		const new_cache = await fetchCallback();
-		if (new_cache) {
+		
+		if (useListPush) { 
+			await this.pushListFunc(key, new_cache, expiryTimeInSeconds);
+		} else {
 			await this.setFunc(key, new_cache, expiryTimeInSeconds);
 		}
+
 		return new_cache;
 	}
 }

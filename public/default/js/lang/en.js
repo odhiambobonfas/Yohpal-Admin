@@ -1,6 +1,9 @@
 const LANG_EN = {
     // Request errors
     req: {
+        // Generic errors 
+        application_name_required: "Application name is required!",
+        
         // api errors
         request_denied: "Your request has been denied.",
         invalid_csrf_token: "Invalid CSRF token. Please refresh the page and try again.",
@@ -67,7 +70,7 @@ const LANG_EN = {
         create_provider_query_failed: "The API setting could not be created.",
         provider_created_success: "API setting created successfully!",
 
-        // settings 
+        // CDN settings 
         company_name_required: "Company name is required.",
         company_name_limit: "Company name cannot exceed 100 characters.",
         company_email_required: "Company email address is required.",
@@ -87,9 +90,126 @@ const LANG_EN = {
         designation_code_required: "Designation code is required.",
         designation_exists: "A designation with the same name or code already exists.",
         provider_code_required: "Provider code is required.",
-    },
 
-    // response errors and statements
+        // holiday
+        holiday_name_required: "Holiday name is required.",
+        holiday_start_date_invalid: "Please provide a valid start date for the holiday.",
+        holiday_end_date_invalid: "Please provide a valid end date for the holiday.",
+        holiday_type_invalid: "Please select a valid holiday type (public, company, or custom).",
+        custom_holiday_type_required: "Please specify a custom holiday type.",
+        holiday_description_too_long: "Holiday description cannot exceed 500 characters.",
+
+        // attendance
+        employee_id_invalid: "Invalid or missing employee ID.",
+        attendance_date_invalid: "Please provide a valid attendance date.",
+        shift_type_invalid: "Invalid shift type. Allowed types: morning, evening, night, or custom.",
+        custom_shift_start_invalid: "Please provide a valid custom shift start time.",
+        custom_shift_end_invalid: "Please provide a valid custom shift end time.",
+        custom_shift_end_before_start: "Custom shift end time must be after the start time.",
+        attendance_status_invalid: "Invalid attendance status. Allowed values: present, absent, or on leave.",
+        attendance_remarks_too_long: "Attendance remarks cannot exceed 500 characters.",
+
+        // leave
+        leave_start_date_invalid: "Invalid leave start date.",
+        leave_end_date_invalid: "Invalid leave end date.",
+        leave_type_invalid: "Invalid leave type.",
+        custom_leave_type_required: "Custom leave type is required when leave type is set to 'custom'.",
+        leave_reason_required: "Leave reason is required.",
+        leave_reason_too_long: "Leave reason cannot exceed 500 characters.",
+        leave_status_invalid: "Invalid leave status.",
+        leave_attachment_upload_failed: "Failed to upload leave attachment. Please try again.",
+
+        // payroll components
+        component_id_required: "Linked component is required.",
+        component_name_required: "Component name is required.",
+        component_type_invalid: "Invalid component type selected.",
+        component_scope_invalid: "Invalid component scope provided.",
+        component_rate_invalid: "Invalid rate or amount entered.",
+        rate_type_invalid: "Invalid rate type selected.",
+        component_category_invalid: "Invalid component category.",
+        component_description_too_long: "Component description is too long.",
+        
+        // component essentials
+        // brackets
+        bracket_name_required: "Bracket name is required.",
+        bracket_code_too_long: "Bracket code is too long.",
+        bracket_min_invalid: "Invalid minimum amount.",
+        bracket_max_invalid: "Invalid maximum amount.",
+        bracket_rate_invalid: "Invalid bracket rate or amount.",
+        rate_type_invalid: "Invalid rate type.",
+        bracket_description_too_long: "Bracket description too long.",
+
+        // tiers 
+        tier_name_required: "Tier name is required.",
+        tier_code_too_long: "Tier code must not exceed 50 characters.",
+        tier_rate_invalid: "Invalid employee contribution rate value.",
+        employer_rate_invalid: "Invalid employer contribution rate value.",
+        rate_type_invalid: "Invalid rate type selected.",
+        employer_rate_type_invalid: "Invalid employer rate type selected.",
+        effective_from_invalid: "Invalid effective from date format.",
+
+        // account category
+        category_name_required: "Account category name is required.",
+        category_code_too_long: "The category code cannot exceed 20 characters.",
+        category_status_invalid: "Invalid account category status.",
+        category_description_too_long: "The description cannot exceed 500 characters.",
+        
+        // accounts
+        account_name_required: "Account name is required",
+        account_category_required: "Account category is required",
+        account_number_too_long: "Account number is too long (maximum 30 characters)",
+        account_description_too_long: "Account description is too long (maximum 500 characters)",
+
+        // API Callbacks
+        validation_url_required: "Validation URL is required!",
+        confirmation_url_required: "Confirmation URL is required!",
+        
+        // CDN 
+        cdn_provider_required: "Please provide the CDN provider name.",
+        target_app_required: "Target application name is required.",
+        cdn_code_required: "CDN unique code is required.",
+        cdn_url_required: "CDN base URL is required.",
+        cdn_url_too_long: "CDN base URL exceeds maximum allowed length (255 characters).",
+        cdn_zone_id_required: "CDN Zone / Distribution ID is required.",
+        invalid_cache_duration: "Cache duration must be a valid positive number.",
+        invalid_cdn_status: "CDN status must be either 'enabled' or 'disabled'.",
+        cdn_module_too_long: "CDN module name exceeds maximum allowed length (100 characters).",
+        
+        // CPANEL Settings 
+        cpanel_host_required: "CPanel host URL is required.",
+        cpanel_username_required: "CPanel username is required.",
+        cpanel_password_required: "CPanel password is required.",
+        cpanel_api_token_too_long: "API token exceeds maximum length (255 characters).",
+        linked_domain_required: "Linked domain is required.",
+        linked_domain_too_long: "Linked domain exceeds maximum length (255 characters).",
+        invalid_is_default: "Invalid value for default server option.",
+
+        // Email
+        email_name_required: "Email name is required.",
+        email_address_required: "Email address is required.",
+        smtp_host_required: "SMTP host is required.",
+        smtp_port_invalid: "Please provide a valid SMTP port number.",
+        smtp_user_required: "SMTP username is required.",
+        smtp_password_required: "SMTP password is required.",
+        encryption_required: "Encryption type is required.",
+        encryption_invalid: "Encryption type must be SSL, TLS, or None.",
+        status_invalid: "Status must be Active or Inactive.",
+        disk_quota_invalid: "Disk quota must be Unlimited or Limited.",
+        quota_value_required: "Please enter a valid disk quota value (in MB).",
+        invalid_share_emails: "One or more shared email addresses are invalid.",
+        email_address_tag_invalid: "Please enter a valid email address tag format (e.g. name, support, etc...).",
+ 
+        // Templatng module
+        template_name_required: "Template name is required.",
+        template_code_required: "Template code is required.",
+        template_channel_required: "Notification channel is required.",
+        template_category_required: "Template category is required.",
+        template_status_required: "Template status is required.", 
+        template_invalid_channel: "Invalid notification channel. Allowed values are email, sms, or whatsapp.",
+        template_description_too_long_or_too_short: "Template description cannot be less than 100 or exceed 1000 characters in total.",
+        template_invalid_status: "Invalid template status. Allowed values are active or inactive.",
+    }, 
+     // // response errors and statements
     res: {
         invalid_json_exception: "Invalid JSON response",
         default_setting_exists: "A default setting for the target application you tried to add, already exists!",
@@ -97,8 +217,61 @@ const LANG_EN = {
     },
     
     success: {
+        // Authentication
+        auth_login: "Login success. Welcome back. Please hold on as we take you to dashboard.",
+
+        // department
         department_created: "Department created successfully.",
         designation_created: "Designation created successfully.",
+
+        // holiday
+        holiday_created: "Holiday has been successfully created.",
+
+        // attendance
+        attendance_record_created: "Attendance record has been successfully created.",
+
+        // payroll
+        payment_component_created: "Payment component created successfully.",
+        payment_component_updated: "Payment component updated successfully.",
+        payment_component_deleted: "Payment component deleted successfully.",
+
+        // component essentials
+        // brackets
+        payment_bracket_created: "Payment bracket created successfully!",
+
+        // tiers
+        payment_tier_created: "Payment tier created successfully.",
+
+        // account categories
+        account_category_created: "Account category created successfully.",
+        account_category_updated: "Account category updated successfully.",
+        account_category_deleted: "Account category deleted successfully.",
+        
+        // accounts
+        account_created: "Account has been created successfully.",
+        account_updated: "Account has been updated successfully.",
+        account_deleted: "Account has been deleted successfully.",
+
+        // API Callbacks 
+        api_callbacks_registered_successfully: "API Callbacks registered successfully!", 
+
+        // API Settings
+        provider_update_success: "API settings updated successfully!",
+
+        // CDN 
+        cdn_setting_created: "CDN setting has been successfully created.",
+        cdn_setting_updated: "CDN setting has been successfully updated.",
+
+        // CPANEL settings
+        cpanel_setting_created: "CPanel setting created successfully.",
+        cpanel_setting_updated: "CPanel setting has been updated successfully.", 
+        cpanel_setting_deleted: "CPanel setting deleted successfully.", 
+
+        // EMails 
+        account_created: "Account created successfully.",
+        email_created: "Email setting created successfully.",
+        server_required: "Please select the server to link this email to.",
+        template_created: "Notification template has been created successfully."
     },
 
     error: {
@@ -113,7 +286,7 @@ const LANG_EN = {
 
         // General
         success: "Operation completed successfully!",
-        error: "An error occurred. Please try again.",
+        generic_error: "An error occurred. Please try again.",
         undefined_error: "An error occurred. Please try again or seek help!",
         nav_route_error: "Invalid route: must be a non-empty string.",
         delete_res_warning: "Delete not applicable at this time!",
@@ -121,6 +294,79 @@ const LANG_EN = {
         invalid_img_size_warning: "Image must be less than 2MB",
         generic_auth_error: "An authentication error occurred!",
         invalid_username_password_warning: "Check your Username and Password, & try again!",
+
+        // holiday
+        holiday_creation_failed: "Failed to create the holiday. Please try again later.",
+
+        // attendance
+        attendance_record_creation_failed: "Failed to create attendance record. Please try again later.",
+
+        // payroll
+        payment_component_creation_failed: "Failed to create payment component. Please try again later.",
+        payment_component_name_exists: "A payment component with this name already exists.",
+        payment_component_code_exists: "A payment component with this code already exists.", 
+
+        // components essentials
+        // brackets
+        bracket_name_exists: "A bracket with this name already exists for the selected component.",
+        bracket_code_exists: "A bracket with this code already exists for the selected component.",
+        payment_bracket_creation_failed: "Failed to create payment bracket. Please try again.",
+
+        // tiers 
+        payment_tier_name_exists: "A tier with the same name already exists.",
+        payment_tier_code_exists: "A tier with the same code already exists.",
+        payment_tier_creation_failed: "Failed to create payment tier. Please try again.",
+
+        // account categories
+        account_category_creation_failed: "Failed to create account category. Please try again later.",
+        account_category_name_exists: "An account category with this name already exists.",
+        account_category_code_exists: "An account category with this code already exists.",
+
+        // accounts
+        account_creation_failed: "Failed to create account due to a database error.",
+        account_name_exists: "An account with this name already exists.",
+        account_number_exists: "An account with this number already exists.",
+        account_not_found: "The specified account could not be found.",
+        account_update_failed: "Failed to update the account.",
+        account_delete_failed: "Failed to delete the account.",
+        account_opening_balance_failed: "Failed to record opening balance transaction.",
+
+        // API CALLBACKS 
+        callback_registration_failed: "Callback registration failed. Please try again later!",
+
+        // API Settings
+        update_provider_query_failed: "Your request to update API provider settings failed!",
+
+        // Payments
+        payment_method_required: "Payment method is required when opening balance is set",
+
+        // CDN
+        cdn_setting_creation_failed: "Failed to create CDN setting due to an internal server error.",
+        internal_server_error: "An unexpected error occurred while processing your request.",
+        
+        // CDN settings
+        setting_with_given_code_exists: "A setting with the given code and for the target application you tried to add, already exists!",
+        cdn_setting_update_failed: "CDN setting update failed. Please try again later!",
+        cdn_setting_not_found: "CDN setting you tried to edit, Not found. Please seek assistance from the administrator!",
+
+        // CPANEL Settings
+        cpanel_setting_creation_failed: "Failed to create new CPanel setting. Please try again later.", 
+        cpanel_settings_fetch_failed: "Unable to retrieve CPanel settings at the moment.",
+        cpanel_setting_update_failed: "Failed to update CPanel setting.",
+        cpanel_setting_delete_failed: "Failed to delete CPanel setting.",
+        cpanel_setting_not_found: "The specified CPanel setting could not be found.", 
+        cpanel_setting_exists: "A CPanel setting with the given host and domain already exists.",
+
+        // EMails 
+        account_creation_failed: "Failed to create account in the database.",
+        email_create_failed: "Failed to create email setting in the database.",
+        email_address_already_exists: "Email you tried to create, already exists.",
+
+        // Templatng module 
+        template_name_exists: "A notification template with the same name already exists in this category.",
+        template_code_exists: "A notification template with the same code already exists in this category.",
+        template_create_failed: "Failed to create the notification template. Please try again.",
+        invalid_payload: "Invalid request data. Please ensure all required fields are filled correctly.", 
     },
 
     // New role/authentication errors

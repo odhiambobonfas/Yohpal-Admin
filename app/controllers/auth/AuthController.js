@@ -4,12 +4,14 @@ import config from '@config/config';
 import User from '@models/User';
 import Util from '@utils/Util';
 import UserUtil from '@utils/UserUtil';
+import SettingsUtil from '@utils/SettingsUtil';
 import Exception from '@config/exceptions';
 import LANG_EN from '@lang/en';
 import Binding from '@config/bindings';
 import RedisCache from '@config/redisCache';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import {env, isInDevelopment} from "@funcs/global_funcs";  
+import { mergeDataGroupObjects } from '@config/utils';
 
 class AuthController {
     static async register(req, res) {
@@ -63,28 +65,24 @@ class AuthController {
                 user
             });
         } catch (error) {
-            if (error instanceof Exception) {
-                if (config.APP.APP_DEBUG) error.mexLogger();
-                return res.status(error.status).json({
-                    status: 'error',
-                    message: error.message,
-                    code: error.code
-                });
-            } else {
-                return res.status(500).json({
-                    status: 'error',
-                    message: error.message || 'Something went wrong. Please try again later.'
-                });
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
             }
+            
+            return res.status((error.status || 500)).json({
+                status: 'error', 
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
         }
     }
 
     static async login(req, res) { 
-        let message = 'Please login to access your account!';
+        let message = '';
 
         if (req.query.message || req.query.auth) {
             try {
-                const decodedMessage = Util.decodeMessage(req.query.message || req.query.auth);
+                const decodedMessage = await (new Util()).decodeMessage(req.query.message || req.query.auth);
                 message = decodedMessage || message;
             } catch (error) {
                 console.error("Error decoding message:", error);
@@ -133,7 +131,7 @@ class AuthController {
             }); 
             
             if (!response.ok) { 
-                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.error.generic_auth_error, 'Auth Error!');
             }
 
             const data = await response.json();   
@@ -145,7 +143,7 @@ class AuthController {
             const v = await firebase.verifyAuthToken(idToken); 
             
             if (!v) {
-                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.generic_auth_error, 'Auth Error!');
+                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.error.generic_auth_error, 'Auth Error!');
             }
             
             let {user, role, permissions} = await UserUtil.getUserByDocid(v.uid);
@@ -160,6 +158,10 @@ class AuthController {
                 throw new Exception(201, 'ACCOUNT_SUSPENDED', LANG_EN.account_suspended_exception, 'Suspension Auth Error!');
             }
 
+            let settings = await SettingsUtil.getAllSettings(req.redis); 
+            
+            settings = mergeDataGroupObjects(settings);
+            
             let userPayload = {
                 email: user.email,
                 username: user.userName,
@@ -174,7 +176,8 @@ class AuthController {
                 role: role || null,
                 permissions: permissions,
                 refreshToken: refreshToken,
-                status: user.status || 'inactive'
+                status: user.status || 'inactive',
+                appSettings: settings
             }; 
             
             if (user.status !== 'active') {
@@ -193,25 +196,30 @@ class AuthController {
 
             res.status(200).json({
                 status: 'success',
+                message: LANG_EN.success.auth_login,
                 redirectUrl: '/dashboard',
                 token
             });
         } catch (error) {
-            if (error instanceof Exception) {  
-                if (config.APP.APP_DEBUG) error.mexLogger();
-                return res.status(error.status).json({ status: 'error', message: error.message, code: error.code, data: [] });
-            } else {   
-                console.log('Server Side Error: ', error);
-                return res.status(500).json({ status: 'error', message: 'Something went wrong. Please try again later.' });
+            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+                error.mexLogger();
             }
+            
+            return res.status((error.status || 500)).json({
+                status: 'error', 
+                message: error.message,
+                code: error.code ||  'INTERNAL_SERVER_ERROR',
+                title: error.title || 'Unexpected Error'
+            });
         }
     }
 
     static async logout(req, res) {
         try { 
+            let msg = await (new Util()).encodeMessage('You have logged out successfully.');
             res.clearCookie(config.COOKIES.COOKIE_NAME); 
             res.clearCookie(config.SESSION.SESSION_NAME); 
-            res.redirect(`/login?auth=${Util.encodeMessage('You have logged out successfully.')}`);
+            res.redirect(`/login?auth=${msg}`);
         } catch (error) { 
             res.redirect('back');
         }

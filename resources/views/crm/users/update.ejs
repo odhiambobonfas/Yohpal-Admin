@@ -50,6 +50,14 @@
                                     placeholder="Short bio"> <%= userData?.bio?.trim() %> </textarea>
                             </div>
 
+                            <!-- Employee ID -->
+                            <div class="mb-3 employeeIdSection">
+                                <label for="employeeId" class="form-label">Employee ID</label>
+                                <input type="text" class="form-select" id="employeeId" name="employeeId"
+                                    placeholder="Enter employee ID" value="<%= userData?.employeeId %>">
+                                <small>Leave empty to autogenerate. However, Once generated cannot be edited unless authorized</small>
+                            </div>
+
                             <div class="form-check form-check-inline fa-2x mb-3">
                                 <label class="form-check-label d-flex align-items-center gap-2">
                                     <input class="form-check-input isEmployee" type="checkbox" name="isEmployee"
@@ -62,7 +70,7 @@
                                         <i class="fa fa-question-circle" aria-hidden="true"></i>
                                     </button>
                                 </label>
-                            </div>
+                            </div> 
                         </div>
                     </div>
 
@@ -85,8 +93,10 @@
                                 </div>
                                 <div class="col-6 mb-3">
                                     <label for="country" class="form-label">Country</label>
-                                    <input type="text" class="form-control" id="country" name="country"
-                                        value="<%= userData?.country %>" placeholder="Enter country">
+                                    <select class="form-select searchSelect" name="country" id="country">
+                                        <option value="">Select country</option>  
+                                        <%- countriesForDropdown %>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -157,35 +167,60 @@
 							HRM Information
 						</div>
 						<div class="card-body">  
-							<div class="row">
-								<!-- Department Name -->
-								<div class="col-md-6 mb-3">
-									<label for="departmentId">Departments:</label> 
-									<select class="form-select searchSelect" name="departmentId" id="departmentId">
-										<option value="">Select department</option> 
-                                        <% departments?.forEach(department => { %>
-                                            <option value="<%= department?.code %>" <%= departmentData?.code == department?.code ? 'selected' : '' %>>
-                                                <%= department?.departmentName %>
-                                            </option>
-                                        <% }) %> 
-									</select>
-								</div> 
+							<div id="deptxdesignWrapper" class="deptxdesignWrapper">
+                                <div class="deptxdesign">
+                                    <% (departmentDesignationData || {}).forEach(([pairId, pair]) => { %>
+                                    <div class="row mb-3 shadow-sm">
+                                        <!-- Department -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="department_<%= pairId %>">Department</label>
+                                            <select 
+                                                class="form-select" 
+                                                name="departmentDesignationPair[department][]" 
+                                                id="department_<%= pairId %>"
+                                            >
+                                                <option value="">Select department</option>
+                                                <% departments?.forEach(department => { %>
+                                                <option 
+                                                    value="<%= department.id %>" 
+                                                    <%= department.departmentName === pair.departmentData.departmentName ? 'selected' : '' %>>
+                                                    <%= department.departmentName %>
+                                                </option>
+                                                <% }) %>
+                                            </select>
+                                        </div>
 
-								<!-- Designation -->
-								<div class="col-md-6 mb-3">
-									<label for="designationId">Designation</label>
-									
-									<select class="form-select searchSelect" name="designationId" id="designationId">
-										<option value="">Select designation</option>  
-                                        <% designations?.forEach(designation => { %>
-                                            <option value="<%= designation?.code %>" <%= designationData?.code == designation?.code ? 'selected' : '' %>>
-                                                <%= designation?.designationName %>
-                                            </option>
-                                        <% }) %> 
-									</select>
-								</div> 
-							</div>
+                                        <!-- Designation -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="designation_<%= pairId %>">Designation</label>
+                                            <select 
+                                                class="form-select" 
+                                                name="departmentDesignationPair[designation][]" 
+                                                id="designation_<%= pairId %>"
+                                            >
+                                                <option value="">Select designation</option>
+                                                <% designations?.forEach(designation => { %>
+                                                <option 
+                                                    value="<%= designation.id %>" 
+                                                    <%= designation.designationName === pair.designationData.designationName ? 'selected' : '' %>>
+                                                    <%= designation.designationName %>
+                                                </option>
+                                                <% }) %>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <% }) %>
 
+                                </div>
+                                
+                                <!-- Add button -->
+                                <div class="add-btn">
+                                    <button type="button" id="addDeptDesignBtn" class="btn btn-outline-danger btn-sm w-100 addDeptDesignBtn">
+                                        Add Department & Designation
+                                    </button>
+                                </div>
+                            </div>
+                            
 							<h4 class="pt-3">Payroll Information</h4>
 							<hr>
 							<div class="row"> 
@@ -217,6 +252,7 @@
 									<label for="payComponents">Pay Components:</label> 
 									<select class="form-select searchSelect" multiple name="paymentComponents" id="paymentComponents">
 										<option value="">Select pay components</option>  
+										<%- componentsForDropdown %>
 									</select>
 								</div> 
 							</div>

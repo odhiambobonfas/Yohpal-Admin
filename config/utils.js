@@ -68,8 +68,8 @@ export function fbCollectionParser(snapshot = {}) {
             dateToISO8601Formatter(doc.updateTime?.toDate());
 
         return {
-            id: doc.id,
-            ...data,
+            id: doc.id, 
+            ...data, 
             createdAt,
             updatedAt,
         };
@@ -80,28 +80,25 @@ export function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export function payloadExtras(input, update=false) {
-    let payload = { 
-        // Added by
-        addedBy: input.userLoggedInUserName,
-        addedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
-        
-        // Created by
+export function payloadExtras(input = {}, isUpdate = false) {
+    const userRef = input.userLoggedInUid 
+        ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) 
+        : null;
+
+    if (isUpdate) { 
+        return {
+            updatedBy: input.userLoggedInUserName || null,
+            updatedByRefUser: userRef,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+    }
+    
+    return {
+        addedBy: input.userLoggedInUserName || null,
+        addedByRefUser: userRef,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }
-
-    if (update) {
-        payload = {
-            ...payload,
-
-            // Updated by
-            updatedBy: input.userLoggedInUserName,
-            updatedByRefUser: input.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(input.userLoggedInUid) : null, 
-        }
-    }
-
-    return payload;
+    };
 }
 
 export function jsonParser(data) {
@@ -122,6 +119,26 @@ export function reduceToObj(array) {
     }, {});
 
     return obj;
+}
+
+/**
+ * Ensure objects 
+ * 
+ * @param {Object} data 
+ * @returns 
+ */
+export function mergeDataGroupObjects(data = {}) {
+    const merged = {};
+
+    for (const [key, arr] of Object.entries(data)) {
+        if (Array.isArray(arr) && arr.length) {
+            merged[key] = arr.reduce((acc, obj) => ({ ...acc, ...obj }), {});
+        } else {
+            merged[key] = {};
+        }
+    }
+
+    return merged;
 }
 
 /**
@@ -213,4 +230,16 @@ export function normalizeFilters(filters = {}) {
     };
     delete clone._;
     return clone;
+}
+
+export function parseRoute(route, params = {}) {
+    if (!route) return null;
+
+    let url = route;
+    
+    for (const [key, value] of Object.entries(params)) {
+        url = url.replace(`{${key}}`, value);
+    }
+
+    return url;
 }

@@ -1,0 +1,161 @@
+<!-- Create Payment Account Modal -->
+<div class="modal fade createAccountModal" id="createAccountModal" tabindex="-1" aria-labelledby="createAccountModalLabel" aria-hidden="true">
+    <form action="/accounts/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="createAccountModalLabel">
+                        <i class="fa fa-credit-card me-2 text-danger"></i> Add Payment Account
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <!-- Account Name -->
+                        <div class="col-md-6">
+                            <label for="accountName" class="form-label fw-semibold">Account Name <span class="text-danger">*</span></label>
+                            <input type="text" name="accountName" id="accountName" class="form-control form-control-sm" placeholder="e.g. Main Bank Account, Petty Cash" required>
+                        </div>
+
+                        <!-- Account Number -->
+                        <div class="col-md-6">
+                            <label for="accountNumber" class="form-label fw-semibold">Account Number <span class="text-danger">*</span></label>
+                            <input type="text" name="accountNumber" id="accountNumber" class="form-control form-control-sm" placeholder="e.g. 00123456789">
+                        </div>
+
+                        <!-- Owner's Name -->
+                        <div class="col-md-6">
+                            <label for="ownerName" class="form-label fw-semibold">Owner Name(Optional)</label>
+                            <input type="text" name="ownerName" id="ownerName" class="form-control form-control-sm" placeholder="e.g. John Doe Wairimu">
+                        </div>
+
+                        <!-- Owner's Contact -->
+                        <div class="col-md-6">
+                            <label for="ownerContactNumber" class="form-label fw-semibold">Owner Contact Number(Optional)</label>
+                            <input type="text" name="ownerContactNumber" id="ownerContactNumber" class="form-control form-control-sm" placeholder="e.g. +254758000000">
+                        </div>
+                        
+                        <!-- Yohpal Applications -->
+                        <div class="col-md-6">
+                            <label for="applicationName" class="form-label fw-semibold">Application Name <span class="text-danger">*</span></label>
+                            <select name="applicationName" id="applicationName" class="form-select form-select-sm searchSelect" required>
+                                <option value="">-- Select Application --</option> 
+                                <% applications?.forEach(application => { %>
+                                    <option value="<%= application.slug %>"><%= application.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <!-- Account Category -->
+                        <div class="col-md-6">
+                            <label for="accountCategory" class="form-label fw-semibold">Account Category <span class="text-danger">*</span></label>
+                            <select name="accountCategory" id="accountCategory" class="form-select form-select-sm" required>
+                                <option value="">-- Select Category --</option> 
+                                <% categories?.forEach(category => { %>
+                                    <option value="<%= category.id %>"><%= category.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>  
+
+                    <div class="row g-3 mb-2">  
+                        <!-- Opening Balance -->
+                        <div class="col-md-4">
+                            <label for="openingBalance" class="form-label fw-semibold">Opening Balance (Optional)</label>
+                            <input type="number" name="openingBalance" id="openingBalance" class="form-control form-control-sm" placeholder="e.g. 15000" step="0.01">
+                        </div>
+
+                        <!-- Payment method -->
+                        <div class="col-md-4">
+                            <label for="paymentMethod" class="form-label fw-semibold">Payment Method <span class="text-danger">*</span></label>
+                            <select name="paymentMethod" id="paymentMethod" class="form-select form-select-sm" required>
+                                <% paymentMethods.forEach(method => { %>
+                                    <option value="<%= method.slug %>"><%= method.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <!-- Opening Balance Transaction reference Number -->
+                        <div class="col-md-4">
+                            <label for="referenceNumber" class="form-label fw-semibold">Reference Number (Optional)</label>
+                            <input type="text" name="referenceNumber" id="referenceNumber" class="form-control form-control-sm" placeholder="e.g. REF-0001">
+                            <small>Leave empty for autogeneration...</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3"> 
+                        <!-- Account status -->
+                        <div class="col-md-6">
+                            <label for="accountStatus" class="form-label fw-semibold">Account Status <span class="text-danger">*</span></label>
+                            <select name="accountStatus" id="accountStatus" class="form-select form-select-sm" required> 
+                                <option value="active">active</option>
+                                <option selected value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3"> 
+                        <!-- Description -->
+                        <div class="col-md-12">
+                            <label for="accountDescription" class="form-label fw-semibold">Description (Optional)</label>
+                            <textarea name="accountDescription" id="accountDescription" class="form-control form-control-sm" rows="6" placeholder="Short note about this payment account..."></textarea>
+                        </div>
+                    </div>
+
+                    <p>
+                        <a class="btn btn-light text-dark border-2 border-dark btn-sm" data-bs-toggle="collapse" href="#contentId" aria-expanded="false" aria-controls="contentId">
+                            Add Bank information, if the account is of type: Bank
+                        </a>
+                    </p>
+                    <div class="collapse" id="contentId"> 
+                        <!-- For Bank related accounts details -->
+                        <h6 class="fw-semibold">Bank Information</h6>
+                        <hr>
+                        <p>All bank details are optional if the account is not mean't to carry out auto-transfer of money to other accounts!</p>
+                        <div class="row g-3 mb-3">
+                            <!-- bank name --> 
+                            <div class="col-md-6">
+                                <label for="bankName" class="form-label">Bank Name</label>
+                                <input type="text" class="form-control fw-semibold" id="bankName" name="bankName" placeholder="e.g. Kenya Commercial Bank" required>
+                            </div>
+
+                            <!-- SWIFT / BIC Code -->
+                            <div class="col-md-6">
+                                <label for="swiftCode" class="form-label">SWIFT / BIC Code</label>
+                                <input type="text" class="form-control text-uppercase" id="swiftCode" name="swiftCode" maxlength="11" placeholder="e.g. KCBLKENX" required>
+                            </div>
+                            
+                            <!-- Bank Code -->
+                            <div class="col-md-6">
+                                <label for="bankCode" class="form-label">Bank Code</label>
+                                <input type="text" class="form-control fw-semibold" id="bankCode" name="bankCode" placeholder="e.g. 01 (KCB)">
+                            </div>
+
+                            <!-- Branch Code -->
+                            <div class="col-md-6">
+                                <label for="branchCode" class="form-label">Branch Code</label>
+                                <input type="text" class="form-control fw-semibold" id="branchCode" name="branchCode" placeholder="e.g. 079 (Kenyatta Ave)">
+                            </div>
+
+                            <!-- BIN (Card Identifier) -->
+                            <div class="col-md-6">
+                                <label for="bin" class="form-label">BIN (Bank Identification Number)</label>
+                                <input type="text" class="form-control fw-semibold" id="bin" name="bin" maxlength="8" placeholder="e.g. 400123">
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="fa fa-times-circle me-1"></i> Close
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-sm create-account-submit-btn">
+                        <i class="fa fa-plus-square me-1"></i> Save Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,86 @@
+<!-- Create Bracket Modal -->
+<div class="modal fade createBracketScopeModal" id="createBracketScopeModal" tabindex="-1" aria-labelledby="createBracketScopeModalLabel" aria-hidden="true">
+    <form action="/payroll/brackets/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-sm border-0 rounded-3">
+                <div class="modal-header bg-light text-dark">
+                    <h5 class="modal-title" id="createBracketScopeModalLabel">
+                        <i class="fa fa-sitemap me-2"></i> Add Bracket Level
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <!-- Linked Component -->
+                        <div class="col-md-12">
+                            <label for="componentId" class="form-label fw-semibold">For Component <span class="text-danger">*</span></label>
+                            <select class="form-select" id="componentId" name="componentId" required>
+                                <option value="">Select Component</option> 
+                                <% components?.forEach(c => { %>
+                                    <% if (c.componentScope == 'bracket') { %>
+                                        <option value="<%= c.id %>"><%= c.componentName %> (<%= c.componentCode %>)</option>
+                                    <% } %>
+                                <% }) %> 
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <!-- Bracket Name -->
+                        <div class="col-md-6">
+                            <label for="bracketName" class="form-label fw-semibold">Bracket Name</label>
+                            <input type="text" class="form-control" id="bracketName" name="bracketName" placeholder="e.g. LEVEL 1, LEVEL 2..." required>
+                        </div>
+
+                        <!-- Bracket Code -->
+                        <div class="col-md-6">
+                            <label for="bracketCode" class="form-label fw-semibold">Bracket Code</label>
+                            <input type="text" class="form-control" id="bracketCode" name="bracketCode" placeholder="e.g. BRKT001">
+                        </div>
+
+                        <!-- Range: Min / Max -->
+                        <div class="col-md-6">
+                            <label for="minRange" class="form-label fw-semibold">Minimum Amount</label>
+                            <input type="number" class="form-control" id="minRange" name="minRange" placeholder="e.g. 0">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="maxRange" class="form-label fw-semibold">Maximum Amount</label>
+                            <input type="number" class="form-control" id="maxRange" name="maxRange" placeholder="e.g. 24000">
+                        </div>
+                    </div>
+
+                    <!-- Rate Type & Rate --> 
+                    <div class="col-md-12">
+                        <label for="componentRate" class="form-label">Rate / Amount</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="componentRate" name="componentRate" placeholder="Enter rate or amount">
+                            <select class="form-select" id="employeeRateType" name="employeeRateType" style="max-width: 150px;">
+                                <option value="value" selected>Value</option>
+                                <option value="percentage">Percentage</option>
+                            </select>
+                        </div>
+                        <small class="text-muted">Select whether this rate is a fixed value or a percentage.</small>
+                    </div> 
+
+                    <div class="row g-3">
+                        <!-- Description -->
+                        <div class="col-md-12">
+                            <label for="bracketDescription" class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control" id="bracketDescription" name="bracketDescription" rows="2" placeholder="Describe this bracket (optional)..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-sm create-bracket-submit-btn">
+                        <i class="fa fa-save me-1"></i> Save Bracket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

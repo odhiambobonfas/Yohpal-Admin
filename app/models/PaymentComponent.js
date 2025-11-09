@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '@config/config';
 import AppModel from '@models/AppModel'; 
+import PayrollUtil from '@utils/PayrollUtil';
 
 class PaymentComponent extends AppModel {
     static table = ''; 
@@ -20,6 +21,20 @@ class PaymentComponent extends AppModel {
      */
     static associate(models) {
         // Define all associations here
+    }
+
+    static async getComponentsForDropdown(redis, linkedPayComponents = []) {
+        let html = '';
+        const components = await PayrollUtil.getAllPaymentComponents(redis);
+
+        components.forEach(method => {
+            const isSelected = linkedPayComponents.some(linked => linked.componentCode === method.componentCode)
+                ? 'selected'
+                : '';       
+            html += `<option value="${method.componentCode}" ${isSelected}>${method.componentName}</option>`;
+        });
+
+        return html;
     }
 }
 

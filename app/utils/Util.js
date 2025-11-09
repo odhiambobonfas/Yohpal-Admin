@@ -10,11 +10,12 @@ class Util {
      * Encodes a parsed payload which later gets decoded using the same algorithm
      * 
      * @param {mixed} message 
+     * @param {String} secret secret used to decode the message
      * @returns {mixed} Encoded payload
      */
-    static encodeMessage(message) {
+    async encodeMessage(message, secret = '') {
         try {
-            const secretKey = config.APP.APP_SECRET;
+            const secretKey = secret || config.APP.APP_SECRET;
             const encrypted = CryptoJS.AES.encrypt(message, secretKey).toString();
             return encodeURIComponent(encrypted);
         } catch (error) {
@@ -27,11 +28,12 @@ class Util {
      * Decodes a parsed payload
      * 
      * @param {mixed} message 
+     * @param {String} secret secret used to encode the message
      * @returns {mixed} Encoded payload
      */
-    static decodeMessage(message) {
+    async decodeMessage(message, secret = '') {
         try {
-            const secretKey = config.APP.APP_SECRET;
+            const secretKey = secret || config.APP.APP_SECRET;
             const decryptedBytes = CryptoJS.AES.decrypt(decodeURIComponent(message), secretKey);
             const decryptedMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
@@ -65,6 +67,16 @@ class Util {
     async validatePassword(plainTextPassword, hashedPassword) {
         const isMatch = await bcrypt.compare(plainTextPassword, hashedPassword);
         return isMatch;
+    }
+
+    /**
+     * Generate an employee number
+     *
+     * @return {string} Employee number
+     */
+    generateEmployeeNumber(prefix = 'EMP') { 
+        const randomNumber = Math.floor(100000 + Math.random() * 900000);
+        return `${prefix}-${randomNumber}`;
     }
 }
 

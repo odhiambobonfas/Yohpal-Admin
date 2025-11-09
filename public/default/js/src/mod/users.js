@@ -15,7 +15,19 @@ class User extends Master {
             disableElement(btn);
 
             let form = btn.closest('form');
-            let data = new FormData(form);
+            let data = new FormData(form); 
+
+            // map departments and designations to array of objects
+            const departments = data.getAll('departmentDesignationPair[department][]');
+            const designations = data.getAll('departmentDesignationPair[designation][]');
+
+            // Zip into pairs
+            const pairs = departments.map((dept, i) => ({
+                department: dept,
+                designation: designations[i] ?? null
+            }));
+
+            data.append('departmentDesignationPairs', JSON.stringify(pairs));
 
             try {
                 const res = await fetch(formRouteParser(form), {
@@ -77,6 +89,18 @@ class User extends Master {
             let form = btn.closest('form');
             let data = new FormData(form);
 
+            // map departments and designations to array of objects
+            const departments = data.getAll('departmentDesignationPair[department][]');
+            const designations = data.getAll('departmentDesignationPair[designation][]');
+
+            // Zip into pairs
+            const pairs = departments.map((dept, i) => ({
+                department: dept,
+                designation: designations[i] ?? null
+            }));
+
+            data.append('departmentDesignationPairs', JSON.stringify(pairs));
+            
             try {
                 const res = await fetch(formRouteParser(form), {
                     method: form.method || 'POST',
@@ -351,5 +375,5 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Enable image preview for profile picture input
     enableImagePreview('.profile_picture', '.profile_preview_div img', false);
- 
+    cloneDeptDesignationSection('.addDeptDesignBtn', '.deptxdesignWrapper', '.deptxdesign');
 });

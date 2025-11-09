@@ -1,11 +1,11 @@
-class Designation extends Master {
+class NotificationTemplate extends Master {
     constructor() {
-        super();
-        this.createDesignationBtns = document.querySelectorAll('.create-designation-submit-btn');
+        super(); 
+        this.createNotificationTempSubmitBtn = document.querySelectorAll('.create-notification-template-submit-btn');
     }
 
-    createDesignation() {
-        const btns = this.createDesignationBtns;
+    createNotificationTemplate() { 
+        const btns = this.createNotificationTempSubmitBtn;
 
         btns.forEach(btn => {
             if (!documentContains(btn)) return;  
@@ -42,6 +42,7 @@ class Designation extends Master {
                     if (response?.status === 'success') {
                         resetFormAndCloseModal(form);
                         toast(response.status, 5000, response.message || LANG_EN.undefined_error); 
+                        (new NotificationTemplate()).listNotificationTemps();
                         return;
                     }
 
@@ -62,8 +63,8 @@ class Designation extends Master {
         });
     }
 
-    getDesignationListing() { 
-        $('.designations-table').DataTable({
+    listNotificationTemps() {
+        $('.notification-templates-table').DataTable({
             destroy: true,
             paging: true,
             searching: true,
@@ -72,36 +73,25 @@ class Designation extends Master {
             lengthChange: true,
             ajax: ajaxDtParser(
                 'GET', 
-                '/institution/designations', 
-                filtersParser('.designationsFilters')
-            ), 
-            columns: [
-                { 
-                    data: 'actions', 
-                    orderable: false, 
-                    searchable: false 
-                },
-                { data: 'Name' },
-                { data: 'Code' },
-                { data: 'BasicSalary' },
-                { data: 'Description' },
-            ],
+                '/notification/templates', 
+                filtersParser('.templateFilters')
+            ),
             fnDrawCallback: () => {
-                const inst = new Designation();
-                inst.actionOnDesignationsRes(); 
-                watchFilterChanges('.designationsFilters', inst.getDesignationListing.bind(inst));
+                const inst = new NotificationTemplate();
+                inst.actionOnNotificationTemplatesRes();
+                watchFilterChanges('.templateFilters', inst.listNotificationTemps.bind(inst));
             },
             language: getDataTableLanguage(),
         });
-    }
+    } 
 
-    actionOnDesignationsRes() {
+    actionOnNotificationTemplatesRes() {
         // ...
     }
 }
 
-document.addEventListener('DOMContentLoaded', async() => {
-    const inst = new Designation();
-    inst.createDesignation();
-    inst.getDesignationListing();
+document.addEventListener('DOMContentLoaded', () => {
+    const inst = new NotificationTemplate();
+    inst.listNotificationTemps();
+    inst.createNotificationTemplate();
 });

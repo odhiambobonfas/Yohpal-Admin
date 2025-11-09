@@ -11,6 +11,8 @@ class Master {
     constructor() {
         // Any constructor logic applicable
         this.debounceTimer;
+        this.initOverlay();
+        this.overlay = document.querySelector('.global-overlay');
     }
 
     /**
@@ -26,8 +28,8 @@ class Master {
             container = document.body;
         }
 
-        this.overlay = document.createElement('div');
-        this.overlay.classList.add('global-overlay');
+        let overlay = document.createElement('div');
+        overlay.classList.add('global-overlay');
 
         __append_html(
             `<div class="loading-message text-center">
@@ -36,10 +38,10 @@ class Master {
                 </div>
                 <div>Loading...</div>
             </div>`, 
-            this.overlay
+            overlay
         );
 
-        container.appendChild(this.overlay);
+        container.appendChild(overlay);
         this.hideOverlay();
     }
 
@@ -47,20 +49,18 @@ class Master {
      * Displays the global overlay by adding the 'active' class.
      * Useful for blocking UI and showing a loading state.
      */
-    showOverlay() {
-        this.overlay = document.querySelector('.global-overlay');
+    showOverlay() { 
         if (this.overlay) {
-            this.overlay.classList.add('active'); 
+            this.overlay.classList.add('active');
         }
     }
 
     /**
      * Hides the global overlay by removing the 'active' class.
      */
-    hideOverlay() {
-        this.overlay = document.querySelector('.global-overlay');
+    hideOverlay() { 
         if (this.overlay) {
-            this.overlay.classList.remove('active');
+            this.overlay.classList.remove('active'); 
         }
     }
 
@@ -79,12 +79,12 @@ class Master {
      * @param {Object} [stepperOptions={}] - Stepper Options to append to the stepper global class...
      */
     assistiveModalActionParser(event, action, method='GET', callbackFuncs = undefined, attribute='target-modal', stepperOptions={}) {
-        (new Master()).showOverlay();
+        this.showOverlay();
         setTimeout(() => {
             $.ajax({
                 type: `${method}`,
                 url: `${action}`,
-                dataType: 'json', 
+                dataType: 'html', 
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 },
@@ -93,7 +93,7 @@ class Master {
                     toggleButtonContent(event.target, '', true);
                     
                     (new Master()).hideOverlay();
-
+                    
                     if (!response) {
                         toast('error', 5000, LANG_EN.undefined_error);
                         return;
@@ -112,25 +112,22 @@ class Master {
                     }
     
                     let modal = document.querySelector(`${target_modal}`);
-    
-                    if (!response.modal) {
+                    
+                    if (!response) {
                         toast('error', 5000, LANG_EN.undefined_error);
                         return;
                     }
     
-                    __append_html(response.modal, modal);
+                    __append_html(response, modal);
                     __show_modal(target_modal); 
     
                     setTimeout(() => { 
                         if (callbackFuncs !== undefined) { 
                             if (Array.isArray(callbackFuncs)) {
                                 callbackFuncs.forEach(item => { 
-                                    if (typeof item === 'function') {
-                                        item();
-                                    }
-                                    else if (typeof item === 'object' && item.callback) {
+                                    if (typeof item === 'object' && item.callback) {
                                         item.callback(...(item.params?.length ? item.params : []));
-                                    }
+                                    } 
                                 });
                             }
                         }

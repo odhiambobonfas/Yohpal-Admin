@@ -21,6 +21,11 @@ import RolesController from "@app/controllers/web/RolesController";
 import SettingsController from "@app/controllers/web/SettingsController";
 import UsersController from "@app/controllers/web/UsersController";
 import HRMController from "@app/controllers/web/HRMController";
+import AccountsController from "@app/controllers/web/AccountsController";
+import MpesaController from "@app/controllers/web/MpesaController";
+import CommunicationController from "@app/controllers/web/CommunicationController";
+import FollowerController from "@app/controllers/yohpal/FollowerController";
+import NotificationController from "@app/controllers/web/NotificationController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
 
@@ -79,11 +84,75 @@ router.route('/institution/designations')
 
 router.post('/designation/create', authMiddleware, HRMController.createDesignation);
 
+router.route('/employee/attendance')
+    .get(authMiddleware, HRMController.employeeAttendance);
+
+router.post('/attendance/create', authMiddleware, HRMController.createAttendanceRecord);
+
+router.route('/holidays/list')
+    .get(authMiddleware, HRMController.holidaysList);
+
+router.post('/holidays/create', authMiddleware, HRMController.createHoliday);
+
+router.route('/leaves/list')
+    .get(authMiddleware, HRMController.leavesList);
+
+router.post('/leaves/create', authMiddleware, upload.single('leaveAttachment'), HRMController.createLeaveRequest);
+
+router.route('/payroll')
+    .get(authMiddleware, HRMController.payrollView);
+
+router.get('/payroll/components', authMiddleware, HRMController.getPaymentComponents);
+router.post('/payroll/component/create', authMiddleware, HRMController.createPaymentComponent);
+
+router.get('/payroll/brackets', authMiddleware, HRMController.getComponentBrackets);
+router.post('/payroll/brackets/create', authMiddleware, HRMController.createBracketScope);
+
+router.post('/payroll/tiers/create', authMiddleware, HRMController.createTierScope);
+router.get('/payroll/tiers', authMiddleware, HRMController.getComponentTiers);
+
+// Accounts Routes
+router.get('/accounts/list', authMiddleware, AccountsController.index);
+router.post('/accounts/create', authMiddleware, AccountsController.createAccount);
+router.get('/accounts/categories', authMiddleware, AccountsController.accountCategories);
+router.post('/accounts/categories/create', authMiddleware, AccountsController.createAccountCategory);
+
 // Settings routes
 router.get('/settings', authMiddleware, SettingsController.index);
 router.post('/api/setting/create', authMiddleware, upload.single('generalSetting[otherSettings][companyLogo]'), SettingsController.createUpdateSettings);
 router.get('/api-settings', authMiddleware, SettingsController.getApiSettingsList);
 router.get('/apps/list', authMiddleware, SettingsController.appsList);
 router.get('/apps/create', authMiddleware, SettingsController.createAppUpdate);
+router.get('/api/settings/edit', authMiddleware, SettingsController.editApiSettingRes);
+router.post('/api/settings/edit/:id', authMiddleware, SettingsController.editApiSettingRes);
+router.get('/cdn-settings', authMiddleware, SettingsController.getCdnSettingsList);
+router.post('/settings/cdn/create', authMiddleware, SettingsController.createCdnSettingsList);
+router.route('/settings/cdn/edit/:id')
+    .get(authMiddleware, SettingsController.updateCdnSettingsList)
+    .post(authMiddleware, SettingsController.updateCdnSettingsList);
+router.post('/settings/cpanel/create', authMiddleware, SettingsController.createCpanelSettingsList);
+router.get('/cpanel-settings', authMiddleware, SettingsController.getCpanelSettingsList);
+router.route('/settings/cpanel/edit/:id')
+    .get(authMiddleware, SettingsController.updateCpanelSettingsList)
+    .post(authMiddleware, SettingsController.updateCpanelSettingsList);
+
+// Folowers/Following
+router.get('/followers/top/followed', authMiddleware, FollowerController.getTopFollowersListing);
+
+// Settings CRUD Operations
+router.route('/callbacks/register')
+    .get(authMiddleware, MpesaController.registerEndpoint)
+    .post(authMiddleware, MpesaController.registerEndpoint);
+
+// Communication Routes
+router.get('/communication', authMiddleware, CommunicationController.mailBox);
+router.get('/communication/emails/list', authMiddleware, CommunicationController.emailsList);
+
+// Email Handlers Routes
+router.post('/emails/create', authMiddleware, CommunicationController.createEmailAddress);
+
+// Notification Templates Handlers Routes
+router.get('/notification/templates', authMiddleware, NotificationController.index);
+router.post('/notification/template/create', authMiddleware, NotificationController.createNtTemplate);
 
 export default router;

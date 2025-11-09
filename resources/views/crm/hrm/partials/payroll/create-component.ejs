@@ -1,0 +1,92 @@
+<!-- Payroll Component Modal -->
+<div class="modal fade createPayrollComponentModal" id="createPayrollComponentModal" tabindex="-1" aria-labelledby="createPayrollComponentModalLabel" aria-hidden="true">
+    <form action="/payroll/component/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="createPayrollComponentModalLabel">
+                        Add Payroll Component
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Component Name -->
+                        <div class="col-md-6">
+                            <label for="componentName" class="form-label">Component Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="componentName" name="componentName" placeholder="Enter component name" required>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-md-6">
+                            <label for="componentType" class="form-label">Type <span class="text-danger">*</span></label>
+                            <select class="form-select searchSelect" id="componentType" name="componentType" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="earning">Earning</option>
+                                <option value="deduction">Deduction</option>
+                            </select>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="col-md-6">
+                            <label for="componentScope" class="form-label">Component Scope</label>
+                            <select class="form-select searchSelect" id="componentScope" name="componentScope">
+                                <option value="">-- Select Option --</option>
+                                <option selected value="none">None</option>
+                                <option value="tier">Tier</option>
+                                <option value="bracket">Bracket</option>
+                            </select>
+                        </div>
+
+                        <!-- Code -->
+                        <div class="col-md-6">
+                            <label for="componentCode" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="componentCode" name="componentCode" placeholder="e.g. HRA, TAX, BONUS">
+                        </div>
+
+                        <!-- Rate / Amount --> 
+                        <div class="col-md-6">
+                            <label for="employeeRate" class="form-label">Rate / Amount</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="employeeRate" name="employeeRate" placeholder="Enter rate or amount">
+                                <select class="form-select" id="rateType" name="rateType" style="max-width: 150px;">
+                                    <option value="value" selected>Value</option>
+                                    <option value="percentage">Percentage</option>
+                                </select>
+                            </div>
+                            <small class="text-muted">Select whether this rate is a fixed value or a percentage. Optional if Component scope is set to None.</small>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="col-md-6">
+                            <label for="componentCategory" class="form-label">Category</label>
+                            <select class="form-select searchSelect" id="componentCategory" name="componentCategory">
+                                <option value="">-- Select Category --</option>
+                                <option value="basic">Basic</option>
+                                <option value="allowance">Allowance</option>
+                                <option value="bonus">Bonus</option>
+                                <option value="tax">Tax</option>
+                                <option value="benefit">Benefit</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label for="componentDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="componentDescription" name="componentDescription" rows="4" placeholder="Describe this payroll component (optional)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger btn-sm create-component-submit-btn">
+                        <i class="fa fa-plus-square me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

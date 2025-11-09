@@ -1,0 +1,73 @@
+<div class="modal-dialog modal-xl">
+    <div class="modal-content">
+        <form id="callbackSettingForm" action="/callbacks/register" method="POST">
+            <div class="modal-header bg-warning bg-opacity-10 border-bottom">
+                <h5 class="modal-title fw-bold text-dark">
+                    ⚠️ API Callback Configuration
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-warning small">
+                    <strong>Disclaimer:</strong> 
+                    These callback URLs are intended for <u>developers and system integrators</u>. 
+                    Editing them incorrectly can break communication between Yohpal and external payment providers.
+                    Proceed only if you understand how callback URLs work.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="provider" class="form-label fw-semibold">Select Provider</label>
+                        <select id="provider" name="provider" class="form-select" required disabled>
+                            <option value="">-- Choose Provider --</option>
+                            <option <%= setting.provider == 'mpesa' ? 'selected' : null %> value="mpesa">M-Pesa</option>
+                            <option <%= setting.provider == 'paypal' ? 'selected' : null %>  value="paypal">PayPal</option>
+                            <option <%= setting.provider == 'custom' ? 'selected' : null %>  value="custom">Custom</option>
+                        </select>
+                    </div>
+                
+                    <div class="row g-3"> 
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmationCallback" class="form-label fw-semibold">
+                                Confirmation Callback URL
+                            </label>
+                            <input 
+                                type="url" 
+                                id="confirmationCallback" 
+                                name="callback[confirmation]" 
+                                class="form-control" 
+                                placeholder="https://example.com/api/payment/confirmation"
+                                value="<%= setting?.settings?.callbackUrl?.confirmation %>"
+                                required
+                            >
+                            <small class="text-muted">This URL will be used to confirm completed transactions.</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="validationCallback" class="form-label fw-semibold">
+                                Validation Callback URL
+                            </label>
+                            <input 
+                                type="url" 
+                                id="validationCallback" 
+                                name="callback[validation]" 
+                                class="form-control" 
+                                placeholder="https://example.com/api/payment/validation"
+                                value="<%= setting?.settings?.callbackUrl?.validation %>"
+                            >
+                            <small class="text-muted">Optional: used for validating incoming payment requests before confirmation.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-danger register-callbacks-submit-btn">
+                    <i class="fa fa-save me-1"></i> Save Callbacks
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

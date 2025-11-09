@@ -7,12 +7,17 @@ import RedisCache from '@config/redisCache';
 import allowedRoutes from '@config/routes';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
-import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, jsonParser, fbCollectionParser } from '@config/utils';
+import { isAjaxRequest, ucfirst, ucwords, validateEmail, handleFileUploads, reduceToObj, jsonParser, fbCollectionParser } from '@config/utils';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
-import UsersUtil from '@utils/UserUtil'; 
-import Binding from '@config/bindings'; 
-import LANG_EN from '@lang/en';
-import Util from '@utils/Util'; 
+import UsersUtil from '@utils/UserUtil';  
+import HRMUtil from '@utils/HRMUtil';  
+import PayrollUtil from '@utils/PayrollUtil';
+import LANG_EN from '@lang/en'; 
+import { departments, designations, employees } from "@funcs/hrm";
+import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
+import Attendance from "@models/Attendance";
+import Application from '@models/Application';
+import PaymentComponent from '@models/PaymentComponent';
 
 class UsersController {
     static async index(req, res) {
@@ -66,7 +71,7 @@ class UsersController {
                                     Actions
                             </button>
                             <div class="dropdown-menu action-btns" aria-labelledby="triggerId">  
-                                ${actions}
+                                ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
                             </div>
                         </div>
                     `;
@@ -138,9 +143,26 @@ class UsersController {
             }
         }
 
+
+        // Get departments and designations data
+        const allRoles = await getAllRoles(req.redis);
+        const departmentsData = await departments(req.redis);
+        const designationsData = await designations(req.redis); 
+
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
+
         return res.render("crm/users/index", { 
             title: `${ config.APP.APP_NAME } || List Users`,
-            user: req.session.user
+            user: req.session.user,
+            allRoles: allRoles,
+            departments: departmentsData,
+            designations: designationsData,
+            shifts: shiftsData,
+            employees: employeesData
         });
     }
 
@@ -149,9 +171,8 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {   
-                let user = req.session.user; 
-
+            try {    
+                let user = req.session.user;  
                 if (!user || !user.uid) {
                     throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
                 }
@@ -212,13 +233,14 @@ class UsersController {
                     } 
                 }
 
+                data.departmentDesignationPairs = JSON.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb; 
                 data.userLoggedInUserName = user.name;
                 data.userLoggedInUid = user.uid;
 
-                let create = await UsersUtil.createUser(data);
+                let create = await UsersUtil.createUser(data, req?.redis);
                 
                 let route;
                 if (!data.stayHere) {
@@ -245,9 +267,33 @@ class UsersController {
             }
         }
 
+        // Get departments and designations data
+        const allRoles = await getAllRoles(req.redis);
+        const departmentsData = await departments(req.redis);
+        const designationsData = await designations(req.redis); 
+
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis); 
+
+        // components For Dropdown
+        const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis);
+        
+        // countries for dropdown!
+        const countriesForDropdown = await Application.countriesForDropdown(req?.redis);
+
         return res.render("crm/users/create", { 
             title: `${ config.APP.APP_NAME } || Create User(s)`,
-            user: req.session.user
+            user: req.session.user,
+            allRoles: allRoles,
+            departments: departmentsData,
+            designations: designationsData,
+            shifts: shiftsData,
+            employees: employeesData,
+            countriesForDropdown: countriesForDropdown,
+            componentsForDropdown: componentsForDropdown
         });
     }
 
@@ -256,9 +302,9 @@ class UsersController {
         if (isAjaxRequest(req)) {
             let data = req.body;  
 
-            try {   
+            try {     
                 let user = req.session.user; 
-
+                
                 if (!user || !user.uid) {
                     throw new Exception(201, "AUTHENTICATION_ERROR_EXCEPTION", LANG_EN.req.unauthenticated, "Authentication Error!");
                 }
@@ -314,14 +360,15 @@ class UsersController {
                         throw new Exception(201, "PROFILE_PICTURE_UPLOAD_FAILED", LANG_EN.req.invalid_avatar_exemption, "Avatar upload to FB error");
                     } 
                 }
-
+            
+                data.departmentDesignationPairs = JSON.parse(data.departmentDesignationPairs) || [];   
                 data.profilePictureLocalPath = profilePicture.replace('public', '');
                 data.profilePicture = profilePicture.replace('public', '');
                 data.profilePictureFbPath = fileUploadToFb;
                 data.userLoggedInUserName = user.name;
                 data.userLoggedInUid = user.uid;
 
-                let create = await UsersUtil.updateUser(uid, data);
+                let create = await UsersUtil.updateUser(uid, data, req?.redis);
                 
                 let route;
                 if (!data.stayHere) {
@@ -348,19 +395,41 @@ class UsersController {
             }
         } 
 
-        let {user, role, departmentData, designationData} = await UsersUtil.getUserByUid(uid);  
-        
+        let { user, role, departmentDesignationData, linkedPayComponents } = await UsersUtil.getUserByUid(req?.redis, uid);    
         if (!user || !user.uid) { 
             return res.redirect('/users');
         }
+
+        // Get departments and designations data
+        const allRoles = await getAllRoles(req.redis);
+        const departmentsData = await departments(req.redis);
+        const designationsData = await designations(req.redis); 
+
+        // Get shifts data
+        const shiftsData = await Attendance.getAllShifts(req.redis);
+
+        // users
+        const employeesData = await employees(req.redis);
+
+        // components For Dropdown 
+        const componentsForDropdown = await PaymentComponent.getComponentsForDropdown(req.redis, linkedPayComponents);
+        
+        const countriesForDropdown = await Application.countriesForDropdown(req?.redis, user?.country);
 
         return res.render("crm/users/update", { 
             title: `${ config.APP.APP_NAME } || List Users`,
             userData: user,
             roleData: role,
-            departmentData: {},
-            designationData: {},
-            user: req.session.user
+            departmentDesignationData: departmentDesignationData || {}, 
+            user: req.session.user,
+            allRoles: allRoles,
+            departments: departmentsData,
+            designations: designationsData,
+            shifts: shiftsData,
+            employees: employeesData,
+            countriesForDropdown: countriesForDropdown,
+            linkedPayComponents: linkedPayComponents,
+            componentsForDropdown: componentsForDropdown
         });
     }
 
@@ -387,7 +456,7 @@ class UsersController {
             data.userLoggedInUserName = user.name;
             data.userLoggedInUid = user.uid;
             
-            let create = await UsersUtil.updateUserStatus(data); 
+            let create = await UsersUtil.updateUserStatus(data, req?.redis); 
 
             return res.status(200).json({
                 status: 'success',
@@ -422,7 +491,7 @@ class UsersController {
                 throw new Exception(201, "VALIDATION_ERROR_EXCEPTION", LANG_EN.req.user_not_found, "User Not Found!");
             }  
             
-            let create = await UsersUtil.deleteUser(uid); 
+            let create = await UsersUtil.deleteUser(uid, req?.redis); 
 
             return res.status(200).json({
                 status: 'success',

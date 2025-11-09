@@ -1,6 +1,7 @@
 const bindings = {
     // API endpoints bindings
     endpoints: {
+        // authentication endpoints bindings
         auth_user: {
             method: 'POST',
             route: 'https://yohpal-market-apis.onrender.com/auth/signin',
@@ -10,7 +11,21 @@ const bindings = {
             method: "POST",
             route: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=',
             action: 'Firebase authentication API endpoint'
-        }
+        },
+        
+        // Mpesa endpoints bindings
+        registerCallbacks: {
+            method: "POST",
+            route: 'https://msv1.yohpal.com/v1/callbacks/register',
+            action: 'Callback registration happens via this endpoint!'
+        },
+
+        // Communication bindings
+        createEmail: {
+            method: "POST",
+            route: 'http://127.0.0.1:4000/v1/api/email/create',
+            action: 'Email creation happens via this endpoint!'
+        },
     },
 
     // Role Permission Bindings 
@@ -66,13 +81,20 @@ const bindings = {
         
         // Communication Panel (merged with chat)
         communication: {
-            access: 'communication.access',
-            access_chat: 'communication.chat.access',
-            chat: 'communication.chat',
-            announcements: 'communication.announcements',
-            messages: 'communication.messages',
-            emails: 'communication.emails',
-            broadcasts: 'communication.broadcasts',
+            access_module: 'communication.access',
+            access_chat: 'communication.chat.access', 
+            announcements: 'communication.announcements',  
+            access_email_mangement: 'communication.emails.access',
+            access_mails_inbox: 'communication.mails.access',
+            access_bulk_messaging: 'communication.bulkMessaging.access',
+            edit_email_record: 'communication.emails.edit',
+            delete_email_record: 'communication.emails.delete',
+            suspend_login_email_record_status: 'communication.emails.suspend_login',
+            unsuspend_login_email_record_status: 'communication.emails.unsuspend_login',
+            suspend_incoming_email_record_status: 'communication.emails.suspend_incoming',
+            unsuspend_incoming_email_record_status: 'communication.emails.unsuspend_incoming',
+            suspend_outgoing_email_record_status: 'communication.emails.suspend_outgoing',
+            unsuspend_outgoing_email_record_status: 'communication.emails.unsuspend_outgoing',
         },
 
         chat: {
@@ -83,12 +105,16 @@ const bindings = {
 
         // Payment Accounts
         accounts: {
-            access: 'accounts.access',
-            view: 'accounts.view',
-            create: 'accounts.create',
-            edit: 'accounts.edit',
-            delete: 'accounts.delete',
-            bank_accounts_access: 'accounts.bank.access',
+            access_accounts: 'accounts.access',
+            view_accounts: 'accounts.view',
+            create_accounts: 'accounts.create',
+            edit_accounts: 'accounts.edit',
+            delete_accounts: 'accounts.delete',
+            deposit_amount: 'accounts.deposit',
+            transfer_amount: 'accounts.transfer',
+            access_bank_accounts: 'accounts.bank.access',
+            edit_account_categories: 'accounts.categories.edit',
+            delete_account_categories: 'accounts.categories.delete',
         }, 
 
         invoices: {
@@ -111,16 +137,37 @@ const bindings = {
         },
         
         hrm: {
-            dashboard_access: 'hrm.dashboard.access',
-            employees_access: 'hrm.employees.access',
-            departments_access: 'hrm.departments.access',
-            designation_access: 'hrm.designation.access',
-            payroll_access: 'hrm.payroll.access',
-            attendance_access: 'hrm.attendance.access',
-            departments_edit: 'hrm.departments.edit',
-            departments_delete: 'hrm.departments.delete',
-            designations_edit: 'hrm.designations.edit',
-            designations_delete: 'hrm.designations.delete',
+            access_dashboard: 'hrm.dashboard.access',
+            access_employees: 'hrm.employees.access',
+            access_departments: 'hrm.departments.access',
+            edit_departments: 'hrm.departments.edit',
+            delete_departments: 'hrm.departments.delete',
+            access_designation: 'hrm.designation.access',
+            edit_designations: 'hrm.designations.edit',
+            delete_designations: 'hrm.designations.delete',
+            access_payroll: 'hrm.payroll.access',
+            access_attendance: 'hrm.attendance.access',
+            edit_attendance: 'hrm.attendance.edit',
+            view_attendance: 'hrm.attendance.view',
+            create_attendance_shift: 'hrm.attendance.customShifts.create',
+            access_holidays: 'hrm.holidays.access',
+            edit_holidays: 'hrm.holidays.edits',
+            view_holidays: 'hrm.holidays.view',
+            access_leaves: 'hrm.leaves.access',
+            view_leaves: 'hrm.leaves.view',
+            edi_leaves: 'hrm.leaves.edit',
+            confirm_leaves: 'hrm.leaves.confirm',
+            reject_leaves: 'hrm.leaves.reject',
+            delete_leaves: 'hrm.leaves.delete',
+            create_leaves: 'hrm.leaves.create',
+            create_custom_leave_type: 'hrm.leaves.custom.create',
+            edit_components: 'hrm.payments.components.edit',
+            delete_components: 'hrm.payments.components.delete',
+            edit_component_brackets: 'hrm.payments.brackets.edit',
+            delete_component_brackets: 'hrm.payments.brackets.delete',
+            edit_component_tiers: 'hrm.payments.tiers.edit',
+            delete_component_tiers: 'hrm.payments.tiers.delete', 
+            manage_account_types: 'accounts.types.manage',
         },
 
         // Wallet
@@ -162,6 +209,7 @@ const bindings = {
             payments: 'reports.view.payments',
             communication: 'reports.view.communication',
             system: 'reports.view.system',
+            access_account_report: 'reports.accounts.access'
         },
 
         // Profile
@@ -170,13 +218,24 @@ const bindings = {
             edit: 'profile.edit',
         },
 
-        // Notifications
+        // Notifications Permissions
         notifications: {
             access: 'notifications.access',
-            all: 'notifications.view.all',
-            system: 'notifications.view.system',
-            emails: 'notifications.view.emails',
-            sms: 'notifications.view.sms',
+            view_all: 'notifications.view.all',
+            view_system: 'notifications.view.system',
+            view_emails: 'notifications.view.emails',
+            view_sms: 'notifications.view.sms',
+            view_whatsapp: 'notifications.view.whatsapp',
+            view_templates: 'notifications.view.templates',
+            view_categories: 'notifications.view.categories',
+            manage_templates: 'notifications.manage.templates',
+            manage_categories: 'notifications.manage.categories',
+            manage_send: 'notifications.manage.send',
+            manage_system: 'notifications.manage.system',
+            manage_emails: 'notifications.manage.emails',
+            manage_sms: 'notifications.manage.sms',
+            manage_whatsapp: 'notifications.manage.whatsapp',
+            settings: 'notifications.settings',
         },
 
         // Settings
@@ -187,9 +246,25 @@ const bindings = {
             update_general_settings: 'settings.general.update', 
             create_api_settings: "settings.api.create", 
             edit_api_settings: "settings.api.edit", 
-            delete_api_settings: "settings.api.delete", 
+            activate_api_settings: "settings.api.activate", 
+            deactivate_api_settings: "settings.api.deactivate", 
+            suspend_api_settings: "settings.api.suspend", 
             update_status_api_settings: "settings.api.statusUpdate",  
-        },
+            edit_cdn_settings: "settings.cdn.edit",  
+            delete_cdn_settings: "settings.cdn.delete",  
+            activate_cdn_settings: "settings.cdn.activate",  
+            deactivate_cdn_settings: "settings.cdn.deactivate",  
+            suspend_cdn_settings: "settings.cdn.suspend",  
+            register_mpesa_callbacks: "settings.mpesa.register_endpoint",
+            access_cpanel_setting: 'edit',
+            delete_cpanel_setting: 'delete',
+            activate_cpanel_setting: 'activate',
+            deactivate_cpanel_setting: 'deactivate',
+            access_cpanel_setting: 'settings.cpanel.edit',
+            delete_cpanel_setting: 'settings.cpanel.delete',
+            activate_cpanel_setting: 'settings.cpanel.activate',
+            deactivate_cpanel_setting: 'settings.cpanel.deactivate',
+        }, 
 
         // Developer
         developer: {

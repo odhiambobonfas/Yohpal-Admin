@@ -40,11 +40,13 @@
 											<li class="list-group-item" data-id="payments">Payments</li>
 											<li class="list-group-item" data-id="hrm">HRM Settings</li>
 											<li class="list-group-item" data-id="api">API Settings</li>
+											<li class="list-group-item" data-id="cdn">CDN Settings</li>
 											<li class="list-group-item" data-id="sms">Sms Settings</li>
 											<li class="list-group-item" data-id="template">Template Settings</li>
 											<li class="list-group-item" data-id="privacy">Privacy Settings</li>
 											<li class="list-group-item" data-id="website">Website Settings</li>
 											<li class="list-group-item" data-id="notifications">Notifications</li>
+											<li class="list-group-item" data-id="cpanel">CPANEL Settings</li>
 										</ul>
 									</div>
 								</div>
@@ -54,7 +56,7 @@
 								<div class="card">
 									<div class="card-body">
 										<div class="content" id="general">
-											<%- include('settings/partials/general-settings-create') %>
+											<%- include('settings/partials/create-general-settings') %>
 										</div>
 										<div class="content d-none" id="tax">Tax Settings Content</div>
 										<div class="content d-none" id="transactions">Transactions Content</div>
@@ -63,11 +65,17 @@
 										<div class="content d-none" id="api">
 											<%- include('settings/partials/api-settings') %>
 										</div>
+										<div class="content d-none" id="cdn">
+											<%- include('settings/partials/cdn-settings') %>
+										</div>
 										<div class="content d-none" id="sms">Sms Settings Content</div>
 										<div class="content d-none" id="template">Template Settings Content</div>
 										<div class="content d-none" id="privacy">Privacy Settings Content</div>
 										<div class="content d-none" id="website">Website Settings Content</div>
 										<div class="content d-none" id="notifications">Notifications Content</div>
+										<div class="content d-none" id="cpanel">
+											<%- include('settings/partials/cpanel-settings') %>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -80,7 +88,16 @@
 </div>
 
 <!-- modal  -->
-<%- include('partials/api-setting-create') %>
+<%- include('partials/create-api-setting') %>
+<div class="modal fade editApiSettingModal" id="editApiSettingModal" tabindex="-1" aria-labelledby="editApiSettingModalLabel" aria-hidden="true"></div>
+
+<%- include('partials/create-cdn-setting') %>
+<div class="modal fade editCdnSettingModal" id="editCdnSettingModal" tabindex="-1" aria-labelledby="editCdnSettingModalLabel" aria-hidden="true"></div>
+
+<%- include('partials/create-cpanel-setting') %>
+<div class="modal fade editCpanelSettingModal" id="editCpanelSettingModal" tabindex="-1" aria-labelledby="editCpanelSettingModalLabel" aria-hidden="true"></div>
+
+<div class="modal fade registerApiCallbackModal" id="registerApiCallbackModal" tabindex="-1" aria-labelledby="registerApiCallbackModalLabel" aria-hidden="true"></div>
 <!-- /modal  -->
 
 <%- include('crm/partials/footer') %>

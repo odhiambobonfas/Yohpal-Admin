@@ -1,0 +1,106 @@
+<%- include('crm/partials/header') %>
+<%- include('crm/partials/navbar') %>
+
+<div class="container-fluid gx-0 px-0">
+    <div class="row gap-0 gx-0">
+        <div class="col-md-3">
+            <%- include('crm/partials/sidebar') %>
+        </div>
+
+        <div class="col-md-9 mt-2 content-body">
+            <!-- Header -->
+            <div class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3">
+                <h4>Leaves Management</h4>
+                <div class="badge-span d-flex justify-content-center align-items-center gap-2">
+                    <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
+                    <span>|</span>
+                    <a href="/leaves/create" class="text-decoration-line-none" data-bs-toggle="modal" 
+                        data-bs-target="#createLeaveModal">
+                        <span class="badge bg-danger text-light rounded-4">Apply Leave</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="content-body gx-0 px-0 h-100">
+                <!-- Filters -->
+                <div class="card-header bg-white shadow-sm d-flex justify-content-between align-items-center p-1">
+                    <button
+                        class="btn btn-sm btn-lg btn-link w-100 text-start text-dark d-flex align-items-center gap-3 text-decoration-line-none"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#leaveFilters" aria-expanded="false"
+                        aria-controls="leaveFilters">
+                        <i class="fas fa-filter fa-2x"></i> <span>Toggle Filters</span>
+                    </button>
+                </div>
+
+                <!-- Collapsible Filters Section -->
+                <div class="container-fluid col-12 collapse mb-3 leavesFilters shadow-sm" id="leaveFilters">
+                    <div class="col-12 mt-3 row g-3">
+                        <div class="col-md-4 mb-2">
+                            <label class="mb-2" for="leaveRange">Leave Date Range</label>
+                            <input type="text" name="leaveRange" id="leaveDaterange" class="form-control leaveDaterange">
+                        </div>
+                        
+                        <div class="col-md-4 mb-2">
+                            <label class="mb-2" for="employeeName">Employee Name</label>
+                            <input type="text" name="employeeName" class="form-control employeeName"
+                                placeholder="Search by employee name...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label class="mb-2" for="leaveType">Leave Type</label>
+                            <select name="leaveType" class="form-control leaveType searchSelect">
+                                <option value="">All Types</option>
+                                <% leaveTypes.forEach(function(type) { %>
+                                    <option value="<%= type.slug %>"><%= type.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="status" class="form-label">Leave Status <span class="text-danger">*</span></label> 
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="">-- Select status --</option>
+                                <% leaveStatuses?.forEach((status) => { %>
+                                    <option value="<%= status.slug %>" <%= status.default ? 'selected' : '' %>><%= status.name %></option>    
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Leaves Table -->
+                <div class="container-fluid col-12 p-0">
+                    <div class="table-responsive m-1">
+                        <table class="table leaves-table" id="leaves-table">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Date</th> 
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                    <th>Added By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic leave rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<%- include('hrm/partials/create-leave') %>
+<!-- /Modals -->
+
+<%- include('crm/partials/footer') %>
+<script type="text/javascript" src="/default/js/src/mod/hrm.js"></script>
+<%- include('crm/partials/closure') %>

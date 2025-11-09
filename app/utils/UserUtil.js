@@ -13,6 +13,7 @@ import Role from '@models/Role';
 import Permission from '@models/Permissions';
 import PaymentComponent from '@models/PaymentComponent';
 import EmployeeDesignation from '@models/EmployeeDesignation';
+import Department from '@models/Department';
 
 class UserUtil extends Util {
     constructor() {
@@ -34,8 +35,7 @@ class UserUtil extends Util {
                 await redis.deleteFunc(cacheKey);
 
                 await redis.cacheParser(filtersKey, async () => filters, 2000);
-            }
-            
+            } 
             let users = await redis?.cacheParser(
                 cacheKey,
                 async () => {  
@@ -69,16 +69,16 @@ class UserUtil extends Util {
                         query = query.where("roleId", "==", filters.roleId);
                     } 
 
-                    if (filters?.createdAt?.length) {
-                        let createdAt = parseDateRange(filters.createdAt, true); 
+                    if (filters?.createdAt?.length || filters?.daterange?.length) {
+                        let createdAt = parseDateRange(filters?.createdAt || filters?.daterange, true); 
                         if (createdAt.start && createdAt.end) { 
                             query = query.where("createdAt", ">=", createdAt.start);
                             query = query.where("createdAt", "<=", createdAt.end);
                         }
                     }
                     
-                    if (filters.orderBy) {
-                        query = query.orderBy(filters.orderBy, filters.orderBy); 
+                    if (filters.orderBy && filters.orderByDirection) {
+                        query = query.orderBy(filters.orderBy, filters.orderByDirection); 
                     }
 
                     if (filters.limit) {
@@ -113,7 +113,7 @@ class UserUtil extends Util {
 
                     return fetched;
                 },
-                300
+                7200
             );
 
             return users;
@@ -123,50 +123,101 @@ class UserUtil extends Util {
 
         return [];
     }
-
     
-    async getUserByUid(uid) {
-        const usersRef = FirestoreDatabase.collection(User.collection)
-            .where("uid", "==", uid);
-
-        const snapshot = await usersRef.get();
-
-        if (snapshot.empty) {
-            return {};
-        }
-
-        const userDoc = snapshot.docs[0];
-        let user = userDoc.data() ?? {};
-
+    async getUserByUid(redis, uid) { 
+        let user = {};
         let role = {};
         let permissions = {};
+        let departmentDesignationData = {};
+        let linkedPayComponents = {};
 
-        // if user has a role reference
-        if (user.roleRef && user.roleRef.get) {
-            const roleSnap = await user.roleRef.get();
-            if (roleSnap.exists) {
-                role = roleSnap.data();
+        const usersRef = FirestoreDatabase.collection(User.collection)
+            .where("uid", "==", uid);
+        
+        const cacheKey = `yp:user:filtered:${uid}`;
 
-                // if role has a permissions reference
-                if (role.refPermissions && role.refPermissions.get) {
-                    const permSnap = await role.refPermissions.get();
-                    if (permSnap.exists) {
-                        permissions = permSnap.data();
+        let userResult = await redis?.cacheParser(
+            cacheKey,
+            async () => { 
+                const snapshot = await usersRef.get();
+                if (snapshot.empty) {
+                    return {};
+                }
+
+                const userDoc = snapshot.docs[0];
+                user = userDoc.data() ?? {};
+                
+                // if user has a role reference
+                if (user.roleRef && user.roleRef.get) {
+                    const roleSnap = await user.roleRef.get();
+                    if (roleSnap.exists) {
+                        role = roleSnap.data();
+
+                        // if role has a permissions reference
+                        if (role.refPermissions && role.refPermissions.get) {
+                            const permSnap = await role.refPermissions.get();
+                            if (permSnap.exists) {
+                                permissions = permSnap.data();
+                            }
+                        }
                     }
                 }
+                
+                linkedPayComponents = [];
+                departmentDesignationData = {};  
+
+                // Fetch department and designation details if user is an employee
+                if (user.isEmployee) {
+                    if (user?.departmentDesignationPairs?.length) { 
+                        for (let pair of user.departmentDesignationPairs) {
+                            let departmentData = {};
+                            let designationData = {};
+                            if (pair?.departmentRef && pair.departmentRef.get) {
+                                const deptSnap = await pair.departmentRef.get();
+                                if (deptSnap.exists) { 
+                                    departmentData = deptSnap.data();
+                                }
+                            }
+
+                            if (pair?.designationRef && pair.designationRef.get) {
+                                const desgSnap = await pair.designationRef.get();
+                                if (desgSnap.exists) {
+                                    designationData = desgSnap.data();
+                                }
+                            }   
+                            
+                            // push pair to departmentDesignationData object
+                            departmentDesignationData[pair.departmentCode] = {departmentData, designationData};
+                        }
+                    }
+
+                    if (user?.paymentComponentRefs?.length) {
+                        for (const componentRef of user.paymentComponentRefs) {
+                            let componentData = {};
+                            if (componentRef && componentRef?.get) {
+                                const component = await componentRef.get();
+                                if (component.exists) {
+                                    componentData = component.data();
+                                }
+                            }
+
+                            linkedPayComponents.push(componentData);
+                        }
+                    }
+                }
+
+                departmentDesignationData = Object.entries(departmentDesignationData);
+                return {
+                    user,
+                    role,
+                    permissions, 
+                    departmentDesignationData,
+                    linkedPayComponents
+                }; 
             }
-        }
+        );
 
-        const departmentData = {};
-        const designationData = {};
-
-        return {
-            user,
-            role,
-            permissions,
-            departmentData,
-            designationData
-        };
+        return userResult; 
     }
 
     async getUserByDocid(uid) {  
@@ -205,16 +256,37 @@ class UserUtil extends Util {
         };
     }
     
-    async getAllUsersCount(redis) { 
+    async getAllUsersCount(redis, filters={}) { 
         try {
+            const filtersKey = 'yp:users:count:filters'; 
             const cacheKey = 'yp:users:count'; 
     
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            
+            // If filters changed, have to invalidate the cache
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+            
+            let query = FirestoreDatabase.collection(User.collection);
+
+            if (filters?.daterange?.length) {
+                let daterange = parseDateRange(filters.daterange, true);   
+                if (daterange.start && daterange.end) { 
+                    query = query.where("timestamp", ">=", daterange.start);
+                    query = query.where("timestamp", "<=", daterange.end);
+                }
+            }
+
             const count = await redis.cacheParser(
                 cacheKey,
                 async () => {
-                    const usersRef = FirestoreDatabase.collection(User.collection);
-                    const snapshot = await usersRef.count().get();
-    
+                    const snapshot = await query.count().get();
                     return snapshot.data().count;
                 },
                 300
@@ -227,7 +299,7 @@ class UserUtil extends Util {
         }
     }    
 
-    async createUser(data) { 
+    async createUser(data, redis) { 
         try {  
             // check if email or username already exists
             const existingUsersRef = FirestoreDatabase.collection(User.collection);
@@ -267,14 +339,30 @@ class UserUtil extends Util {
                 });
             }
             
+            if (data?.departmentDesignationPairs?.length) {
+                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
+                    return { 
+                        departmentCode: pair.department || '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) :  '',
+                        designationCode: pair.designation || '',
+                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
+                    }
+                });
+            }
+
+            if (data.isEmployee) {
+                data.employeeId = data.employeeId && data.employeeId.trim().length ? data.employeeId.trim() : this.generateEmployeeNumber();
+            }
+            
             let newUser = { 
                 uid: userRecord.uid,
                 firstName: ucwords(data.firstName) || "", 
                 lastName: ucwords(data.lastName) || "", 
                 userName: data.userName.toLowerCase() || "", 
-                isEmployee: data.isEmployee ? true : false, 
+                isEmployee: data.isEmployee ? true : false,
+                employeeId: data.employeeId || '', 
                 email: data.email.toLowerCase() || "", 
-                Country: data.country || "",
+                country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
                 roleRef: data.roleId ? FirestoreDatabase.collection(Role.collection).doc(data.roleId) : null,
                 refPermissions: data.permissionId ? FirestoreDatabase.collection(Permission.collection).doc(data.permissionId) : null,
@@ -282,18 +370,10 @@ class UserUtil extends Util {
                 profilePictureLocalPath: data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg',
                 profilePictureFbPath: data.profilePictureFbPath,
                 address: data.address || "",
-                bio: data.bio || "",
+                bio: (data?.bio && data?.bio?.length) ? data.bio.trim() : "",
                 status: data.status || "active", 
 
                 // HRM information 
-                departmentName: data?.departmentName || '',
-                departmentRef: data?.departmentId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.departmentId) :  '',
-                
-                designationName: data?.designationName || '',
-                designationRef: data?.designationId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.designationId) :  '',
-                
-                paymentComponentRefs: paymentComponentRefs,
-                
                 basicSalary: data?.basicSalary || 0,
                 basicSalaryDuration: data?.basicSalaryDuration || '',
                 tokenAmount: data?.tokenAmount || 0,
@@ -307,10 +387,23 @@ class UserUtil extends Util {
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             };
 
+            if (data?.departmentDesignationPairs?.length) {
+                newUser.departmentDesignationPairs = data.departmentDesignationPairs;
+            }
+
+            if (paymentComponentRefs.length) {
+                newUser.paymentComponentRefs = paymentComponentRefs;
+            }
+
             const userRef = await FirestoreDatabase.collection(User.collection).doc(userRecord.uid).set(newUser);
             console.log("USER REF: ", userRef);
             if (!userRef) {
                 throw new Exception(500, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
+            }
+
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
             }
             
             return newUser;
@@ -320,7 +413,7 @@ class UserUtil extends Util {
         }
     }
 
-    async updateUser(uid, data) {
+    async updateUser(uid, data, redis) {
         try {
             if (!uid) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.req.invalid_request, "Invalid input data");
@@ -409,7 +502,7 @@ class UserUtil extends Util {
             }
 
             if (data.bio) {
-                updatedData.bio = data.bio;
+                updatedData.bio = (data?.bio && data?.bio?.length) ? data.bio.trim() : "";
             }
 
             if (data.status) {
@@ -429,13 +522,24 @@ class UserUtil extends Util {
                 });
             }
 
+            if (data.isEmployee) {
+                updatedData.employeeId = data.employeeId && data.employeeId.trim().length ? data.employeeId.trim() : this.generateEmployeeNumber();
+            }
+
+            if (data?.departmentDesignationPairs?.length) {
+                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => { 
+                    return { 
+                        departmentCode: pair.department || '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) :  '',
+                        designationCode: pair.designation || '',
+                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
+                    }
+                });
+            }
+            
             let hrmInformation = {
                 // HRM information 
-                departmentName: data?.departmentName || '',
-                departmentRef: data?.departmentId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.departmentId) :  '',
-                
-                designationName: data?.designationName || '',
-                designationRef: data?.designationId ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(data.designationId) :  '',
+                departmentDesignationPairs: data?.departmentDesignationPairs || [],
                 
                 paymentComponentRefs: paymentComponentRefs,
                 
@@ -449,6 +553,16 @@ class UserUtil extends Util {
 
             await usersRef.doc(userDoc.id).update({...updatedData, ...hrmInformation}); // fixed doc reference
 
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
+            
+            const cacheKey = `yp:user:filtered:${uid}`;
+            if (redis) {
+                await redis.deleteFunc(cacheKey);
+            }
+
             return true;
         } catch (error) {
             console.error('Error updating user:', error);
@@ -456,7 +570,7 @@ class UserUtil extends Util {
         }
     }
 
-    async updateUserStatus(data) {
+    async updateUserStatus(data, redis) {
         let { uid, status, userLoggedInUserName, userLoggedInUid } = data; 
         
         try {
@@ -480,6 +594,11 @@ class UserUtil extends Util {
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             });
 
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
+
             return true;
         } catch (error) {
             console.error('Error updating user status:', error);
@@ -487,7 +606,7 @@ class UserUtil extends Util {
         }
     }
 
-    async deleteUser(uid) {
+    async deleteUser(uid, redis) {
         try {
             if (!uid) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.req.invalid_request, "Invalid input data");
@@ -507,6 +626,11 @@ class UserUtil extends Util {
 
             // Delete user document from Firestore
             await usersRef.doc(userDoc.id).delete();
+
+            if (redis) {
+                await redis.deleteFunc('yp:users:filtered');
+                await redis.deleteFunc('yp:users:count');
+            }
 
             return true;
         } catch (error) {

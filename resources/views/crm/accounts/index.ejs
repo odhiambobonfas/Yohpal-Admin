@@ -1,0 +1,133 @@
+<%- include('crm/partials/header') %>
+<%- include('crm/partials/navbar') %>
+
+<div class="container-fluid gx-0 px-0">
+    <div class="row gx-0">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <%- include('crm/partials/sidebar') %>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 mt-2 content-body">
+            <!-- Page Header -->
+            <div class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0 d-flex align-items-center gap-2">
+                    <i class="fas fa-wallet"></i> Payment Accounts Management
+                </h4>
+                <div class="badge-span d-flex align-items-center gap-2">
+                    <a class="text-decoration-none text-dark" href="/">
+                        <i class="fa fa-home me-1"></i> Dashboard
+                    </a>
+                    <span>|</span>
+                    <a href="javascript:void(0)" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#createAccountModal">
+                        <span class="badge bg-danger text-light rounded-4">
+                            <i class="fa fa-plus-circle me-1"></i> Add Payment Account
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters + Table -->
+            <div class="content-body gx-0 px-0 h-100">
+
+                <!-- Card Header / Filter Toggle -->
+                <div class="card-header bg-white shadow-sm d-flex justify-content-between align-items-center p-1">
+                    <button
+                        class="btn btn-sm btn-lg btn-link w-100 text-start text-dark d-flex align-items-center gap-3 text-decoration-none"
+                        type="button" data-bs-toggle="collapse" data-bs-target="#paymentAccountFilters"
+                        aria-expanded="false" aria-controls="paymentAccountFilters">
+                        <i class="fas fa-filter fa-2x"></i> <span>Toggle Filters</span>
+                    </button>
+                </div>
+
+                <!-- Collapsible Filters Section -->
+                <div class="container-fluid col-12 collapse mb-3 paymentAccountsFilters shadow-sm" id="paymentAccountFilters">
+                    <div class="col-12 mt-3 row g-3">
+                        <div class="col-md-4 mb-2">
+                            <label for="accountName">Account Name</label>
+                            <input type="text" name="accountName" class="form-control accountName"
+                                placeholder="Search by account name...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="accountNumber">Account Number</label>
+                            <input type="text" name="accountNumber" class="form-control accountNumber"
+                                placeholder="Search by account number...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="bankName">Bank Name</label>
+                            <input type="text" name="bankName" class="form-control bankName"
+                                placeholder="Search by bank name...">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="accountCategory">Account Category</label>
+                            <select name="accountCategory" class="form-control accountCategory searchSelect">
+                                <option selected value="">All</option>  
+                                <% categories?.forEach(category => { %>
+                                    <option value="<%= category.id %>"><%= category.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-2">
+                            <label for="status">Status</label>
+                            <select name="status" class="form-control status searchSelect">
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="createdRange">Created Range</label>
+                            <input type="text" name="createdRange" id="daterange" class="form-control daterange createdRange">
+                        </div>
+
+                        <div class="col-md-4 mb-2">
+                            <label for="ownerName">Account Owner</label>
+                            <input type="text" name="ownerName" class="form-control ownerName"
+                                placeholder="Search by owner...">
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Table Section -->
+                <div class="container-fluid col-12 p-0">
+                    <div class="table-responsive m-1">
+                        <table class="table table-striped w-100 payment-accounts-table" id="payment-accounts-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Account Name</th>
+                                    <th>Account Number</th> 
+                                    <th>Type</th> 
+                                    <th>Balance</th> 
+                                    <th>Status</th>
+                                    <th>Owner</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- modals -->
+<%- include('accounts/partials/create-account') %>
+<!-- /modals -->
+
+<%- include('crm/partials/footer') %>
+<script type="text/javascript" src="/default/js/src/mod/accounts.js"></script>
+<%- include('crm/partials/closure') %>

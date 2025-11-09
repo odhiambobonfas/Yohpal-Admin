@@ -1,0 +1,105 @@
+<!-- Leave Creation Modal -->
+<div class="modal fade createLeaveModal" id="createLeaveModal" tabindex="-1" aria-labelledby="createLeaveModalLabel" aria-hidden="true">
+    <form action="/leaves/create" method="post" enctype="multipart/form-data">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createLeaveModalLabel">Apply for Leave</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Employee -->
+                    <div class="mb-3">
+                        <label for="employeeSelect" class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select class="form-select searchSelect" id="employeeSelect" name="employeeId" required>
+                            <option value="">-- Select Employee --</option>
+                            <!-- Options populated dynamically -->
+                            <% if (employees && employees.length) { %>
+                                <% employees?.forEach(employee => { %>
+                                    <option value="<%= employee.uid %>"><%= employee.firstName %> <%= employee.lastName %> (<%= employee.employeeId %>)</option>
+                                <% }); %>
+                            <% } %>
+                            <!-- /Options populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Leave Type -->
+                    <div class="mb-3">
+                        <label for="leaveType" class="form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="form-select searchSelect leaveTypeSelect" id="leaveType" name="leaveType" required>
+                            <option value="">-- Select Type --</option>
+                            <!-- loop thru -->  
+                            <% leaveTypes?.forEach(type => { %>
+                                <option value="<%= type.slug %>"><%= type.name %> Leave</option>
+                            <% }) %> 
+                            <% if (hasPermission('hrm.leaves.custom.create')) { %>
+                                <option value="custom">Custom</option>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <!-- Custom Leave Type -->
+                    <div class="mb-3 d-none">
+                        <label for="customLeaveType" class="form-label">Custom Leave Type <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control customLeaveType" id="customLeaveType" name="customLeaveType" placeholder="Enter custom leave type">
+                    </div>
+
+                    <!-- Start & End Dates -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Leave statuses -->
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Leave Status <span class="text-danger">*</span></label> 
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="">-- Select status --</option>
+                            <% leaveStatuses?.forEach((status) => { %>
+                                <option value="<%= status.slug %>" <%= status.default ? 'selected' : '' %>><%= status.name %></option>    
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <!-- Reason -->
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="State the reason for leave" required></textarea>
+                    </div>
+
+                    <!-- Attachment --> 
+                    <div class="col-12">
+                        <label for="leaveAttachment" class="form-label">Leave Attachment(Optional)</label>
+                        <div class="card shadow-sm border-dark p-4 text-center" style="cursor: pointer; min-height: 120px;"
+                            onclick="document.getElementById('leaveAttachment').click()">
+
+                            <div class="d-flex flex-column justify-content-center align-items-center h-100">  
+                                <i class="bi bi-file-earmark-arrow-up fs-1 text-muted"></i>
+                                <span class="text-muted mt-2">Click to upload file</span>
+                            </div>
+
+                            <!-- Hidden File Input -->
+                            <input type="file" id="leaveAttachment" 
+                                name="leaveAttachment" multiple
+                                class="leaveAttachment d-none" accept=".png, .jpg, .jpeg, .pdf, .doc, .docx" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger btn-sm create-leave-submit-btn">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

@@ -390,11 +390,13 @@ function searchSelectInitializer(selector = '.searchSelect', endpoint = '', minI
  * @param {HTMLSelectElement} element 
  * @returns {void} void
  */
-function cloneNodeElement(element) {
+function cloneNodeElement(element, deep = true, replace = true) {
     var newElement = null;
     if (documentContains(element)) {
-        newElement = element.cloneNode(true);
-        element.replaceWith(newElement);
+        newElement = element.cloneNode(deep);
+        if (replace) {
+            element.replaceWith(newElement);
+        }
     }
 
     return newElement;
@@ -875,21 +877,38 @@ function filtersParser(selector) {
  * @param {string} selector - The CSS selector for the filters container.
  * @param {Array|Function} callback - The function|Array of Functions, to call when any input changes.
  */
-function watchFilterChanges(selector, callback) {
-    const container = document.querySelector(selector);
+function watchFilterChanges(selector, callback) { 
+    let container = document.querySelector(selector);  
     if (!documentContains(container)) return;
 
-    const inputs = container.querySelectorAll('input, select, textarea');
+    const inputs = container.querySelectorAll('input, select, textarea'); 
+    const dropdownItems = container.querySelectorAll('.dropdown-item'); 
 
     inputs.forEach(input => {
-        input = cloneNodeElement(input);
+        input = cloneNodeElement(input); 
         input.addEventListener('change', (event) => {
             if (Array.isArray(callback)) {
                 callback.forEach(func => {
                     func();
                 });
             } else {
-                callback();
+                callback(event, input);
+            }
+        });
+    });
+
+    dropdownItems.forEach(item => { 
+        item.addEventListener('click', (event) => {
+            event.preventDefault();   
+            const input = container.querySelector('.daterange');
+            if (input) { 
+                input.dispatchEvent(new Event('change')); 
+            }
+            
+            if (Array.isArray(callback)) {
+                callback.forEach(func => func(event, item));
+            } else {
+                callback(event, item);
             }
         });
     });
@@ -1141,18 +1160,22 @@ function initListTransition(listSelector, contentSelector) {
     });
 }
 
-function initProviderToggle(selectId, formClass) {
-    const select = document.getElementById(selectId);
-    const forms = document.querySelectorAll(`.${formClass}`);
-    if (!select) return;
-    select.addEventListener('change', () => {
-        const provider = select.value;
-        forms.forEach(f => f.classList.add('d-none'));
-        if (provider) {
-            const activeForm = document.getElementById(`${provider}-form`);
-            if (activeForm) activeForm.classList.remove('d-none');
-        }
-    });
+function initProviderToggle(selectElems, formClass) {
+    const selects = document.querySelectorAll(selectElems);
+    const forms = document.querySelectorAll(formClass);
+    selects.forEach(select => {
+        if (!select) return;
+        select.addEventListener('change', () => {
+            const provider = select.value;
+            forms.forEach(f => f.classList.add('d-none'));
+            if (provider) {
+                const activeForms = document.querySelectorAll(`${provider}-form`);
+                activeForms.forEach(activeForm => { 
+                    if (activeForm) activeForm.classList.remove('d-none');
+                });
+            } 
+        });
+    }); 
 }
 
 /**
@@ -1180,6 +1203,50 @@ function growing3FlexedSpinners() {
         </div>`;
 }
 
+
+/**
+ * Clone Department × Designation block dynamically
+ * 
+ * @param {string} triggableBtn - The btn selector that triggers the cloning
+ * @param {string} wrapperSelector - The main wrapper holding all dept-design blocks
+ * @param {string} itemSelector - The class of the item block to be cloned
+ */
+function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector) {
+    let btn = document.querySelector(triggableBtn);
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+        const wrapper = btn.closest(wrapperSelector);
+        if (!wrapper) return; 
+        const cloneWrapper = wrapper.querySelector(itemSelector);
+        const clonableSection = cloneWrapper.querySelector('.row');  
+
+        const clone = cloneNodeElement(clonableSection, true, false);
+        
+        if (clone) {
+            const removeBtn = clone.querySelector('.remove-dept-designation');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    clone.remove();
+                });
+            }
+        } 
+
+        // change ids of inputs 
+        const selects = clone.querySelectorAll('select');
+        selects.forEach(select => {
+            const currentId = select.id;
+            if (currentId) { 
+                const newId = currentId + '-' + Date.now();
+                select.id = newId; 
+                select.value = '';
+            }  
+        }); 
+
+        __append_html(clone.outerHTML, cloneWrapper, true);
+    }); 
+}
+
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {
@@ -1191,8 +1258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchSelectInitializer();
     initDragAndDropFileUpload();
     fireUpSearchSelectFuncOnModals();
-    const masterInstance = new Master();
-    masterInstance.initOverlay('.main .content-section');
+    const masterInstance = new Master(); 
     masterInstance.initDonateNowFunc();
     setupDateRangeWithBootstrapDatePickerLib(); 
 });
