@@ -37,8 +37,7 @@ class Transaction extends AppModel {
                     { name: 'Yohpal Hustle', slug: 'hustle', description: "Freelance and gig management platform" },
                     { name: 'Yohpal Other', slug: 'other', description: "For miscellaneous or experimental Yohpal modules" },
                 ];
-            },
-            7200
+            }
         );
 
         return apps
