@@ -76,6 +76,40 @@ class NotificationTemplate extends Master {
                 '/notification/templates', 
                 filtersParser('.templateFilters')
             ),
+            columns: [
+                {
+                    data: 'actions',
+                    title: 'Action',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'templateName',
+                    title: 'Name'
+                },
+                {
+                    data: 'templateDescription',
+                    title: 'Subject',
+                },
+                {
+                    data: 'templateChannel',
+                    title: 'Channel'
+                },
+                {
+                    data: 'templateCategory',
+                    title: 'Category'
+                },
+                {
+                    data: 'status',
+                    title: 'Status',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'createdAt',
+                    title: 'Created At'
+                }
+            ],
             fnDrawCallback: () => {
                 const inst = new NotificationTemplate();
                 inst.actionOnNotificationTemplatesRes();

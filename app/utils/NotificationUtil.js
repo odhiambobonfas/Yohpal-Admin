@@ -76,6 +76,60 @@ class NotificationUtil extends Util {
 
         return result;
     } 
+
+    async getAllNotificationTemplates(redis, filters={}) {
+        const filtersKey = 'yp:notificationTemplates:filters';
+        const cacheKey = 'yp:notificationTemplates:filtered'; 
+
+        const cachedFilters = await redis.getFunc(filtersKey);
+        const currentFilters = normalizeFilters(filters) || {};
+        const savedFilters = cachedFilters ? normalizeFilters(cachedFilters) : null;  
+        
+        if (savedFilters !== currentFilters) {
+            await redis.deleteFunc(filtersKey);
+            await redis.deleteFunc(cacheKey);
+
+            await redis.cacheParser(filtersKey, async () => filters, 2000);
+        }
+
+        const db = FirestoreDatabase.collection(NotificationTemplate.collection);
+        let query = db;
+        
+        if (filters?.status?.length > 0) {
+            query = query.where("templateStatus", "==", filters.status);
+        } 
+
+        if (filters?.tempCategory?.length > 0) {
+            query = query.where("templateCategory", "==", filters.tempCategory);
+        }
+
+        if (filters?.channel?.length > 0) {
+            query = query.where("templateChannel", "==", filters.channel);
+        }
+
+        if (filters?.createdRange?.length > 0) {
+            const { startDate, endDate } = parseDateRange(filters.createdRange);
+            query = query.where("createdAt", ">=", startDate).where("createdAt", "<=", endDate);
+        }
+
+        if (filters?.templateName?.length > 0) {
+            query = query.where("templateName", ">=", filters.templateName)
+                         .where("templateName", "<=", filters.templateName + '\uf8ff');
+        } 
+        
+        let data = await redis.cacheParser(
+            cacheKey,
+            async () => { 
+                let collection = await ref.get(); 
+                let data = fbCollectionParser(collection);
+
+                return data;
+            },
+            3600
+        );
+        
+        return data;
+    }
 }
 
 export default new NotificationUtil();
