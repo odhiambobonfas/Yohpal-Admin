@@ -12,6 +12,7 @@ import RedisCache from '@config/redisCache';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import {env, isInDevelopment} from "@funcs/global_funcs";  
 import { mergeDataGroupObjects } from '@config/utils';
+import EventLogger from '@models/Event';
 
 class AuthController {
     static async register(req, res) {
@@ -193,6 +194,18 @@ class AuthController {
             }); 
             
             req.session.token = token;
+
+            EventLogger.dispatch(req.redis, {
+                eventType: 'user_login',
+                eventPayload: {
+                    uid: user.uid,
+                    email: user.email,
+                    username: user.userName,
+                    loginAt: new Date().toISOString(),
+                    ipAddress: req.ip,
+                    userAgent: req.headers['user-agent'] || ''
+                }
+            });
 
             res.status(200).json({
                 status: 'success',
