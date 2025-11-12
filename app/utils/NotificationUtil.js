@@ -92,9 +92,7 @@ class NotificationUtil extends Util {
             await redis.cacheParser(filtersKey, async () => filters, 2000);
         }
 
-        const db = FirestoreDatabase.collection(NotificationTemplate.collection);
-        let query = db;
-        
+        let query = FirestoreDatabase.collection(NotificationTemplate.collection); 
         if (filters?.status?.length > 0) {
             query = query.where("templateStatus", "==", filters.status);
         } 
@@ -108,8 +106,9 @@ class NotificationUtil extends Util {
         }
 
         if (filters?.createdRange?.length > 0) {
-            const { startDate, endDate } = parseDateRange(filters.createdRange);
-            query = query.where("createdAt", ">=", startDate).where("createdAt", "<=", endDate);
+            const { start, end } = parseDateRange(filters.createdRange, true);  
+            query = query.where("createdAt", ">=", start);
+            query = query.where("createdAt", "<=", end);
         }
 
         if (filters?.templateName?.length > 0) {
@@ -120,7 +119,7 @@ class NotificationUtil extends Util {
         let data = await redis.cacheParser(
             cacheKey,
             async () => { 
-                let collection = await ref.get(); 
+                let collection = await query.get(); 
                 let data = fbCollectionParser(collection);
 
                 return data;

@@ -10,8 +10,7 @@ public/logs/*.txt
 public/store/docs/*
 tests/none
 public/store/sessions/*.json
-public/store/images/avatars/*
-public/store/images/logos/*
+public/store/images/avatars/* 
 projects.code-workspace
 
 # tests to exclude

@@ -34,6 +34,7 @@ class NotificationController {
     static async index(req, res) { 
         try { 
             if (isAjaxRequest(req)) {
+                const user = req.session.user;
                 let notificationTemplates = await NotificationUtil.getAllNotificationTemplates(req.redis, req.query);
 
                 const mex = new mexDtParser(notificationTemplates);
@@ -60,6 +61,24 @@ class NotificationController {
                                     <i class="fas fa-trash-alt me-1"></i> Delete
                                 </a>`;
                         }
+
+                        // Activate action
+                        if (hasPermission(user?.permissions || [], 'notifications.templates.activate') && status !== 'active') {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" 
+                                    data-id="${id}">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                </a>`;
+                        }
+
+                        // Deactivate action
+                        if (hasPermission(user?.permissions || [], 'notifications.templates.deactivate') && status === 'active') {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" 
+                                    data-id="${id}">
+                                    <i class="fas fa-trash-alt me-1"></i> Deactivate
+                                </a>`;
+                        }   
 
                         const actionDropdown = `
                             <div class="dropdown">
