@@ -201,6 +201,7 @@ class AuthController {
                 token
             });
         } catch (error) {
+            console.log("AUTH ERROR: ", error?.message || error);
             if (error instanceof Exception && config.APP.APP_DEBUG) { 
                 error.mexLogger();
             }
