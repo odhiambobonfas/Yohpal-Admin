@@ -12,7 +12,7 @@ import RedisCache from '@config/redisCache';
 import { FirebaseUtility, FirestoreDatabase } from '@utils/FirebaseUtil';
 import {env, isInDevelopment} from "@funcs/global_funcs";  
 import { mergeDataGroupObjects } from '@config/utils';
-import EventLogger from '@models/Event';
+import EventLogger from '@models/EventLogger';
 
 class AuthController {
     static async register(req, res) {
