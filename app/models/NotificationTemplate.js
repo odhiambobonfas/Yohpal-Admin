@@ -5,7 +5,7 @@ import AppModel from '@models/AppModel';
 class NotificationTemplate extends AppModel {
     static table = ''; 
 
-    static collection = 'notificationTemplates';
+    static collection = 'notificationCategories';
 
     static fields = {};
 
@@ -22,14 +22,15 @@ class NotificationTemplate extends AppModel {
         // Define all associations here
     } 
 
-    static async notificationTemplates(redis) { 
-        const cacheKey = `yp:notificationTemplates:categories`;
-
+    static async notificationCategories(redis) { 
+        const cacheKey = `yp:notifications:categories`;
+        await redis.deleteFunc(cacheKey); // For development/testing purposes
         const temps = await redis.cacheParser(
             cacheKey,
             () => [
                 // General / System Notifications
                 { name: 'Welcome Message', slug: 'welcome_message', default: true, description: "Sent to new users upon registration." },
+                { name: 'User Login', slug: 'user_login', default: true, description: "Sent when a user logs in." },
                 { name: 'Password Reset', slug: 'password_reset', default: true, description: "Sent when a user requests a password reset." },
                 { name: 'Account Activation', slug: 'account_activation', default: true, description: "Sent when an account is activated." },
 
@@ -55,14 +56,14 @@ class NotificationTemplate extends AppModel {
                 { name: 'Payment Received', slug: 'payment_received', default: true, description: "Sent to users when a payment is successfully received." },
                 { name: 'Payment Failed', slug: 'payment_failed', default: true, description: "Sent to users when a payment fails." },
                 { name: 'System Alert', slug: 'system_alert', default: true, description: "Sent for important system alerts." }
-            ]
+            ] 
         );
 
         return temps;
     } 
 
     static async templateCategoriesForDropdown(redis) {
-        const temps = await this.notificationTemplates(redis);
+        const temps = await this.notificationCategories(redis);
         let html = '';
         temps.forEach(temp => {
             html += `<option value="${temp.slug}">${temp.name}</option>`;

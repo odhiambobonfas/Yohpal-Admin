@@ -98,16 +98,47 @@ class RedisCache {
 	}
 
     /**
+     * Get all Keys that match a given pattern.
+     * 
+     * @param {string} pattern - Key pattern, e.g., 'yp:events:*'
+     * @param {number} [count=100] - Number of keys to fetch per scan iteration
+     * @returns {Promise<string[]>} List of matched keys
+     */
+    async getKeysByPattern(pattern, count = 100) {
+        try {
+            const keys = [];
+            let cursor = '0';
+
+            while (cursor !== '0' || keys.length === 0) {
+                const [nextCursor, foundKeys] = await this.client.scan(cursor, 'MATCH', pattern, 'COUNT', count);
+                if (foundKeys.length) keys.push(...foundKeys);
+                cursor = nextCursor;
+            }
+
+            return keys;
+        } catch (err) {
+            console.error(`Redis SCAN Error (pattern: ${pattern}):`, err);
+            return [];
+        }
+    }
+
+    /**
      * Set data into the redis cache
      * 
      * @param {string} key  A key to hold up the cache values(s)
      * @param {any} value  A value to dump as the cache values(s)
      * @param {number} expiryTimeInSeconds expiry time in seconds
      */
-	async setFunc(key, value, expiryTimeInSeconds = 3600) {
+	async setFunc(key, value, expiryTimeInSeconds = 0) {
 		try {
 			let payload = typeof value === "string" ? value : JSON.stringify(value);
-			await this.client.set(key, payload, "EX", expiryTimeInSeconds);
+			await this.client.set(key, payload); 
+			if (expiryTimeInSeconds == 0) {
+				await this.client.persist(key);
+			}
+			else {
+				await this.client.expire(key, expiryTimeInSeconds);
+			}
 		} catch (err) {
 			console.error(`Redis SET function Error ${key}:`, err.message);
 		}
@@ -121,11 +152,16 @@ class RedisCache {
      * @param {number} expiryTimeInSeconds expiry time in seconds
 	 * @param {boolean} [useListPush=false] - Whether to push list items instead of setting
      */
-	async pushListFunc(key, value, expiryTimeInSeconds = 3600) {
+	async pushListFunc(key, value, expiryTimeInSeconds = 0) {
 		try {
 			let payload = typeof value === "string" ? value : JSON.stringify(value);
 			await this.client.lpush(key, payload); 
-			await this.client.expire(key, expiryTimeInSeconds);
+			if (expiryTimeInSeconds == 0) {
+				await this.client.persist(key);
+			}
+			else {
+				await this.client.expire(key, expiryTimeInSeconds);
+			}
 		} catch (err) {
 			console.error(`Redis SET function Error ${key}:`, err.message);
 		}
@@ -175,7 +211,7 @@ class RedisCache {
      * @param {Function} fetchCallback - function that returns new cache data. Well, logically, pass a DB Callback to get the new data or otherwise.
      * @param {number} expiryTimeInSeconds expiry time in seconds - Time the cache should take before expiry
      */
-	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600, useListPush = false) {
+	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 0, useListPush = false) {
 		const cached = await this.getFunc(key); 
 		if (cached && cached?.length) return cached; 
 		const new_cache = await fetchCallback();

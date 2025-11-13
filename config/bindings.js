@@ -7,6 +7,7 @@ const bindings = {
             route: 'https://yohpal-market-apis.onrender.com/auth/signin',
             action: 'Sign In User API service - log in to ...',
         },
+
         firebase_auth: {
             method: "POST",
             route: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=',
@@ -23,7 +24,7 @@ const bindings = {
         // Communication bindings
         createEmail: {
             method: "POST",
-            route: 'http://127.0.0.1:4000/v1/api/email/create',
+            route: 'https://msv1.yohpal.com/v1/api/email/create',
             action: 'Email creation happens via this endpoint!'
         },
     },
@@ -227,6 +228,10 @@ const bindings = {
             view_sms: 'notifications.view.sms',
             view_whatsapp: 'notifications.view.whatsapp',
             view_templates: 'notifications.view.templates',
+            edit_templates: 'notifications.templates.edit',
+            delete_templates: 'notifications.templates.delete',
+            activate_templates: 'notifications.templates.activate',
+            deactivate_templates: 'notifications.templates.deactivate',
             view_categories: 'notifications.view.categories',
             manage_templates: 'notifications.manage.templates',
             manage_categories: 'notifications.manage.categories',

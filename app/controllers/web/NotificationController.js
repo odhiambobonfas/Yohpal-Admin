@@ -16,7 +16,8 @@ import {
     ucwords,
     handleFileUploads,
     jsonParser,
-    reduceToObj
+    reduceToObj,
+    dateToISO8601Formatter
 } from '@config/utils';
 import RolesUtil from '@utils/RolesUtil';
 import Binding from '@config/bindings';
@@ -33,10 +34,90 @@ class NotificationController {
     static async index(req, res) { 
         try { 
             if (isAjaxRequest(req)) {
+                const user = req.session.user;
+                let notificationTemplates = await NotificationUtil.getAllNotificationTemplates(req.redis, req.query);
+
+                const mex = new mexDtParser(notificationTemplates);
+                notificationTemplates = mex
+                    .addColumn('actions', (col) => {
+                        let actions = '';
+                        const id = col.uid || col.id;
+                        const status = col.templateStatus?.toLowerCase() || 'inactive';
+
+                        // Edit action
+                        if (hasPermission(user?.permissions || [], 'notifications.templates.edit')) {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item edit" href="javascript:void(0)" 
+                                    data-id="${id}" target-modal=".editTemplateModal">
+                                    <i class="fas fa-edit me-1"></i> Edit
+                                </a>`;
+                        }
+
+                        // Delete action
+                        if (hasPermission(user?.permissions || [], 'notifications.templates.delete')) {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" 
+                                    data-id="${id}">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                </a>`;
+                        }
+
+                        // Activate action
+                        if (hasPermission(user?.permissions || [], 'notifications.templates.activate') && status !== 'active') {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" 
+                                    data-id="${id}">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                </a>`;
+                        }
+
+                        // Deactivate action
+                        if (hasPermission(user?.permissions || [], 'notifications.templates.deactivate') && status === 'active') {
+                            actions += `
+                                <a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" 
+                                    data-id="${id}">
+                                    <i class="fas fa-trash-alt me-1"></i> Deactivate
+                                </a>`;
+                        }   
+
+                        const actionDropdown = `
+                            <div class="dropdown">
+                                <button class="btn btn-secondary btn-xs dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Actions
+                                </button>
+                                <div class="dropdown-menu action-btns">
+                                    ${actions || '<span class="dropdown-item text-muted">No Actions</span>'}
+                                </div>
+                            </div>`;
+                        return actionDropdown;
+                    })
+                    .editColumn('templateName', (col) => col || '<em>Untitled</em>')
+                    .editColumn('templateDescription', (col) => col || '<em>No Description</em>')
+                    .editColumn('templateCategory', (col) => ucfirst(col || 'general'))
+                    .editColumn('templateChannel', (col) => ucfirst(col || 'unspecified'))
+                    .editColumn('templateCode', (col) => col || '<em>N/A</em>')
+                    .addColumn('addedBy', (col) => col?.addedBy || '<em>Unknown</em>')
+                    .editColumn('addedByRefUser', (col) => col?.addedByRefUser ? `<code>${col.addedByRefUser}</code>` : '<em>N/A</em>')
+                    .addColumn('status', (col) => {
+                        const status = col?.templateStatus?.toLowerCase();
+                        if (status === 'active') {
+                            return `<span class="badge text-dark bg-success">${ucfirst(status)}</span>`;
+                        } else if (status === 'inactive') {
+                            return `<span class="badge text-dark bg-warning">${ucfirst(status)}</span>`;
+                        } else if (status === 'archived') {
+                            return `<span class="badge text-dark bg-danger">${ucfirst(status)}</span>`;
+                        }
+                        return `<span class="badge text-dark bg-secondary">Unknown</span>`;
+                    })
+                    .editColumn('createdAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
+                    .editColumn('updatedAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
+                    .make();
+
                 return res.status(200).json({
-                    status: 'success', 
-                    data: []
+                    status: 'success',
+                    data: notificationTemplates
                 });
+
             }
 
             const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis); 
