@@ -129,10 +129,16 @@ class RedisCache {
      * @param {any} value  A value to dump as the cache values(s)
      * @param {number} expiryTimeInSeconds expiry time in seconds
      */
-	async setFunc(key, value, expiryTimeInSeconds = 3600) {
+	async setFunc(key, value, expiryTimeInSeconds = 0) {
 		try {
 			let payload = typeof value === "string" ? value : JSON.stringify(value);
-			await this.client.set(key, payload, "EX", expiryTimeInSeconds);
+			await this.client.set(key, payload); 
+			if (expiryTimeInSeconds == 0) {
+				await this.client.persist(key);
+			}
+			else {
+				await this.client.expire(key, expiryTimeInSeconds);
+			}
 		} catch (err) {
 			console.error(`Redis SET function Error ${key}:`, err.message);
 		}
@@ -146,11 +152,16 @@ class RedisCache {
      * @param {number} expiryTimeInSeconds expiry time in seconds
 	 * @param {boolean} [useListPush=false] - Whether to push list items instead of setting
      */
-	async pushListFunc(key, value, expiryTimeInSeconds = 3600) {
+	async pushListFunc(key, value, expiryTimeInSeconds = 0) {
 		try {
 			let payload = typeof value === "string" ? value : JSON.stringify(value);
 			await this.client.lpush(key, payload); 
-			await this.client.expire(key, expiryTimeInSeconds);
+			if (expiryTimeInSeconds == 0) {
+				await this.client.persist(key);
+			}
+			else {
+				await this.client.expire(key, expiryTimeInSeconds);
+			}
 		} catch (err) {
 			console.error(`Redis SET function Error ${key}:`, err.message);
 		}
@@ -200,7 +211,7 @@ class RedisCache {
      * @param {Function} fetchCallback - function that returns new cache data. Well, logically, pass a DB Callback to get the new data or otherwise.
      * @param {number} expiryTimeInSeconds expiry time in seconds - Time the cache should take before expiry
      */
-	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 3600, useListPush = false) {
+	async cacheParser(key, fetchCallback, expiryTimeInSeconds = 0, useListPush = false) {
 		const cached = await this.getFunc(key); 
 		if (cached && cached?.length) return cached; 
 		const new_cache = await fetchCallback();

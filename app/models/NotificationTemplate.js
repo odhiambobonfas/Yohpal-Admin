@@ -23,8 +23,8 @@ class NotificationTemplate extends AppModel {
     } 
 
     static async notificationCategories(redis) { 
-        const cacheKey = `yp:notificationCategories`;
-
+        const cacheKey = `yp:notifications:categories`;
+        await redis.deleteFunc(cacheKey); // For development/testing purposes
         const temps = await redis.cacheParser(
             cacheKey,
             () => [
@@ -56,7 +56,7 @@ class NotificationTemplate extends AppModel {
                 { name: 'Payment Received', slug: 'payment_received', default: true, description: "Sent to users when a payment is successfully received." },
                 { name: 'Payment Failed', slug: 'payment_failed', default: true, description: "Sent to users when a payment fails." },
                 { name: 'System Alert', slug: 'system_alert', default: true, description: "Sent for important system alerts." }
-            ]
+            ] 
         );
 
         return temps;

@@ -24,7 +24,7 @@ class EventLogger extends AppModel {
 
     
     static async eventsCategories(redis) { 
-        const cacheKey = `yp:eventsCategories`;
+        const cacheKey = `yp:events:categories`;
 
         const temps = await redis.cacheParser(
             cacheKey,
@@ -102,7 +102,7 @@ class EventLogger extends AppModel {
         const cacheKey = `yp:events:${data.eventType}:${data.eventActor}`;  
         let request = await redis.cacheParser(cacheKey, 
             () => {
-                return data?.eventPayload;
+                return data;
             },
             cacheDuration || 259200, // cached for three days! 
         ); 
