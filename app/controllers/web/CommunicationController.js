@@ -197,8 +197,7 @@ class CommunicationController {
                 }); 
             }
 
-            const cpanelServersForDropdown = await Application.cpanelsListForDropdown(req?.redis);
-            console.log("SERVER LIST: ", cpanelServersForDropdown);
+            const cpanelServersForDropdown = await Application.cpanelsListForDropdown(req?.redis); 
             return res.render("crm/communication/mails/index", {
                 title: `${ config.APP.APP_NAME } || Email Management`,
                 user: req.session.user, 
