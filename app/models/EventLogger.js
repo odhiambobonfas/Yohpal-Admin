@@ -23,16 +23,77 @@ class EventLogger extends AppModel {
     }
     
     static async dispatch(redis, data) {
-        const cacheKey = `yp:events:${data.eventType}`;  
+        const cacheKey = `yp:events:${data.eventType}:${data.eventActor}`;  
         let request = await redis.cacheParser(cacheKey, 
             () => {
-                return data.eventPayload;
+                return data?.eventPayload;
             },
-            259200, // cached for three days!
-            true
+            259200, // cached for three days! 
         ); 
 
         return request;
+    }
+
+    static async getRecentEvents(redis, limit = 10) {
+        const pattern = 'yp:events:*';
+        const keys = await redis.getKeysByPattern(pattern);
+        const events = [];  
+
+        // PROMISE ALL 
+        await Promise.all(keys.map(async (key) => {
+            const eventData = await redis.getFunc(key);
+            if (eventData) {
+                events.push({
+                    key,
+                    data: eventData
+                });
+            }
+        }));
+
+        // Sort events by Descending order
+        events.sort((a, b) => {
+            const dateA = new Date(a.data.createdAt || 0);
+            const dateB = new Date(b.data.createdAt || 0);
+            return dateB - dateA;
+        });
+
+        return events.slice(0, limit);
+    }
+
+    static async allEvents(redis) {
+        const pattern = 'yp:events:*';
+        const keys = await redis.getKeysByPattern(pattern);
+        const events = []; 
+
+        // PROMISE ALL
+        await Promise.all(keys.map(async (key) => {
+            const eventData = await redis.getFunc(key);
+            if (eventData) {
+                events.push({
+                    key,
+                    data: eventData
+                });
+            }
+        }));
+
+        // Sort events by Descending order
+        events.sort((a, b) => {
+            const dateA = new Date(a.data.createdAt || 0);
+            const dateB = new Date(b.data.createdAt || 0);
+            return dateB - dateA;
+        });
+
+        return events;
+    }
+
+    static async clearEvents(redis) {
+        const pattern = 'yp:events:*';
+        const keys = await redis.getKeysByPattern(pattern);
+        if (keys.length > 0) {
+            await redis.client.deleteFunc(keys);
+        }
+
+        return true;
     }
 }
 

@@ -197,16 +197,18 @@ class AuthController {
 
             EventLogger.dispatch(req.redis, {
                 eventType: 'user_login',
+                eventActor: user.uid,
                 eventPayload: {
                     uid: user.uid,
                     email: user.email,
                     username: user.userName,
                     loginAt: new Date().toISOString(),
+                    createdAt: new Date().toISOString(), 
                     ipAddress: req.ip,
                     userAgent: req.headers['user-agent'] || ''
                 }
             });
-
+            
             res.status(200).json({
                 status: 'success',
                 message: LANG_EN.success.auth_login,
