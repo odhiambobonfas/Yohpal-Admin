@@ -98,6 +98,31 @@ class RedisCache {
 	}
 
     /**
+     * Get all Keys that match a given pattern.
+     * 
+     * @param {string} pattern - Key pattern, e.g., 'yp:events:*'
+     * @param {number} [count=100] - Number of keys to fetch per scan iteration
+     * @returns {Promise<string[]>} List of matched keys
+     */
+    async getKeysByPattern(pattern, count = 100) {
+        try {
+            const keys = [];
+            let cursor = '0';
+
+            while (cursor !== '0' || keys.length === 0) {
+                const [nextCursor, foundKeys] = await this.client.scan(cursor, 'MATCH', pattern, 'COUNT', count);
+                if (foundKeys.length) keys.push(...foundKeys);
+                cursor = nextCursor;
+            }
+
+            return keys;
+        } catch (err) {
+            console.error(`Redis SCAN Error (pattern: ${pattern}):`, err);
+            return [];
+        }
+    }
+
+    /**
      * Set data into the redis cache
      * 
      * @param {string} key  A key to hold up the cache values(s)
