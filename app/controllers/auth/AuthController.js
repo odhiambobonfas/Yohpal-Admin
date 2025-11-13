@@ -198,6 +198,7 @@ class AuthController {
             EventLogger.dispatch(req.redis, {
                 eventType: 'user_login',
                 eventActor: user.uid,
+                eventChannel: 'email',
                 eventPayload: {
                     uid: user.uid,
                     email: user.email,
@@ -205,7 +206,8 @@ class AuthController {
                     loginAt: new Date().toISOString(),
                     createdAt: new Date().toISOString(), 
                     ipAddress: req.ip,
-                    userAgent: req.headers['user-agent'] || ''
+                    userAgent: req.headers['user-agent'] || '', 
+                    notificationTemplate: 'user_login',
                 }
             });
             
