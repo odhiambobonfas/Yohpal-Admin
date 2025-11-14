@@ -139,6 +139,11 @@ const InitializeServer = async () => {
             return res.status(403).send(LANG_EN.req.request_denied);
         }
 
+        // Block every request that has no user-agent header
+        if (!req.headers['user-agent']) {
+            return res.status(403).send('Forbidden');
+        }
+
         const redis = req?.redis;
         res.locals.message = null;
         res.locals.status = null;
