@@ -107,8 +107,15 @@ class NotificationController {
                         return view;
                     });
 
-                notificationTemplates = notificationTemplates.editColumn('templateCategory', (col) => ucfirst(col || 'general'))
-                    .editColumn('templateChannel', (col) => ucfirst(col || 'unspecified'))
+                notificationTemplates = await notificationTemplates.editColumnAsync('templateCategory', async(col) => {
+                    const categories = await NotificationTemplate.notificationCategories(req?.redis);
+                    const category = categories.find(cat => cat.slug.toLowerCase() === col.toLowerCase()) || null;  
+                    let name = category.name || '<em>Untitled</em>';
+
+                    return name.toLowerCase();
+                });
+
+                notificationTemplates = notificationTemplates.editColumn('templateChannel', (col) => ucfirst(col || 'unspecified'))
                     .editColumn('templateCode', (col) => col || '<em>N/A</em>')
                     .addColumn('addedBy', (col) => col?.addedBy || '<em>Unknown</em>')
                     .editColumn('addedByRefUser', (col) => col?.addedByRefUser ? `<code>${col.addedByRefUser}</code>` : '<em>N/A</em>')
