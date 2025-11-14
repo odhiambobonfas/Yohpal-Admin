@@ -1245,14 +1245,24 @@ function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector
     }); 
 }
 
-function dtClickableRowHandler(tableSelector, callback, elementsExceptedForClicks = []) {
+function dtClickableRowHandler(tableSelector, callback, elementExceptedForClicks = []) {
     const table = document.querySelector(tableSelector);
     if (!table) return;
 
     $(tableSelector).off('click', 'tr').on('click', 'tr', function (event) {  
-        const rowData = $(tableSelector).DataTable().row(this).data(); 
-        const targetClasses = Array.from(event.target.classList);
-        const isIgnored = targetClasses.some(cls => elementsExceptedForClicks.includes(cls));
+        const rowData = $(tableSelector).DataTable().row(this).data();  
+        if (event.target.closest('.dropdown, .dropdown-menu, .dropdown-item')) {
+            return;
+        }
+        
+        let isIgnored = false;
+        if (elementExceptedForClicks?.length) {
+            const targetClasses = Array.from(event.target.classList);
+            isIgnored = targetClasses.some(cls =>
+                elementExceptedForClicks.includes(cls)
+            );
+        }
+
         if (typeof callback === 'function' && !isIgnored) {
             callback(rowData, this);
         }
