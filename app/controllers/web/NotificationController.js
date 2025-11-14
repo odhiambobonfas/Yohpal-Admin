@@ -77,7 +77,7 @@ class NotificationController {
                             actions += `
                                 <a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" 
                                     data-id="${id}">
-                                    <i class="fas fa-trash-alt me-1"></i> Deactivate
+                                   <i class="fas fa-times-circle me-1"></i> Deactivate
                                 </a>`;
                         }   
 
