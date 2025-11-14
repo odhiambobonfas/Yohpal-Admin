@@ -5,7 +5,7 @@ import AppModel from '@models/AppModel';
 class NotificationTemplate extends AppModel {
     static table = ''; 
 
-    static collection = 'notificationCategories';
+    static collection = 'notificationTemplates';
 
     static fields = {};
 

@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '@config/config';
 import AppModel from '@models/AppModel';  
+import CommunicationUtil from '@utils/CommunicationUtil';
 
 class Email extends AppModel {
     static table = ''; 
@@ -20,6 +21,17 @@ class Email extends AppModel {
      */
     static associate(models) {
         // Define all associations here
+    }
+
+    static async emailsListForDropdown(redis) { 
+        let html = '';
+        const allEmail = await CommunicationUtil.getAllEmails(redis);
+        
+        allEmail.forEach(email => {
+            html += `<option value="${email.id}">${email.email}</option>`;
+        });
+
+        return html;
     }
 }
 

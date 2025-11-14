@@ -4,6 +4,23 @@ class NotificationTemplate extends Master {
         this.createNotificationTempSubmitBtn = document.querySelectorAll('.create-notification-template-submit-btn');
     }
 
+    setupNotifactionTemplateView() {
+        // Show/hide associated email based on channel selection
+        const templateChannel = document.querySelector('.templateChannel');
+        templateChannel.addEventListener('change', function() {
+            var selectedChannel = this.value;
+            const parentDiv = templateChannel.closest('form');
+            var emailDiv = parentDiv.querySelector('.associatedEmailDiv'); 
+            var emailSubjectDiv = parentDiv.querySelector('.emailSubjectDiv');
+
+            if (selectedChannel === 'email') {
+                [emailDiv, emailSubjectDiv].forEach(div => div.classList.remove('d-none'));
+            } else {
+                [emailDiv, emailSubjectDiv].forEach(div => div.classList.add('d-none'));
+            }
+        });
+    }
+
     createNotificationTemplate() { 
         const btns = this.createNotificationTempSubmitBtn;
 
@@ -88,12 +105,16 @@ class NotificationTemplate extends Master {
                     title: 'Name'
                 },
                 {
-                    data: 'templateDescription',
+                    data: 'emailSubject',
                     title: 'Subject',
                 },
                 {
                     data: 'templateChannel',
                     title: 'Channel'
+                },
+                {
+                    data: 'linkedEmail',
+                    title: 'Linked Email'
                 },
                 {
                     data: 'templateCategory',
@@ -114,6 +135,7 @@ class NotificationTemplate extends Master {
                 const inst = new NotificationTemplate();
                 inst.actionOnNotificationTemplatesRes();
                 watchFilterChanges('.templateFilters', inst.listNotificationTemps.bind(inst));
+                dtClickableRowHandler('.notification-templates-table', this.actionRowParser, ['dropdown-toggle']);
             },
             language: getDataTableLanguage(),
         });
@@ -122,10 +144,17 @@ class NotificationTemplate extends Master {
     actionOnNotificationTemplatesRes() {
         // ...
     }
+
+    actionRowParser(rowData) { 
+        const modalContent = rowData.viewTemplate;
+        __append_html(modalContent, '.notificationTemplateViewModal', false);
+        __show_modal('.notificationTemplateViewModal');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const inst = new NotificationTemplate();
     inst.listNotificationTemps();
     inst.createNotificationTemplate();
+    inst.setupNotifactionTemplateView();
 });

@@ -11,6 +11,7 @@ import {
 } from '@utils/FirebaseUtil';
 import mexDtParser from '@config/mexDtParser';
 import {
+    viewTemplate,
     isAjaxRequest,
     ucfirst,
     ucwords,
@@ -27,6 +28,7 @@ import Setting from '@models/Setting'
 import Application from '@models/Application'
 import NotificationTemplate from '@models/NotificationTemplate'
 import NotificationUtil from '@utils/NotificationUtil';
+import Email from '@models/Email';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from 'qs'; 
 
@@ -36,10 +38,9 @@ class NotificationController {
             if (isAjaxRequest(req)) {
                 const user = req.session.user;
                 let notificationTemplates = await NotificationUtil.getAllNotificationTemplates(req.redis, req.query);
-
                 const mex = new mexDtParser(notificationTemplates);
-                notificationTemplates = mex
-                    .addColumn('actions', (col) => {
+                notificationTemplates = mex.addColumn('actions', 
+                    (col) => {
                         let actions = '';
                         const id = col.uid || col.id;
                         const status = col.templateStatus?.toLowerCase() || 'inactive';
@@ -93,7 +94,20 @@ class NotificationController {
                     })
                     .editColumn('templateName', (col) => col || '<em>Untitled</em>')
                     .editColumn('templateDescription', (col) => col || '<em>No Description</em>')
-                    .editColumn('templateCategory', (col) => ucfirst(col || 'general'))
+                    .editColumn('emailSubject', (col) => ucfirst(col) || '<em>N/A</em>')
+                    .addColumn('linkedEmail', (col) => { 
+                        return col ? col?.associatedEmail?.email : '<em>N/A</em>';
+                    });
+
+                notificationTemplates = await notificationTemplates.addColumnAsync('viewTemplate', async (col) => {  
+                        const view = await viewTemplate(res, 'crm/notificationTemp/partials/view-template', { 
+                            template: col
+                        });
+                        
+                        return view;
+                    });
+
+                notificationTemplates = notificationTemplates.editColumn('templateCategory', (col) => ucfirst(col || 'general'))
                     .editColumn('templateChannel', (col) => ucfirst(col || 'unspecified'))
                     .editColumn('templateCode', (col) => col || '<em>N/A</em>')
                     .addColumn('addedBy', (col) => col?.addedBy || '<em>Unknown</em>')
@@ -110,9 +124,10 @@ class NotificationController {
                         return `<span class="badge text-dark bg-secondary">Unknown</span>`;
                     })
                     .editColumn('createdAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
-                    .editColumn('updatedAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''))
-                    .make();
+                    .editColumn('updatedAt', (col) => dateToISO8601Formatter(col?.toDate?.() || col || ''));
 
+                notificationTemplates = await notificationTemplates.makeAsync();
+                    
                 return res.status(200).json({
                     status: 'success',
                     data: notificationTemplates
@@ -120,11 +135,13 @@ class NotificationController {
 
             }
 
-            const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis); 
+            const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis);  
+            const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis);
             return res.render("crm/notificationTemp/index", {
                 title: `${ config.APP.APP_NAME } || Notification Template Management`,
                 user: req.session.user, 
-                templateCategoriesForDropdown: templateCategoriesForDropdown
+                templateCategoriesForDropdown: templateCategoriesForDropdown,
+                emailsListForDropdown: emailsListForDropdown
             });
         } catch (error) {
             console.log(error.message);
@@ -173,6 +190,24 @@ class NotificationController {
                 );
             }
 
+            if (post.templateChannel === 'email' && (!post.associatedEmail || post.associatedEmail.trim() === "")) {
+                throw new Exception(
+                    201,
+                    "ASSOCIATED_EMAIL_REQUIRED",
+                    LANG_EN.req.template_associated_email_required,
+                    "Associated email is required for email channel"
+                );
+            }
+
+            if (post.templateChannel === 'email' && (!post.emailSubject || post.emailSubject.trim() === "")) {
+                throw new Exception(
+                    201,
+                    "EMAIL_SUBJECT_REQUIRED",
+                    LANG_EN.req.template_email_subject_required,
+                    "Email subject is required for email channel"
+                );
+            }
+
             if (!post.templateCategory || post.templateCategory.trim() === "") {
                 throw new Exception(
                     201,
@@ -191,8 +226,8 @@ class NotificationController {
                     "Invalid notification channel"
                 );
             }
-
-            if (post.templateDescription && (post.templateDescription.length === 0 || post.templateDescription.length > 2000)) {
+            
+            if (post.templateDescription && (post.templateDescription.length === 0 || post.templateDescription.length > 10000)) {
                 throw new Exception(
                     201,
                     "DESCRIPTION_TOO_LONG",

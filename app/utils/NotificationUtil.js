@@ -63,6 +63,9 @@ class NotificationUtil extends Util {
             templateName: data.templateName,
             templateCode: data.templateCode,
             templateChannel: data.templateChannel,
+            associatedEmailId: data.associatedEmail || null,
+            associatedEmailRef: FirestoreDatabase.collection(Email.collection).doc(data.associatedEmail) || null,
+            emailSubject: data.emailSubject || "", 
             templateCategory: data.templateCategory || "",
             templateStatus: data.templateStatus || "active",
             templateDescription: data.templateDescription || "",
@@ -121,9 +124,21 @@ class NotificationUtil extends Util {
             cacheKey,
             async () => { 
                 let collection = await query.get(); 
-                let data = fbCollectionParser(collection);
-
-                return data;
+                let temps = fbCollectionParser(collection);
+                
+                for (let i = 0; i < temps.length; i++) {
+                    const temp = temps[i];
+                    if (temp.associatedEmailRef && temp.associatedEmailRef.get) {
+                        const emailDoc = await temp.associatedEmailRef.get();
+                        const record = emailDoc.exists ? emailDoc.data() : null;
+                        temp.associatedEmail = {
+                            emailId: record.id,
+                            email: record.email
+                        }
+                    }
+                }
+                
+                return temps;
             },
             3600
         );

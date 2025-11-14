@@ -30,7 +30,7 @@
                         <!-- Channel -->
                         <div class="col-md-6">
                             <label for="templateChannel" class="form-label">Channel</label>
-                            <select class="form-control" id="templateChannel" name="templateChannel" required>
+                            <select class="form-control templateChannel" id="templateChannel" name="templateChannel" required>
                                 <option value="">Select channel</option>
                                 <option value="email">Email</option>
                                 <option value="sms">SMS</option>
@@ -38,6 +38,22 @@
                             </select>
                         </div>
 
+                        <!-- emails -->
+                        <div class="col-md-6 associatedEmailDiv d-none" id="associatedEmailDiv">
+                            <label for="associatedEmail" class="form-label">Link Email</label>
+                            <select class="form-control searchSelect" id="_associatedEmail" name="associatedEmail">
+                                <option value="">Select email</option>
+                                <%- emailsListForDropdown %>
+                            </select>
+                        </div>
+
+                        <!-- add subject --> 
+                        <div class="col-md-6 emailSubjectDiv d-none" id="emailSubjectDiv">
+                            <label for="emailSubject" class="form-label">Email Subject</label>
+                            <input type="text" class="form-control" id="emailSubject" name="emailSubject"
+                                placeholder="Enter email subject"> 
+                        </div>
+                        
                         <!-- Category -->
                         <div class="col-md-6">
                             <label for="templateCategory" class="form-label">Category</label>
