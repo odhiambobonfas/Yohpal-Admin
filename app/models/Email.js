@@ -23,12 +23,13 @@ class Email extends AppModel {
         // Define all associations here
     }
 
-    static async emailsListForDropdown(redis) { 
+    static async emailsListForDropdown(redis, associatedEmail='') { 
         let html = '';
         const allEmail = await CommunicationUtil.getAllEmails(redis);
         
         allEmail.forEach(email => {
-            html += `<option value="${email.id}">${email.email}</option>`;
+            let isSelected = associatedEmail === email.id ? 'selected' : '';
+            html += `<option ${isSelected} value="${email.id}">${email.email}</option>`;
         });
 
         return html;

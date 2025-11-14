@@ -78,6 +78,17 @@ class Util {
         const randomNumber = Math.floor(100000 + Math.random() * 900000);
         return `${prefix}-${randomNumber}`;
     }
+
+    /**
+     * Generate a unique document ID
+     * @param {string} prefix 
+     * @returns {string} Unique Document ID
+     */
+    async generateUniqueDocumentId(prefix = '') {
+        const timestamp = Date.now().toString(36);
+        const randomString = Math.random().toString(36).substring(2, 8);
+        return `${prefix}${timestamp}${randomString}`.toLowerCase();
+    }
 }
 
 export default Util;

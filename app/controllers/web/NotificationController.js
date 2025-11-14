@@ -281,6 +281,165 @@ class NotificationController {
             });
         }
     }
+
+    static async updateNtTemplate(req, res) {
+        try {
+            let post = req.query;
+            let { id } = req?.params;
+            let user = req.session.user;
+
+            if (post.modal) {
+                let template = await NotificationUtil.getTemplateByid(id, req?.redis);
+                if (!template) {
+                    throw new Exception(
+                        404,
+                        "TEMPLATE_NOT_FOUND",
+                        LANG_EN.error.template_not_found,
+                        "Notification template not found"
+                    );
+                } 
+
+                const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis, template.templateCategory || null);  
+                const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis, template?.associatedEmail?.emailId || null);
+                return res.render('crm/notificationTemp/partials/edit-template', {
+                    user: req.session.user,
+                    template: template,
+                    templateCategoriesForDropdown: templateCategoriesForDropdown,
+                    emailsListForDropdown: emailsListForDropdown
+                });
+            }
+
+            post = qs.parse(req.body);
+            post.id = id;
+            if (!post.modal) {
+                if (!post.id || post.id.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "TEMPLATE_UID_REQUIRED",
+                        LANG_EN.req.request_denied,
+                        "Template UID is required"
+                    );
+                }
+                
+                if (!post.templateName || post.templateName.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "TEMPLATE_NAME_REQUIRED",
+                        LANG_EN.req.template_name_required,
+                        "Template name is required"
+                    );
+                }
+
+                if (!post.templateCode || post.templateCode.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "TEMPLATE_CODE_REQUIRED",
+                        LANG_EN.req.template_code_required,
+                        "Template code is required"
+                    );
+                }
+
+                if (!post.templateChannel || post.templateChannel.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CHANNEL_REQUIRED",
+                        LANG_EN.req.template_channel_required,
+                        "Notification channel is required"
+                    );
+                }
+
+                if (post.templateChannel === 'email' && (!post.associatedEmail || post.associatedEmail.trim() === "")) {
+                    throw new Exception(
+                        201,
+                        "ASSOCIATED_EMAIL_REQUIRED",
+                        LANG_EN.req.template_associated_email_required,
+                        "Associated email is required for email channel"
+                    );
+                }
+
+                if (post.templateChannel === 'email' && (!post.emailSubject || post.emailSubject.trim() === "")) {
+                    throw new Exception(
+                        201,
+                        "EMAIL_SUBJECT_REQUIRED",
+                        LANG_EN.req.template_email_subject_required,
+                        "Email subject is required for email channel"
+                    );
+                }
+
+                if (!post.templateCategory || post.templateCategory.trim() === "") {
+                    throw new Exception(
+                        201,
+                        "CHANNEL_REQUIRED",
+                        LANG_EN.req.template_category_required,
+                        "Notification channel is required"
+                    );
+                }
+
+                const channels = ["email", "sms", "whatsapp"];
+                if (!channels.includes(post.templateChannel)) {
+                    throw new Exception(
+                        201,
+                        "INVALID_CHANNEL",
+                        LANG_EN.req.template_invalid_channel,
+                        "Invalid notification channel"
+                    );
+                }
+                
+                if (post.templateDescription && (post.templateDescription.length === 0 || post.templateDescription.length > 10000)) {
+                    throw new Exception(
+                        201,
+                        "DESCRIPTION_TOO_LONG",
+                        LANG_EN.req.template_description_too_long_or_too_short,
+                        "Template description too short or too long"
+                    );
+                }
+
+                const templateStatus = ["active", "inactive"];
+                if (post.templateStatus && !templateStatus.includes(post.templateStatus)) {
+                    throw new Exception(
+                        201,
+                        "INVALID_STATUS",
+                        LANG_EN.req.template_invalid_status,
+                        "Invalid template status"
+                    );
+                }
+
+                const finalPayload = {
+                    userLoggedInUid: user.uid,
+                    userLoggedInUserName: user.name,
+                    ...post
+                };
+
+                const result = await NotificationUtil.editTemplateQuery(finalPayload, req?.redis);
+                if (!result) {
+                    throw new Exception(
+                        500,
+                        "TEMPLATE_UPDATE_FAILED",
+                        LANG_EN.error.template_update_failed,
+                        "Database error updating notification template"
+                    );
+                }
+
+                return res.status(200).json({
+                    status: "success",
+                    message: LANG_EN.success.template_updated,
+                    data: result,
+                });
+            }
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status(error.status || 500).json({
+                status: "error",
+                code: error.code || "INTERNAL_SERVER_ERROR",
+                message: error.message || "Something went wrong. Please try again later.",
+                title: error.title || "Unexpected Error",
+            });
+        }
+    }
 }
 
 export default NotificationController;
