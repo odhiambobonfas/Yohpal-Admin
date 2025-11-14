@@ -96,6 +96,7 @@
                                     <th>Name</th>
                                     <th>Subject</th>
                                     <th>Channel</th>
+                                    <th>Server Email</th>
                                     <th>Category</th>
                                     <th>Status</th>
                                     <th>Created At</th>
@@ -114,6 +115,8 @@
 
 <!-- modals -->
 <%- include('notificationTemp/partials/create-template') %>
+<div class="modal fade notificationTemplateViewModal" id="modalId" tabindex="-1" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true"></div>
+<div class="modal fade editTemplateModal" id="editTemplateModal" tabindex="-1" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true"></div>
 <!-- /modals -->
 
 <%- include('crm/partials/footer') %>

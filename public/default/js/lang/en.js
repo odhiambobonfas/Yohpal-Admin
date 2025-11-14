@@ -206,8 +206,10 @@ const LANG_EN = {
         template_category_required: "Template category is required.",
         template_status_required: "Template status is required.", 
         template_invalid_channel: "Invalid notification channel. Allowed values are email, sms, or whatsapp.",
-        template_description_too_long_or_too_short: "Template description cannot be less than 100 or exceed 1000 characters in total.",
+        template_description_too_long_or_too_short: "Template description cannot be less than 100 or exceed 10000 characters in total.",
         template_invalid_status: "Invalid template status. Allowed values are active or inactive.",
+        template_associated_email_required: "Associated email is required for email channel.",
+        template_email_subject_required: "Email subject is required for email channel.",
     }, 
      // // response errors and statements
     res: {
@@ -367,6 +369,7 @@ const LANG_EN = {
         template_code_exists: "A notification template with the same code already exists in this category.",
         template_create_failed: "Failed to create the notification template. Please try again.",
         invalid_payload: "Invalid request data. Please ensure all required fields are filled correctly.", 
+        template_already_exists: "A notification template with the same code, channel, and category already exists.",
     },
 
     // New role/authentication errors

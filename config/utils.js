@@ -243,3 +243,14 @@ export function parseRoute(route, params = {}) {
 
     return url;
 }
+
+export async function viewTemplate(res, templatePath, data = {}) {
+    return new Promise((resolve, reject) => {
+        res.render(templatePath, data, (err, html) => {
+            if (err) {
+                return reject(err);
+            } 
+            return resolve(html);
+        });
+    });
+}

@@ -23,8 +23,9 @@ import RolesUtil from '@utils/RolesUtil';
 import Binding from '@config/bindings';
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
-import Setting from '@models/Setting'
-import Application from '@models/Application'
+import Setting from '@models/Setting';
+import Application from '@models/Application';
+import Email from '@models/Email';
 import CommunicationUtil from '@utils/CommunicationUtil';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from 'qs'; 

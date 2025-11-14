@@ -262,16 +262,15 @@ function documentContains(target) {
  * Inserts or appends HTML content into an element.
  *
  * @param {string|number} content - The HTML string|number to insert.
- * @param {HTMLElement} element - The target DOM element.
+ * @param {HTMLElement} elementOrSelector - The target DOM element.
  * @param {boolean} [append=false] - If true, appends content; otherwise, replaces it.
  * @param {string|null} [insertBeforeSelector=null] - Optional CSS selector to insert before a specific child.
  */
-function __append_html(content, element, append = false, insertBeforeSelector = null) {
-    if (!(element instanceof HTMLElement)) {
-        console.warn('__append_html: Invalid target element.');
-        return;
-    }
-
+function __append_html(content, elementOrSelector, append = false, insertBeforeSelector = null) {
+    const element = typeof elementOrSelector === 'string'
+        ? document.querySelector(elementOrSelector)
+        : elementOrSelector;
+        
     // Prepare content as DOM nodes
     const wrapper = document.createElement('div');
     wrapper.innerHTML = content;
@@ -682,8 +681,7 @@ function containsClass(element, className) {
  */
 function __show_modal(modal) {
     let selector = modal.startsWith('.') ? modal : `.${modal}`;
-    let modalElement = document.querySelector(selector);
-
+    let modalElement = document.querySelector(selector); 
     if (!modalElement) {
         console.warn(`Modal not found: ${modal}`);
         return;
@@ -1247,6 +1245,30 @@ function cloneDeptDesignationSection(triggableBtn, wrapperSelector, itemSelector
     }); 
 }
 
+function dtClickableRowHandler(tableSelector, callback, elementExceptedForClicks = []) {
+    const table = document.querySelector(tableSelector);
+    if (!table) return;
+
+    $(tableSelector).off('click', 'tr').on('click', 'tr', function (event) {  
+        const rowData = $(tableSelector).DataTable().row(this).data();  
+        if (event.target.closest('.dropdown, .dropdown-menu, .dropdown-item')) {
+            return;
+        }
+        
+        let isIgnored = false;
+        if (elementExceptedForClicks?.length) {
+            const targetClasses = Array.from(event.target.classList);
+            isIgnored = targetClasses.some(cls =>
+                elementExceptedForClicks.includes(cls)
+            );
+        }
+
+        if (typeof callback === 'function' && !isIgnored) {
+            callback(rowData, this);
+        }
+    });
+}
+    
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.searchToggle').forEach(toggler => {

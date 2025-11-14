@@ -5,7 +5,7 @@ import AppModel from '@models/AppModel';
 class NotificationTemplate extends AppModel {
     static table = ''; 
 
-    static collection = 'notificationCategories';
+    static collection = 'notificationTemplates';
 
     static fields = {};
 
@@ -62,11 +62,12 @@ class NotificationTemplate extends AppModel {
         return temps;
     } 
 
-    static async templateCategoriesForDropdown(redis) {
+    static async templateCategoriesForDropdown(redis, templateCategory='') {
         const temps = await this.notificationCategories(redis);
         let html = '';
         temps.forEach(temp => {
-            html += `<option value="${temp.slug}">${temp.name}</option>`;
+            let isSelected = templateCategory === temp.slug ? 'selected' : '';
+            html += `<option ${isSelected} value="${temp.slug}">${temp.name}</option>`;
         });
         
         return html;

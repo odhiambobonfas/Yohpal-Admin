@@ -154,5 +154,8 @@ router.post('/emails/create', authMiddleware, CommunicationController.createEmai
 // Notification Templates Handlers Routes
 router.get('/notification/templates', authMiddleware, NotificationController.index);
 router.post('/notification/template/create', authMiddleware, NotificationController.createNtTemplate);
+router.route('/notification/templates/edit/:id')
+    .get(authMiddleware, NotificationController.updateNtTemplate)
+    .post(authMiddleware, NotificationController.updateNtTemplate);
 
 export default router;

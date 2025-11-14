@@ -1,0 +1,97 @@
+<!-- Update Notification Template Modal -->
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <form id="editTemplateForm" action="/notification/templates/edit/<%= template?.id %>" method="POST"
+        enctype="multipart/form-data">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="editTemplateModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i> Update Notification Template
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <!-- Template Name -->
+                    <div class="col-md-6">
+                        <label for="templateName" class="form-label">Template Name</label>
+                        <input type="text" class="form-control" id="templateName" name="templateName"
+                            value="<%= template?.templateName || '' %>" placeholder="Enter template name" required>
+                    </div>
+
+                    <!-- Template Code -->
+                    <div class="col-md-6">
+                        <label for="templateCode" class="form-label">Template Code</label>
+                        <input type="text" class="form-control" id="templateCode" name="templateCode"
+                            value="<%= template?.templateCode || '' %>" placeholder="Unique identifier Code" required>
+                    </div>
+
+                    <!-- Channel -->
+                    <div class="col-md-6">
+                        <label for="templateChannel" class="form-label">Channel</label>
+                        <select class="form-control templateChannel" id="templateChannel" name="templateChannel"
+                            required>
+                            <option value="">Select channel</option>
+                            <option value="email" <%= template?.templateChannel === 'email' ? 'selected' : '' %>>Email</option>
+                            <option value="sms" <%= template?.templateChannel === 'sms' ? 'selected' : '' %>>SMS</option>
+                            <option value="whatsapp" <%= template?.templateChannel === 'whatsapp' ? 'selected' : '' %>>WhatsApp</option>
+                        </select>
+                    </div>
+
+                    <!-- Linked Email -->
+                    <div class="col-md-6 associatedEmailDiv <%= template?.templateChannel === 'email' ? '' : 'd-none' %>"
+                        id="associatedEmailDiv">
+                        <label for="_associatedEmail" class="form-label">Link Email</label>
+                        <select class="form-control searchSelect" id="_associatedEmail" name="associatedEmail">
+                            <option value="">Select email</option>
+                            <%- emailsListForDropdown %>
+                        </select>
+                    </div>
+
+                    <!-- Email Subject -->
+                    <div class="col-md-6 emailSubjectDiv <%= template?.templateChannel === 'email' ? '' : 'd-none' %>"
+                        id="emailSubjectDiv">
+                        <label for="emailSubject" class="form-label">Email Subject</label>
+                        <input type="text" class="form-control" id="emailSubject" name="emailSubject"
+                            value="<%= template?.emailSubject || '' %>" placeholder="Enter email subject">
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label for="_templateCategory" class="form-label">Category</label>
+                        <select class="form-control searchSelect" id="_templateCategory" name="templateCategory">
+                            <option value="">Select category</option>
+                            <%- templateCategoriesForDropdown %>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label for="templateStatus" class="form-label">Status</label>
+                        <select class="form-control" id="templateStatus" name="templateStatus" required>
+                            <option value="active" <%= template?.templateStatus === 'active' ? 'selected' : '' %>>Active
+                            </option>
+                            <option value="inactive" <%= template?.templateStatus === 'inactive' ? 'selected' : '' %>>
+                                Inactive</option>
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12 position-relative">
+                        <label for="templateDescription" class="form-label">Description / Content</label>
+                        <textarea class="form-control" id="templateDescription" name="templateDescription" rows="5"
+                            placeholder="Template content..."><%= template?.templateDescription || '' %></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-sm text-dark" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger btn-sm edit-notification-template-submit-btn">
+                    <i class="fa fa-pencil" aria-hidden="true"></i> Update Template
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<%- include('partials/ct-tooltip') %>
