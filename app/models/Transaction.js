@@ -23,7 +23,7 @@ class Transaction extends AppModel {
     }
 
     static async paymentMethods(redis) { 
-        const cacheKey = `yp:paymentMethods`;
+        const cacheKey = `yp:payments:methods`;
         const paymentMethods = redis.cacheParser(
             cacheKey,
             () => {

@@ -24,7 +24,7 @@ class Transaction extends AppModel {
     }
 
     static async ypApplications(redis) { 
-        const cacheKey = `yp:applications`
+        const cacheKey = `yp:applications:list`;
         const apps = redis.cacheParser(
             cacheKey,
             () => {
