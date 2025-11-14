@@ -367,6 +367,7 @@ const LANG_EN = {
         template_code_exists: "A notification template with the same code already exists in this category.",
         template_create_failed: "Failed to create the notification template. Please try again.",
         invalid_payload: "Invalid request data. Please ensure all required fields are filled correctly.", 
+        template_already_exists: "A notification template with the same code, channel, and category already exists.",
     },
 
     // New role/authentication errors

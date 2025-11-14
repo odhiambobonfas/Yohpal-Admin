@@ -41,14 +41,15 @@ class NotificationUtil extends Util {
         }
 
         const duplicateSnap = await db.where("templateCode", "==", data.templateCode)
+            .where("templateChannel", "==", data.templateChannel)
             .where("templateCategory", "==", data.templateCategory)
             .get();
 
         if (!duplicateSnap.empty) {
             throw new Exception(
                 201,
-                "TEMPLATE_CODE_DUPLICATE",
-                LANG_EN.error.template_code_exists,
+                "TEMPLATE_DUPLICATE",
+                LANG_EN.error.template_already_exists,
                 "Duplicate Error"
             );
         }
