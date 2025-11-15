@@ -20,13 +20,13 @@ import {
     reduceToObj,
     dateToISO8601Formatter
 } from '@config/utils';
-import RolesUtil from '@utils/RolesUtil';
 import Binding from '@config/bindings';
 import LANG_EN from '@lang/en';
 import Util from '@utils/Util';
-import Setting from '@models/Setting'
-import Application from '@models/Application'
-import NotificationTemplate from '@models/NotificationTemplate'
+import Setting from '@models/Setting';
+import Application from '@models/Application';
+import NotificationTemplate from '@models/NotificationTemplate';
+import SettingsUtil from '@utils/SettingsUtil';
 import NotificationUtil from '@utils/NotificationUtil';
 import Email from '@models/Email';
 import {hasPermission, hasAnyPermission} from '@funcs/permissions';
@@ -142,11 +142,20 @@ class NotificationController {
 
             }
 
+            let settings = await SettingsUtil.getAllSettings(req.redis);       
+            let apiSettings = Object.assign({}, ...(settings?.apiSettings || [])); 
+            const defaultTinyMceSetting = [apiSettings].find(s => s.isDefault == true);
+            
+            if (defaultTinyMceSetting?.settings) {  
+                await (new Util()).decodeFields(defaultTinyMceSetting.settings, ["apiKey"]);
+            }
+
             const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis);  
-            const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis);
+            const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis); 
             return res.render("crm/notificationTemp/index", {
                 title: `${ config.APP.APP_NAME } || Notification Template Management`,
                 user: req.session.user, 
+                tinyMceApiSettings: defaultTinyMceSetting,
                 templateCategoriesForDropdown: templateCategoriesForDropdown,
                 emailsListForDropdown: emailsListForDropdown
             });

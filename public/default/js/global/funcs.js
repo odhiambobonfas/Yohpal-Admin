@@ -1270,6 +1270,54 @@ function dtClickableRowHandler(tableSelector, callback, elementExceptedForClicks
         }
     });
 }
+
+async function initializeTinyMce(selector='.editor') {
+    // initialize tinymce on template create modal
+    if (typeof tinymce !== 'undefined') {
+        try {
+            const res = await fetch('/tinymce/settings', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest', 
+                }
+            }); 
+
+            if (!res.ok) {
+                toast('error', 5000, LANG_EN.undefined_error);
+                return;
+            }
+
+            const response = await res.json();
+            console.log(response);
+
+            if (response?.status === 'success') { 
+                let setting = response?.setting;
+                tinymce.init({
+                    selector: selector,
+                    height: 600,
+                    menubar: false,
+                    branding: setting?.settings?.branding || false,
+                    promotion: setting?.settings?.promotion || false,
+                    plugins: 'code preview autolink link lists table image media fullscreen',
+                    toolbar: 'undo redo | bold italic underline | bullist numlist | link | code preview fullscreen',
+                });
+                return;
+            }
+
+            if (response?.status === 'error') {
+                toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                return;
+            }
+
+            toast('error', 5000, LANG_EN.undefined_error);
+        } catch (error) {
+            console.log(error.message || error); 
+            toast('error', 5000, LANG_EN.undefined_error);
+        }
+    }
+}
     
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1277,6 +1325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggler.addEventListener('click', handleShowNavbarSearchBarToggler);
     });
 
+    initializeTinyMce()
     toggleCrmSideBar();
     stickNavbarOnScroll();
     searchSelectInitializer();

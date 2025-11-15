@@ -46,6 +46,21 @@ class SettingsController {
         });
     }
 
+    static async tinyMceSetting(req, res) {
+        let settings = await SettingsUtil.getAllSettings(req.redis);       
+        let apiSettings = Object.assign({}, ...(settings?.apiSettings || [])); 
+        const defaultTinyMceSetting = [apiSettings].find(s => s.isDefault == true);
+        
+        if (defaultTinyMceSetting?.settings) {  
+            await (new Util()).decodeFields(defaultTinyMceSetting.settings, ["apiKey"]);
+        }
+        
+        return res.status(200).json({
+            status: "success", 
+            setting: defaultTinyMceSetting,
+        });
+    }
+
     static async appsList(req, res) {
         if (isAjaxRequest(req)) {
             let roles = [];
