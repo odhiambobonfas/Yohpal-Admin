@@ -27,7 +27,7 @@ class Settings extends Master {
 
                 let form = btn.closest('form');
                 let data = new FormData(form);
-                data.append('type', form.getAttribute('id'));
+                data.append('type', form.getAttribute('id')); 
 
                 fetch(formRouteParser(form), {
                     method: form.method,
@@ -234,7 +234,7 @@ class Settings extends Master {
                 let data = new FormData(form);
                 data.append('clickedId', clickedId);
                 data.append('targetApp', targetApp);
-                data.append('settingType', 'apisetting');
+                data.append('settingType', 'apiSettings');
 
                 fetch(formRouteParser(form), {
                     method: form.method,

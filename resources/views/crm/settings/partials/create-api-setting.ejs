@@ -2,7 +2,7 @@
 	aria-hidden="true">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
-			<form id="apisetting" class="create-api-setting-form" action="/api/setting/create" enctype="multipart/form-data" method="POST">
+			<form id="apiSettings" class="create-api-setting-form" action="/api/setting/create" enctype="multipart/form-data" method="POST">
 				<div class="modal-header">
 					<h5 class="modal-title" id="createApiSettingModalLabel">Create API Setting</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -17,6 +17,7 @@
 								<option value="">-- Select Provider --</option>
 								<option selected value="mpesa">M-Pesa</option>
 								<option value="paypal">PayPal</option>
+								<option value="tinymce">TinyMCE</option>
 								<option value="custom">Custom</option>
 							</select>
 						</div>
@@ -142,6 +143,38 @@
 							<select class="form-select" name="paypalSettings[mode]">
 								<option value="sandbox">Sandbox</option>
 								<option value="live">Live</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- TinyMCE Form -->
+					<div class="provider-form d-none" id="tinymce-form">
+						<h6 class="mb-2 fw-bold">TinyMCE Settings</h6>
+						<hr>
+
+						<div class="mb-3">
+							<label id="apiKey" class="form-label">API Key</label>
+							<input type="text" class="form-control" name="tinymceSettings[apiKey]" id="apiKey" placeholder="e.g. your-api-key">
+						</div>
+
+						<div class="mb-3">
+							<label id="editorDomain" class="form-label">Editor Domain (Optional)</label>
+							<input type="text" class="form-control" name="tinymceSettings[editorDomain]" id="editorDomain" placeholder="e.g. cloud.tinymce.com">
+						</div>
+
+						<div class="mb-3">
+							<label id="branding" class="form-label">Enable Branding</label>
+							<select class="form-select" name="tinymceSettings[branding]" id="branding">
+								<option value="true">True</option>
+								<option value="false" selected>False</option>
+							</select>
+						</div>
+
+						<div class="mb-3">
+							<label id="theme" class="form-label">Default Theme</label>
+							<select class="form-select" name="tinymceSettings[theme]" id="theme">
+								<option value="oxide" selected>Oxide</option>
+								<option value="oxide-dark">Oxide Dark</option>
 							</select>
 						</div>
 					</div>

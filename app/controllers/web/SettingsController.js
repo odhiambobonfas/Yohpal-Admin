@@ -30,22 +30,18 @@ import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import qs from "qs"; 
 class SettingsController {
     static async index(req, res) {
-        let settings = await SettingsUtil.getAllSettings(req.redis);   
-
-        let generalsettings = Object.assign({}, ...(settings?.generalsettings || [])); 
-
-        console.log(generalsettings.companyLogoLocalPath);
-        let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
-        let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
-
+        let settings = await SettingsUtil.getAllSettings(req.redis);    
+        let generalSettings = Object.assign({}, ...(settings?.generalSettings || []));  
+        let apiSettings = Object.assign({}, ...(settings?.apiSettings || [])); 
+        let taxSettings = Object.assign({}, ...(settings?.taxSettings || []));  
         let ypApplications = await Application.ypApplications(req?.redis);
 
         return res.render("crm/settings/index", {
             title: `${ config.APP.APP_NAME } || App Settings`,
             user: req.session.user,
-            generalsetting: generalsettings,
-            apisetting: apisettings,
-            taxsetting: taxsettings,
+            generalSettings: generalSettings,
+            apiSettings: apiSettings,
+            taxSettings: taxSettings,
             applications: ypApplications
         });
     }
@@ -163,21 +159,26 @@ class SettingsController {
                 );
             } 
             
-            if (type == 'apisetting') {
-                const {
-                    type,
-                    provider,
-                    code,
-                    phone,
-                    email,
-                    targetApp,
-                    environ,
-                    status, 
-                    isDefault,
-                    description
-                } = req.body;
-
-                let settings = req.body['mpesaSetting'] || req.body['paypalSettings'] || req.body['customSettings'] || {}; 
+            if (type == 'apiSettings') {
+                const {  type, provider, code, phone, email, targetApp, environ, status,  isDefault, description } = req.body;
+                
+                let settings = null;
+                switch (provider?.toLowerCase()) {
+                    case 'mpesa':
+                        settings = req.body['mpesaSetting'] || {};
+                        break;
+                    case 'paypal':
+                        settings = req.body['paypalSettings'] || {};
+                        break;
+                    case 'tinymce':
+                        settings = req.body['tinymceSettings'] || {};
+                        break;
+                    case 'custom':
+                        settings = req.body['customSettings'] || {};
+                        break;
+                    default:
+                        settings = {};
+                }
 
                 if (!provider) {
                     throw new Exception(
@@ -251,23 +252,12 @@ class SettingsController {
                     );
                 }
 
-                payload = {
-                    type,
-                    provider,
-                    code,
-                    phone,
-                    email,
-                    targetApp,
-                    environ,
-                    status,
-                    isDefault,
-                    settings
-                };  
+                payload = { type, provider, code, phone, email, targetApp, environ, status, isDefault, settings };  
                 
                 payload['isDefault'] = isDefault ? true : false;  
             }
 
-            if (type == 'generalsettings') {
+            if (type == 'generalSettings') {
                 const { generalSetting } = req.body;
                 
                 const {
@@ -588,11 +578,12 @@ class SettingsController {
                 const data = {
                     id: post.clickedId,
                     targetApp: post.targetApp,
-                    settingType: "apisetting",
+                    settingType: "apiSettings",
                     flushCache: post?.flushCache ? true : false
                 };
 
                 let apiSet = await SettingsUtil.getApiSettingById(req?.redis, data);  
+                
                 return res.render('views/crm/settings/partials/edit-api-setting', { 
                     user: req.session.user,
                     applications: ypApplications,
@@ -615,20 +606,25 @@ class SettingsController {
                     );
                 } 
                 
-                const { 
-                    type,
-                    provider,
-                    code,
-                    phone,
-                    email,
-                    targetApp,
-                    environ,
-                    status, 
-                    isDefault,
-                    description
-                } = req.body;
-
-                let settings = req.body['mpesaSetting'] || req.body['paypalSettings'] || req.body['customSettings'] || {}; 
+                const {  type, provider, code, phone, email, targetApp, environ, status,  isDefault, description } = req.body;
+                
+                let settings = null;
+                switch (provider?.toLowerCase()) {
+                    case 'mpesa':
+                        settings = req.body['mpesaSetting'] || {};
+                        break;
+                    case 'paypal':
+                        settings = req.body['paypalSettings'] || {};
+                        break;
+                    case 'tinymce':
+                        settings = req.body['tinymceSettings'] || {};
+                        break;
+                    case 'custom':
+                        settings = req.body['customSettings'] || {};
+                        break;
+                    default:
+                        settings = {};
+                }
 
                 if (!provider) {
                     throw new Exception(
@@ -642,7 +638,7 @@ class SettingsController {
                 if (!phone) {
                     throw new Exception(
                         201,
-                        "PROVIDER_NAME_EXCEPTION",
+                        "ACCOUNT_HOLDER_PHONE_EXCEPTION",
                         LANG_EN.req.phone_number_required,
                         "Provider Error"
                     );
@@ -702,20 +698,7 @@ class SettingsController {
                     );
                 }
 
-                payload = {
-                    id,
-                    type,
-                    provider,
-                    code,
-                    phone,
-                    email,
-                    targetApp,
-                    environ,
-                    status,
-                    isDefault,
-                    settings
-                };  
-                
+                payload = { id, type, provider, code, phone, email, targetApp, environ, status, isDefault, settings };  
                 payload['isDefault'] = isDefault ? true : false;   
 
                 const finalPayload = {

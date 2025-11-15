@@ -38,7 +38,7 @@ class MpesaController {
                 const data = {
                     id: post.clickedId,
                     targetApp: post.targetApp,
-                    settingType: "apisetting",
+                    settingType: "apiSettings",
                     flushCache: post?.flushCache ? true : false
                 };
 

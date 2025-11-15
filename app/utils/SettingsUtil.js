@@ -17,11 +17,11 @@ class SettingsUtil extends Util {
 
     async getAllAPISettings(redis, filters={}) { 
         try { 
-            const filtersKey = 'yp:appApiSettings:filters';
-            const cacheKey = 'yp:appApiSettings:filtered';
             filters.docId = filters.targetApp || 'yohpal';
+            const filtersKey = `yp:settings:${filters.docId}:apiSettings:filters`;
+            const cacheKey = `yp:settings:${filters.docId}:apiSettings:filtered`;
             let ref = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
-                .collection('apisetting');
+                .collection('apiSettings');
 
             const cachedFilters = await redis.getFunc(filtersKey);
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
@@ -40,8 +40,7 @@ class SettingsUtil extends Util {
                     let data = fbCollectionParser(collection);
                     
                     return data;
-                },
-                300
+                }
             );
 
             return data;
@@ -99,7 +98,7 @@ class SettingsUtil extends Util {
             const cdnDoc = await query.add(cdnPayload);
             
             if (redis) {
-                const cacheKey = `yp:cdnSetting:${cdnDoc.id}`;
+                const cacheKey = `:applications:settings:${targetApp}:cdnSettings:${cdnDoc.id}`;
                 await redis.setFunc(cacheKey, {
                     id: cdnDoc.id,
                     ...cdnPayload
@@ -107,7 +106,7 @@ class SettingsUtil extends Util {
             }
             
             if (redis) {
-                await redis.deleteFunc('yp:appCdnSettings:filtered'); 
+                await redis.deleteFunc(`yp:settings:${targetApp}:cdnSettings:filtered`); 
             }
             
             return {
@@ -202,9 +201,9 @@ class SettingsUtil extends Util {
             await cdnDocRef.update(cdnPayload);
             
             if (redis) {
-                const cacheKey = `yp:cdnSetting:${id}`;
+                const cacheKey = `yp:settings:${targetApp}:cdnSettings:${id}`;
                 await redis.setFunc(cacheKey, { id, ...cdnPayload });
-                await redis.deleteFunc('yp:appCdnSettings:filtered');
+                await redis.deleteFunc(`yp:settings:${targetApp}:cdnSettings:filtered`);
             }
 
             return {
@@ -224,10 +223,9 @@ class SettingsUtil extends Util {
 
     async getAllCdnSettings(redis, filters={}) { 
         try { 
-            const filtersKey = 'yp:appCdnSettings:filters';
-            const cacheKey = 'yp:appCdnSettings:filtered';
-            filters.docId = filters.targetApp || 'yohpal';
-            await redis.deleteFunc(cacheKey);
+            let targetApp = filters.docId = filters.targetApp || 'yohpal';
+            const filtersKey = `yp:settings:${targetApp}:cdnSettings:filters`;
+            const cacheKey = `yp:settings:${targetApp}:cdnSettings:filtered`; 
             let ref = FirestoreDatabase.collection(Setting.collection).doc(filters.docId)
                 .collection('cdnSettings');
 
@@ -260,10 +258,11 @@ class SettingsUtil extends Util {
     
     async getCdnSettingById(redis, cdn) {
         try { 
-            const cacheKey = `yp:applicationSetting:${cdn?.targetApp}:${cdn?.id}`;  
+            let settingType = cdn?.settingType || "cdnSettings"
+            const cacheKey = `yp:settings:${cdn?.targetApp}:${settingType}:${cdn?.id}`;  
             let settingsRef = FirestoreDatabase.collection(Setting.collection)
                     .doc(cdn?.targetApp)
-                    .collection(cdn?.settingType || "cdnSettings")
+                    .collection(settingType)
                     .doc(cdn?.id);
 
             if (cdn?.flushCache && cdn.flushCache) {
@@ -275,8 +274,7 @@ class SettingsUtil extends Util {
                 async () => {   
                     const snap = await settingsRef.get(); 
                     return snap.exists ? { id: snap.id, ...snap.data() } : null;
-                },
-                3600
+                }
             ); 
 
             return data;
@@ -304,9 +302,9 @@ class SettingsUtil extends Util {
 
     async getAllSettings(redis, filters = {}) { 
         try { 
-            const filtersKey = 'yp:applicationSettings:filters';
-            const cacheKey = 'yp:applicationSettings:filtered'; 
-            filters.docId = filters.targetApp || 'yohpal';
+            let targetApp = filters.docId = filters.targetApp || 'yohpal';
+            const filtersKey = `yp:settings:${targetApp}:filters`;
+            const cacheKey = `yp:settings:${targetApp}:filtered`; 
 
             const cachedFilters = await redis.getFunc(filtersKey);
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
@@ -337,8 +335,7 @@ class SettingsUtil extends Util {
                     const results = await Promise.all(promises); 
 
                     return reduceToObj(results);   
-                },
-                300
+                }
             );
 
             return data;
@@ -349,10 +346,11 @@ class SettingsUtil extends Util {
 
     async getApiSettingById(redis, api) {
         try { 
-            const cacheKey = `yp:applicationSetting:${api?.targetApp}:${api?.id}`;  
+            let settingType  = api?.settingType; 
+            const cacheKey = `yp:settings:${api?.targetApp}:${settingType}:${api?.id}`;  
             let settingsRef = FirestoreDatabase.collection(Setting.collection)
                     .doc(api?.targetApp)
-                    .collection(api?.settingType)
+                    .collection(settingType)
                     .doc(api?.id);
 
             if (api?.flushCache && api.flushCache) {
@@ -364,16 +362,20 @@ class SettingsUtil extends Util {
                 async () => {   
                     const snap = await settingsRef.get(); 
                     return snap.exists ? { id: snap.id, ...snap.data() } : null;
-                },
-                3600
+                }
             );
 
-            if (data) {  
-                data.settings.callbackUrl.confirmation = await this.decodeMessage(data?.settings?.callbackUrl?.confirmation);
-                data.settings.callbackUrl.validation = await this.decodeMessage(data?.settings?.callbackUrl?.validation);
-                data.settings.consumerKey = await this.decodeMessage(data?.settings?.consumerKey);
-                data.settings.consumerSecret = await this.decodeMessage(data?.settings?.consumerSecret);
-                data.settings.passKey = await this.decodeMessage(data?.settings?.passKey); 
+            if (data?.settings) {
+                // M-Pesa
+                await this.decodeFields(data.settings, ["consumerKey", "consumerSecret", "passKey"]);
+
+                // Callback URLs
+                if (data.settings.callbackUrl) {
+                    await this.decodeFields(data.settings.callbackUrl, ["confirmation", "validation"]);
+                }
+
+                // TinyMCE
+                await this.decodeFields(data.settings, ["apiKey"]);
             }
 
             return data;
@@ -390,7 +392,7 @@ class SettingsUtil extends Util {
             let input;
             let payload = {};
 
-            if (['apisetting'].includes(data.type)) {  
+            if (['apiSettings'].includes(data.type)) {  
                 let settingsRef = FirestoreDatabase.collection(Setting.collection).doc(targetApp)
                     .collection(colId); 
                 
@@ -411,7 +413,8 @@ class SettingsUtil extends Util {
                 }
 
                 if (data.isDefault) {
-                    const defaultSnap = await settingsRef
+                    const defaultSnap = await settingsRef 
+                        .where("code", "==", data.code)
                         .where("targetApp", "==", data.targetApp)
                         .where("isDefault", "==", true)
                         .limit(1)
@@ -432,6 +435,9 @@ class SettingsUtil extends Util {
                     userLoggedInUserName: data?.userLoggedInUserName
                 });
             
+                
+                // Encode sensitive fields
+                // M-Pesa specific fields
                 if (data.settings.shortCode) 
                     data.settings.shortCode = data?.settings?.shortCode ? Number(data?.settings?.shortCode) : 0;
                 if (data.settings.consumerKey)
@@ -444,24 +450,30 @@ class SettingsUtil extends Util {
                     data.settings.callbackUrl.confirmation = await this.encodeMessage(data?.settings.callbackUrl.confirmation);
                 if (data.settings.callbackUrl?.validation)
                     data.settings.callbackUrl.validation = await this.encodeMessage(data?.settings.callbackUrl.validation);
-                input = data;
                 
+                // TinyMCE specific fields
+                if (data.settings.apiKey)
+                    data.settings.apiKey = await this.encodeMessage(data.settings.apiKey);
+                
+                console.log("Settings:", data.settings);
+                input = data;
+
                 payload = {
                     ...input,
                     ...extras
                 };
                 
-                await settingsRef.add(payload);
+                let query = await settingsRef.add(payload);
 
-                const cacheKeyA = 'yp:appApiSettings:filtered';  
-                const cacheKeyB = `yp:appApiSettings:${data?.targetApp}:${data?.settings?.shortCode}`;  
+                const cacheKeyA = `yp:settings:${targetApp}:apiSettings:filtered`;  
+                const cacheKeyB = `yp:settings:${data?.targetApp}:apiSettings:${data?.settings?.shortCode}`;  
                 if (query && redis) {
                     await redis.deleteFunc(cacheKeyA);
                     await redis.deleteFunc(cacheKeyB);
                 }
             }
 
-            if (['generalsettings'].includes(data.type)) { 
+            if (['generalSettings'].includes(data.type)) { 
                 const obj = data.generalSetting || '';
                 const settingsArray = Object.entries(obj).map(([key, value]) => ({
                     key,
@@ -491,8 +503,8 @@ class SettingsUtil extends Util {
                     Object.assign(payload, res);
                 });
                 
-                const cacheKey = `yp:applicationSetting:filtered`; 
-                if (query && redis) await redis.deleteFunc(cacheKey);
+                const cacheKey = `yp:settings:${targetApp}:filtered`; 
+                if (allInsertPromises && redis) await redis.deleteFunc(cacheKey);
             } 
 
             return { id: colId, ...payload };
@@ -507,7 +519,7 @@ class SettingsUtil extends Util {
             const colId = data.type;
             const targetApp = data.targetApp || 'yohpal';
             const settingId = data.id;  
-
+            
             if (!settingId) {
                 throw new Exception(
                     400,
@@ -537,8 +549,7 @@ class SettingsUtil extends Util {
                 const codeSnap = await FirestoreDatabase
                     .collection(Setting.collection)
                     .doc(targetApp)
-                    .collection(colId)
-                    .where("code", "==", data.code)
+                    .collection(colId) 
                     .limit(1)
                     .get();
 
@@ -557,8 +568,8 @@ class SettingsUtil extends Util {
                 const defaultSnap = await FirestoreDatabase
                     .collection(Setting.collection)
                     .doc(targetApp)
-                    .collection(colId)
-                    .where("targetApp", "==", targetApp)
+                    .collection(colId) 
+                    .where("code", "==", data.code)
                     .where("isDefault", "==", true)
                     .limit(1)
                     .get();
@@ -581,6 +592,8 @@ class SettingsUtil extends Util {
 
             const settings = { ...data.settings };
 
+            // Encode sensitive fields
+            // M-Pesa specific fields
             if (settings.shortCode) 
                 settings.shortCode = data?.settings?.shortCode ? Number(data?.settings?.shortCode) : 0;
             if (settings.consumerKey)
@@ -594,6 +607,11 @@ class SettingsUtil extends Util {
             if (settings.callbackUrl?.validation)
                 settings.callbackUrl.validation = await this.encodeMessage(settings.callbackUrl.validation);
 
+
+            // TinyMCE specific fields
+            if (settings.apiKey)
+                settings.apiKey = await this.encodeMessage(settings.apiKey);
+            
             const payload = {
                 ...data,
                 settings: settings,
@@ -602,8 +620,10 @@ class SettingsUtil extends Util {
             
             let query = await settingsRef.update(payload);
 
-            const cacheKey = 'yp:appApiSettings:filtered';
-            if (query && redis) await redis.deleteFunc(cacheKey);
+            const cacheKeyA = `yp:settings:${targetApp}:apiSettings:filtered`;
+            const cacheKeyB = `yp:settings:${targetApp}:apiSettings:${data?.id}`;  
+            if (query && redis) await redis.deleteFunc(cacheKeyA);
+            if (query && redis) await redis.deleteFunc(cacheKeyB);
 
             return { id: settingId, ...payload };
         } catch (error) {
@@ -621,14 +641,14 @@ class SettingsUtil extends Util {
         
         let settingsRef = FirestoreDatabase.collection(Setting.collection) // settings
             .doc(topLevelDocName) //yohpal
-            .collection(colId) //generalsettings
+            .collection(colId) //generalSettings
             .doc(categoryName) // categoryName - companyInformation 
                 
         const setData = await settingsRef.set(payload);
 
         if (setData) await settingsRef.update({ key: settingsRef.id });
 
-        return { ...payload };
+        return true;
     }
 
     async createCpanelSettingQuery(data, redis) {
@@ -646,6 +666,7 @@ class SettingsUtil extends Util {
                 userLoggedInUserName
             } = data;
 
+            const targetApp = data.targetApp || 'yohpal';
             cpanelHost = await this.encodeMessage(cpanelHost);
             cpanelUsername = await this.encodeMessage(cpanelUsername);
             cpanelPassword = await this.encodeMessage(cpanelPassword);
@@ -689,8 +710,8 @@ class SettingsUtil extends Util {
             const cpanelDoc = await query.doc(cpanelCode).set(cpanelPayload); 
 
             if (redis) {
-                await redis.deleteFunc("yp:cpanelSettings:filtered");
-                await redis.deleteFunc(`yp:cpanelSettings:${cpanelDoc.id}`);
+                await redis.deleteFunc(`yp:settings:${targetApp}:cpanelSettings:filtered`);
+                await redis.deleteFunc(`yp:settings:${targetApp}:cpanelSettings:${cpanelDoc.id}`);
             }
 
             return {
@@ -709,12 +730,10 @@ class SettingsUtil extends Util {
     }
 
     async getAllCpanelSettings(redis, filters = {}) {
-        try {
-            const filtersKey = 'yp:appCpanelSettings:filters';
-            const cacheKey = 'yp:appCpanelSettings:filtered';
-            
-            filters.docId = filters.targetApp || 'yohpal';
-            
+        try {  
+            let targetApp = filters.docId = filters.targetApp || 'yohpal'; 
+            const filtersKey = `yp:settings:${targetApp}:cpanelSettings:filters`;
+            const cacheKey = `yp:settings:${targetApp}:cpanelSettings:filtered`;
             let ref = FirestoreDatabase.collection(Setting.collection)
                 .doc(filters.docId)
                 .collection('cpanelSettings');
@@ -760,7 +779,8 @@ class SettingsUtil extends Util {
 
     async getCpanelSettingById(redis, filters) {
         try {
-            const cacheKey = `yp:cpanelSettings:${filters?.id}`;
+            let targetApp = filters.docId = filters.targetApp || 'yohpal'; 
+            const cacheKey = `yp:settings:${targetApp}:cpanelSettings:${filters?.id}`;
 
             const settingsRef = FirestoreDatabase.collection(Setting.collection)
                 .doc('yohpal')
@@ -798,6 +818,7 @@ class SettingsUtil extends Util {
     
     async updateCpanelSettingQuery(data, redis) {
         try {
+            let targetApp = data.targetApp || 'yohpal'; 
             let {
                 id,
                 cpanelCode,
@@ -861,8 +882,8 @@ class SettingsUtil extends Util {
             await docRef.update(updatePayload);
 
             if (redis) {
-                await redis.deleteFunc(`yp:cpanelSettings:${id}`);
-                await redis.deleteFunc("yp:cpanelSettings:filtered");
+                await redis.deleteFunc(`yp:settings:${targetApp}:cpanelSettings:${id}`);
+                await redis.deleteFunc(`yp:settings:${targetApp}:cpanelSettings:filtered`);
             }
 
             return {

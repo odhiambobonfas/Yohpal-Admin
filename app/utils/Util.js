@@ -45,6 +45,14 @@ class Util {
         }
     }
 
+    async decodeFields(obj, fields = []) {
+        for (const key of fields) {
+            if (obj[key]) {
+                obj[key] = await this.decodeMessage(obj[key]);
+            }
+        }
+    }
+
     /**
      * Checks whether the password given is an instance of BYCRYPT Hash.
      * 

@@ -1,6 +1,6 @@
 <div class="modal-dialog modal-lg">
 	<div class="modal-content">
-		<form id="apisetting" class="edit-api-setting-form" action="/api/settings/edit/<%= setting?.id %>"
+		<form id="apiSettings" class="edit-api-setting-form" action="/api/settings/edit/<%= setting?.id %>"
 			enctype="multipart/form-data" method="POST">
 			<div class="modal-header">
 				<h5 class="modal-title" id="editApiSettingModalLabel">
@@ -11,13 +11,15 @@
 
 			<div class="modal-body">
 				<!-- General Info -->
-				<div class="row">
+				<div class="row"> 
 					<div class="col-md-6 mb-3">
 						<label for="provider" class="form-label">Provider</label>
 						<select id="provider" name="provider" class="form-select" required>
 							<option value="">-- Select Provider --</option>
 							<option value="mpesa" <%= setting?.provider === 'mpesa' ? 'selected' : '' %>>M-Pesa</option>
 							<option value="paypal" <%= setting?.provider === 'paypal' ? 'selected' : '' %>>PayPal
+							</option>
+							<option value="tinymce" <%= setting?.provider === 'tinymce' ? 'selected' : '' %>>TinyMCE
 							</option>
 							<option value="custom" <%= setting?.provider === 'custom' ? 'selected' : '' %>>Custom
 							</option>
@@ -76,8 +78,7 @@
 						<label for="status" class="form-label">Status</label>
 						<select id="status" name="status" class="form-select" required>
 							<option value="active" <%= setting?.status === 'active' ? 'selected' : '' %>>Active</option>
-							<option value="inactive" <%= setting?.status === 'inactive' ? 'selected' : '' %>>Inactive
-							</option>
+							<option value="inactive" <%= setting?.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
 						</select>
 					</div>
 				</div>
@@ -145,6 +146,44 @@
 								name="mpesaSetting[callbackUrl][validation]"
 								value="<%= setting?.settings?.callbackUrl?.validation %>" />
 						</div>
+					</div>
+				</div>
+
+				<!-- TinyMCE Form -->
+				<div class="provider-form <%= setting?.provider !== 'tinymce' ? 'd-none' : '' %>" id="tinymce-form">
+					<h6 class="mb-2 fw-bold">TinyMCE Settings</h6>
+					<hr>
+
+					<div class="mb-3">
+						<label class="form-label">API Key</label>
+						<input type="text" class="form-control" name="tinymceSettings[apiKey]" id="apiKey"
+							value="<%= setting?.settings?.apiKey || '' %>" placeholder="e.g. your-api-key">
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Editor Domain (Optional)</label>
+						<input type="text" class="form-control" name="tinymceSettings[editorDomain]" id="editorDomain"
+							value="<%= setting?.settings?.editorDomain || '' %>" placeholder="e.g. cloud.tinymce.com">
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Enable Branding</label>
+						<select class="form-select" name="tinymceSettings[branding]" id="branding">
+							<option value="true" <%= setting?.settings?.branding == "true" ? "selected" : "" %>>True
+							</option>
+							<option value="false" <%= setting?.settings?.branding == "false" ? "selected" : "" %>>False
+							</option>
+						</select>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Default Theme</label>
+						<select class="form-select" name="tinymceSettings[theme]" id="theme">
+							<option value="oxide" <%= setting?.settings?.theme == "oxide" ? "selected" : "" %>>Oxide
+							</option>
+							<option value="oxide-dark"
+								<%= setting?.settings?.theme == "oxide-dark" ? "selected" : "" %>>Oxide Dark</option>
+						</select>
 					</div>
 				</div>
 

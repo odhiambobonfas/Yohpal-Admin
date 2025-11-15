@@ -1160,16 +1160,18 @@ function initListTransition(listSelector, contentSelector) {
 
 function initProviderToggle(selectElems, formClass) {
     const selects = document.querySelectorAll(selectElems);
-    const forms = document.querySelectorAll(formClass);
     selects.forEach(select => {
         if (!select) return;
         select.addEventListener('change', () => {
-            const provider = select.value;
+            const provider = select.value; 
+            let parentDiv = select.closest('form');
+            const forms = parentDiv.querySelectorAll(formClass);
             forms.forEach(f => f.classList.add('d-none'));
             if (provider) {
-                const activeForms = document.querySelectorAll(`${provider}-form`);
+                const activeForms = parentDiv.querySelectorAll(`#${provider}-form`); 
                 activeForms.forEach(activeForm => { 
                     if (activeForm) activeForm.classList.remove('d-none');
+                    
                 });
             } 
         });
