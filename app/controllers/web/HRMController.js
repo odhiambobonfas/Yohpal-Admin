@@ -38,16 +38,16 @@ class HRMController {
     static async index(req, res) {
         let settings = await SettingsUtil.getAllSettings(req.redis);   
 
-        let generalsettings = Object.assign({}, ...(settings?.generalsettings || [])); 
-        let apisettings = Object.assign({}, ...(settings?.apisettings || [])); 
-        let taxsettings = Object.assign({}, ...(settings?.taxsettings || [])); 
+        let generalSettings = Object.assign({}, ...(settings?.generalSettings || [])); 
+        let apiSettings = Object.assign({}, ...(settings?.apiSettings || [])); 
+        let taxSettings = Object.assign({}, ...(settings?.taxSettings || [])); 
  
         return res.render("crm/hrm/index", {
             title: `${ config.APP.APP_NAME } || HRM`,
             user: req.session.user,
-            generalsetting: generalsettings,
-            apisetting: apisettings,
-            taxsetting: taxsettings
+            generalSettings: generalSettings,
+            apiSettings: apiSettings,
+            taxSettings: taxSettings
         });
     }
 

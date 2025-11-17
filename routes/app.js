@@ -158,4 +158,7 @@ router.route('/notification/templates/edit/:id')
     .get(authMiddleware, NotificationController.updateNtTemplate)
     .post(authMiddleware, NotificationController.updateNtTemplate);
 
+// TINYMCE settings
+router.get('/tinymce/settings', authMiddleware, SettingsController.tinyMceSetting);
+
 export default router;

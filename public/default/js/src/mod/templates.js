@@ -4,7 +4,7 @@ class NotificationTemplate extends Master {
         this.createNotificationTempSubmitBtn = document.querySelectorAll('.create-notification-template-submit-btn');
     }
 
-    setupNotifactionTemplateView() {
+    setupNotifactionTemplateView() {   
         // Show/hide associated email based on channel selection
         const templateChannel = document.querySelector('.templateChannel');
         templateChannel.addEventListener('change', function() {
@@ -149,8 +149,7 @@ class NotificationTemplate extends Master {
             btn.addEventListener('click', (event) => { 
                 toggleLoadingOverlay(true);
                 let clickedBtn = event.target;
-                let clickedId = clickedBtn.getAttribute('data-id'); 
-                let targetApp = clickedBtn.getAttribute('data-target'); 
+                let clickedId = clickedBtn.getAttribute('data-id');   
 
                 if (containsClass(clickedBtn, 'edit')) {
                     this.assistiveModalActionParser(
@@ -159,10 +158,11 @@ class NotificationTemplate extends Master {
                         'GET',
                         [ 
                             { callback: this.editNotificationTemplateRes, params: [] }, 
-                            { callback: this.setupNotifactionTemplateView, params: [] }
+                            { callback: this.setupNotifactionTemplateView, params: [] },
+                            { callback: initializeTinyMce, params: [`.edit-template-editor-${clickedId}`] }
                         ]
                     );
-                } 
+                }
             });
         })
     }
@@ -179,8 +179,9 @@ class NotificationTemplate extends Master {
                 disableElement(btn);
 
                 let form = btn.closest('form');
-                let data = new FormData(form); 
-
+                tinymce.triggerSave();
+                let data = new FormData(form);  
+                
                 fetch(formRouteParser(form), {
                     method: form.method,
                     headers: { 
@@ -226,7 +227,8 @@ class NotificationTemplate extends Master {
     }
 
     actionRowParser(rowData) { 
-        const modalContent = rowData.viewTemplate;
+        const modalContent = rowData?.viewTemplate;
+        if (!modalContent) return;
         __append_html(modalContent, '.notificationTemplateViewModal', false);
         __show_modal('.notificationTemplateViewModal');
     }
@@ -237,4 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.listNotificationTemps();
     inst.createNotificationTemplate();
     inst.setupNotifactionTemplateView();
+
+    // initialize Tiny Mce 
+    initializeTinyMce('.create-template-editor');
 });

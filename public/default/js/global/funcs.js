@@ -1160,16 +1160,18 @@ function initListTransition(listSelector, contentSelector) {
 
 function initProviderToggle(selectElems, formClass) {
     const selects = document.querySelectorAll(selectElems);
-    const forms = document.querySelectorAll(formClass);
     selects.forEach(select => {
         if (!select) return;
         select.addEventListener('change', () => {
-            const provider = select.value;
+            const provider = select.value; 
+            let parentDiv = select.closest('form');
+            const forms = parentDiv.querySelectorAll(formClass);
             forms.forEach(f => f.classList.add('d-none'));
             if (provider) {
-                const activeForms = document.querySelectorAll(`${provider}-form`);
+                const activeForms = parentDiv.querySelectorAll(`#${provider}-form`); 
                 activeForms.forEach(activeForm => { 
                     if (activeForm) activeForm.classList.remove('d-none');
+                    
                 });
             } 
         });
@@ -1268,6 +1270,116 @@ function dtClickableRowHandler(tableSelector, callback, elementExceptedForClicks
         }
     });
 }
+
+function isAsync(fn) {
+    return fn && fn.constructor.name === "AsyncFunction";
+}
+
+/**
+ * TinyMCE initializer utility function
+ * 
+ * @param {Array|String} selector element selector
+ */
+function initializeTinyMce(selector='.editor') {
+    // initialize tinymce on template create modal 
+    if (typeof tinymce !== 'undefined') {
+        try {
+            fetch('/tinymce/settings', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest', 
+                }
+            }).then(async res => { 
+                if (!res.ok) {
+                    toast('error', 5000, LANG_EN.undefined_error);
+                    return;
+                }
+
+                let response = await res.json();
+
+                const extraParams = { 
+                    // FULL FEATURE PLUGINS
+                    plugins: `
+                        code preview autolink link lists table image media fullscreen emoticons hr wordcount anchor charmap nonbreaking directionality autoresize 
+                        paste quickbars searchreplace visualblocks visualchars help advlist autosave save insertdatetime pagebreak toc advtable imagetools textpattern 
+                        anchor advcode template importcss typography align
+                    `,
+
+                    // FULL FEATURE TOOLBAR
+                    toolbar: `
+                        undo redo | blocks fontfamily fontsize | bold italic underline strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify | 
+                        bullist numlist outdent indent | link image media emoticons hr | table | insertdatetime charmap | searchreplace | removeformat | code preview fullscreen
+                    `,
+
+                    // BLOCK FORMATS (headings)
+                    block_formats: `Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Heading 5=h5; Heading 6=h6; Blockquote=blockquote; Code=pre`,
+
+                    // FONT SIZES
+                    fontsize_formats: '8px 10px 12px 14px 16px 18px 20px 24px 28px 32px 36px 48px 60px',
+
+                    // FONTS
+                    font_family_formats: `Arial=arial, helvetica, sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Tahoma=tahoma,arial,helvetica,sans-serif; Times New Roman=times new roman,times; Verdana=verdana,geneva; Courier New=courier new,courier,monospace`,
+
+                    // QUICK ACTIONS TOOLBAR (select text to see it)
+                    quickbars_insert_toolbar: 'quickimage quicktable hr',
+                    quickbars_selection_toolbar: 'bold italic underline | forecolor backcolor | h2 h3 blockquote',
+
+                    // AUTOSAVE OPTIONS
+                    autosave_interval: '20s',
+                    autosave_prefix: 'tinymce-autosave-{path}{query}-{id}-',
+                    autosave_restore_when_empty: true,
+
+                    // IMAGE + MEDIA SETTINGS
+                    image_advtab: true,
+                    image_caption: true,
+
+                    // PASTE SETTINGS
+                    paste_data_images: true,
+                    paste_as_text: false,
+
+                    // CONTENT CSS for nicer formatting
+                    content_style: ` body { font-family: Arial, sans-serif; line-height: 1.6; padding: 10px; } img { max-width: 100%; height: auto; } `,
+                }
+
+                if (response?.status === 'success') {    
+                    let setting = response?.setting; 
+                    tinymce.get(selector)?.remove();
+                    tinymce.init({
+                        selector: selector,
+                        height: setting?.settings?.height || 400,
+                        menubar: setting?.settings?.menubar || false,
+                        branding: setting?.settings?.branding || false,
+                        promotion: setting?.settings?.promotion || false,
+                        ...extraParams
+                    });
+                    return;
+                } else if (response?.status === 'error') {
+                    selector.forEach(element => { 
+                        tinymce.get(element)?.remove();
+                        tinymce.init({
+                            selector: element,
+                            height: setting?.settings?.height || 400,
+                            menubar: setting?.settings?.menubar || false,
+                            branding: setting?.settings?.branding || false,
+                            promotion: setting?.settings?.promotion || false,
+                            ...extraParams
+                        });
+                    }); 
+                    
+                    toast(response.status, 5000, response.message || LANG_EN.undefined_error);
+                    return;
+                }
+
+                toast('error', 5000, LANG_EN.undefined_error);
+            })
+        } catch (error) {
+            console.log(error.message || error); 
+            toast('error', 5000, LANG_EN.undefined_error);
+        }
+    }
+}
     
 // Call functions Below.
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1276,7 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     toggleCrmSideBar();
-    stickNavbarOnScroll();
+    stickNavbarOnScroll(); 
     searchSelectInitializer();
     initDragAndDropFileUpload();
     fireUpSearchSelectFuncOnModals();
