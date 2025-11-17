@@ -281,6 +281,14 @@ const bindings = {
             upload_updates: 'developer.zip.upload',
             unpack_updates: 'developer.zip.unpack',
         },
+    },
+    
+    templateInstructions: {
+        business_logo: {
+            name: 'Business Logo',
+            slug: 'business_logo',
+            description: 'The official logo of the business, used for branding purposes in communications and documents.',
+        },
     }
 }
 
