@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '@config/config';
-import AppModel from '@models/AppModel';   
+import AppModel from '@models/AppModel';
+import bindings from '@config/bindings';   
 
 class NotificationTemplate extends AppModel {
     static table = ''; 
@@ -73,6 +74,48 @@ class NotificationTemplate extends AppModel {
         return html;
     }
 
+    static async templateInstructionsForDropdown(selected = '') {
+        const templateInstructions = bindings.templateInstructions;
+
+        let html = `<select id="templateInstructionCategories searchSelect" class="form-control">`;
+
+        Object.keys(templateInstructions).forEach(key => {
+            const category = templateInstructions[key];
+            const isSelected = selected === key ? 'selected' : '';
+            html += `<option ${isSelected} value="${key}">${category.tabName}</option>`;
+        });
+
+        html += `</select>`;
+
+        return html;
+    }
+
+    static async templateInstructionsAsArray() {
+        const templateInstructions = bindings.templateInstructions;
+
+        const arr = [];
+        let first = true;
+
+        Object.keys(templateInstructions).forEach(categoryKey => {
+            const category = templateInstructions[categoryKey];
+            const bindings = category.bindings;
+
+            arr.push({
+                categorySlug: categoryKey,
+                tabName: category.tabName,
+                active: first,
+                bindings: Object.keys(bindings).map(bKey => ({
+                    name: bindings[bKey].name,
+                    slug: bindings[bKey].slug,
+                    description: bindings[bKey].description
+                }))
+            });
+
+            first = false;
+        });
+
+        return arr;
+    }
 }
 
 export default NotificationTemplate;

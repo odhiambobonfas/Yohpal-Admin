@@ -29,8 +29,7 @@
                     <!-- Channel -->
                     <div class="col-md-6">
                         <label for="templateChannel" class="form-label">Channel</label>
-                        <select class="form-control templateChannel" id="templateChannel" name="templateChannel"
-                            required>
+                        <select class="form-control templateChannel" id="templateChannel" name="templateChannel" required>
                             <option value="">Select channel</option>
                             <option value="email" <%= template?.templateChannel === 'email' ? 'selected' : '' %>>Email</option>
                             <option value="sms" <%= template?.templateChannel === 'sms' ? 'selected' : '' %>>SMS</option>

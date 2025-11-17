@@ -151,13 +151,17 @@ class NotificationController {
             }
 
             const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis);  
-            const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis); 
+            const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis);  
+            const templateInstructionsForDropdown = await NotificationTemplate.templateInstructionsForDropdown();
+            const templateInstructionsAsArray = await NotificationTemplate.templateInstructionsAsArray();
             return res.render("crm/notificationTemp/index", {
                 title: `${ config.APP.APP_NAME } || Notification Template Management`,
                 user: req.session.user, 
                 tinyMceApiSettings: defaultTinyMceSetting,
                 templateCategoriesForDropdown: templateCategoriesForDropdown,
-                emailsListForDropdown: emailsListForDropdown
+                emailsListForDropdown: emailsListForDropdown,
+                templateInstructionsForDropdown:templateInstructionsForDropdown,
+                templateInstructionData:templateInstructionsAsArray
             });
         } catch (error) {
             console.log(error.message);
