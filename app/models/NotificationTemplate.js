@@ -77,7 +77,7 @@ class NotificationTemplate extends AppModel {
     static async templateInstructionsForDropdown(selected = '') {
         const templateInstructions = bindings.templateInstructions;
 
-        let html = `<select id="templateInstructionCategories searchSelect" class="form-control">`;
+        let html = `<select id="templateInstructionCategories" class="form-control templateInstructionCategories">`;
 
         Object.keys(templateInstructions).forEach(key => {
             const category = templateInstructions[key];
