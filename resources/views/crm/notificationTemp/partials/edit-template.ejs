@@ -78,6 +78,14 @@
                     <!-- Description -->
                     <div class="col-12 position-relative">
                         <label for="templateDescription" class="form-label">Description / Content</label>
+                        <p>
+                            <a href="#" class="text-dark tdl-0" data-bs-toggle="modal"
+                                data-bs-target="#keywordsHelpModal">
+                                <span class="instructions-modal-btn">To read defined notification template
+                                    Instructions(Keywords): click here:</span><i
+                                    class="fas fa-info-circle ms-1 text-danger"></i>
+                            </a>
+                        </p>
                         <textarea class="form-control edit-template-editor-<%= template?.id %>" id="editTemplateDescription<%= template?.id %>" name="templateDescription" rows="8"
                             placeholder="Template content..."><%= template?.templateDescription || '' %></textarea>
                     </div>

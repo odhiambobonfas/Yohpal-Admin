@@ -316,6 +316,43 @@ const bindings = {
             }
         },
 
+        user_info: {
+            tabName: 'User Info',
+            description: 'Details related to the user performing the action or receiving the notification.',
+            bindings: {
+                user_id: {
+                    name: 'User ID',
+                    slug: 'user_id',
+                    description: 'Unique system identifier for the user.',
+                },
+                user_email: {
+                    name: 'User Email',
+                    slug: 'user_email',
+                    description: 'The email address of the user.',
+                },
+                user_username: {
+                    name: 'Username',
+                    slug: 'user_username',
+                    description: 'The display or login username of the user.',
+                },
+                login_at: {
+                    name: 'Login Time',
+                    slug: 'login_at',
+                    description: 'The date and time when the user logged in.',
+                },
+                ip_address: {
+                    name: 'IP Address',
+                    slug: 'ip_address',
+                    description: 'The IP address used during login.',
+                },
+                user_agent: {
+                    name: 'User Agent',
+                    slug: 'user_agent',
+                    description: 'Browser or device used to perform the login.',
+                },
+            }
+        },
+
         customer_info: {
             tabName: 'Customer Info',
             description: 'Details related to customers or tenants.',
@@ -432,7 +469,7 @@ const bindings = {
                     description: 'Name of the SaaS system sending the notification.',
                 },
             }
-        }
+        },
     }
 }
 

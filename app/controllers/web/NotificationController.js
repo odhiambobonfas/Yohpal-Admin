@@ -321,11 +321,15 @@ class NotificationController {
 
                 const templateCategoriesForDropdown = await NotificationTemplate.templateCategoriesForDropdown(req?.redis, template.templateCategory || null);  
                 const emailsListForDropdown = await Email.emailsListForDropdown(req?.redis, template?.associatedEmail?.emailId || null);
+                const templateInstructionsForDropdown = await NotificationTemplate.templateInstructionsForDropdown();
+                const templateInstructionsAsArray = await NotificationTemplate.templateInstructionsAsArray();
                 return res.render('crm/notificationTemp/partials/edit-template', {
                     user: req.session.user,
                     template: template,
                     templateCategoriesForDropdown: templateCategoriesForDropdown,
-                    emailsListForDropdown: emailsListForDropdown
+                    emailsListForDropdown: emailsListForDropdown,
+                    templateInstructionsForDropdown:templateInstructionsForDropdown,
+                    templateInstructionData:templateInstructionsAsArray
                 });
             }
 
