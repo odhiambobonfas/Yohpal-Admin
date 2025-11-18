@@ -194,17 +194,20 @@ class AuthController {
             }); 
             
             req.session.token = token;
-            
+
             EventLogger.dispatch(req.redis, {
                 eventType: 'user_login',
-                eventActor: user.uid,
+                eventActor: userPayload.uid,
                 eventChannel: 'email',
                 eventPayload: {
-                    user_id: user.uid,
-                    user_email: user.email,
-                    user_username: user.userName,
-                    login_at: new Date().toISOString(),
+                    user_id: userPayload.uid,
+                    user_email: userPayload.email,
+                    user_name: userPayload.name,
+                    username: userPayload.username,
+                    user_username: userPayload.username,
                     created_at: new Date().toISOString(),
+                    login_time:  new Date().toTimeString().split(' ')[0],
+                    login_date: new Date().toISOString().split('T')[0],
                     ip_address: req.ip,
                     user_agent: req.headers['user-agent'] || '',
                     notification_template: 'user_login',
