@@ -13,7 +13,7 @@ const bindings = {
             route: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=',
             action: 'Firebase authentication API endpoint'
         },
-        
+
         // Mpesa endpoints bindings
         registerCallbacks: {
             method: "POST",
@@ -78,13 +78,13 @@ const bindings = {
             delete: 'contacts.delete',
             groups: 'contacts.view.groups',
             contact_groups: 'contacts.group.access',
-        }, 
-        
+        },
+
         // Communication Panel (merged with chat)
         communication: {
             access_module: 'communication.access',
-            access_chat: 'communication.chat.access', 
-            announcements: 'communication.announcements',  
+            access_chat: 'communication.chat.access',
+            announcements: 'communication.announcements',
             access_email_mangement: 'communication.emails.access',
             access_mails_inbox: 'communication.mails.access',
             access_bulk_messaging: 'communication.bulkMessaging.access',
@@ -116,7 +116,7 @@ const bindings = {
             access_bank_accounts: 'accounts.bank.access',
             edit_account_categories: 'accounts.categories.edit',
             delete_account_categories: 'accounts.categories.delete',
-        }, 
+        },
 
         invoices: {
             access: 'invoices.access',
@@ -136,7 +136,7 @@ const bindings = {
             edit: 'transactions.edit',
             delete: 'transactions.delete',
         },
-        
+
         hrm: {
             access_dashboard: 'hrm.dashboard.access',
             access_employees: 'hrm.employees.access',
@@ -167,7 +167,7 @@ const bindings = {
             edit_component_brackets: 'hrm.payments.brackets.edit',
             delete_component_brackets: 'hrm.payments.brackets.delete',
             edit_component_tiers: 'hrm.payments.tiers.edit',
-            delete_component_tiers: 'hrm.payments.tiers.delete', 
+            delete_component_tiers: 'hrm.payments.tiers.delete',
             manage_account_types: 'accounts.types.manage',
         },
 
@@ -247,19 +247,19 @@ const bindings = {
         settings: {
             access: 'settings.access',
             app_settings_access: 'settings.view',
-            view_general_settings: 'settings.general.view', 
-            update_general_settings: 'settings.general.update', 
-            create_api_settings: "settings.api.create", 
-            edit_api_settings: "settings.api.edit", 
-            activate_api_settings: "settings.api.activate", 
-            deactivate_api_settings: "settings.api.deactivate", 
-            suspend_api_settings: "settings.api.suspend", 
-            update_status_api_settings: "settings.api.statusUpdate",  
-            edit_cdn_settings: "settings.cdn.edit",  
-            delete_cdn_settings: "settings.cdn.delete",  
-            activate_cdn_settings: "settings.cdn.activate",  
-            deactivate_cdn_settings: "settings.cdn.deactivate",  
-            suspend_cdn_settings: "settings.cdn.suspend",  
+            view_general_settings: 'settings.general.view',
+            update_general_settings: 'settings.general.update',
+            create_api_settings: "settings.api.create",
+            edit_api_settings: "settings.api.edit",
+            activate_api_settings: "settings.api.activate",
+            deactivate_api_settings: "settings.api.deactivate",
+            suspend_api_settings: "settings.api.suspend",
+            update_status_api_settings: "settings.api.statusUpdate",
+            edit_cdn_settings: "settings.cdn.edit",
+            delete_cdn_settings: "settings.cdn.delete",
+            activate_cdn_settings: "settings.cdn.activate",
+            deactivate_cdn_settings: "settings.cdn.deactivate",
+            suspend_cdn_settings: "settings.cdn.suspend",
             register_mpesa_callbacks: "settings.mpesa.register_endpoint",
             access_cpanel_setting: 'edit',
             delete_cpanel_setting: 'delete',
@@ -269,7 +269,7 @@ const bindings = {
             delete_cpanel_setting: 'settings.cpanel.delete',
             activate_cpanel_setting: 'settings.cpanel.activate',
             deactivate_cpanel_setting: 'settings.cpanel.deactivate',
-        }, 
+        },
 
         // Developer
         developer: {
@@ -282,12 +282,129 @@ const bindings = {
             unpack_updates: 'developer.zip.unpack',
         },
     },
-    
+
     templateInstructions: {
-        business_logo: {
-            name: 'Business Logo',
-            slug: 'business_logo',
-            description: 'The official logo of the business, used for branding purposes in communications and documents.',
+        business_info: {
+            tabName: 'Business Info',
+            description: 'Details related to the business identity and contact information.',
+            bindings: {
+                business_logo: {
+                    name: 'Business Logo',
+                    slug: 'business_logo',
+                    description: 'The official logo of the business, used in documents and communication.',
+                },
+                business_name: {
+                    name: 'Business Name',
+                    slug: 'business_name',
+                    description: 'The registered name of the business.',
+                },
+                business_email: {
+                    name: 'Business Email',
+                    slug: 'business_email',
+                    description: 'Primary communication email address for the business.',
+                },
+                business_phone: {
+                    name: 'Business Phone',
+                    slug: 'business_phone',
+                    description: 'The official contact phone number of the business.',
+                },
+                business_address: {
+                    name: 'Business Address',
+                    slug: 'business_address',
+                    description: 'The postal or physical address of the business.',
+                },
+            }
+        },
+
+        user_info: {
+            tabName: 'User Info',
+            description: 'Details related to the user performing the action or receiving the notification.',
+            bindings: {
+                user_id: {
+                    name: 'User ID',
+                    slug: 'user_id',
+                    description: 'Unique system identifier for the user.',
+                },
+                user_email: {
+                    name: 'User Email',
+                    slug: 'user_email',
+                    description: 'The email address of the user.',
+                },
+                user_username: {
+                    name: 'Username',
+                    slug: 'user_username',
+                    description: 'The display or login username of the user.',
+                },
+                login_at: {
+                    name: 'Login Time',
+                    slug: 'login_at',
+                    description: 'The date and time when the user logged in.',
+                },
+                ip_address: {
+                    name: 'IP Address',
+                    slug: 'ip_address',
+                    description: 'The IP address used during login.',
+                },
+                user_agent: {
+                    name: 'User Agent',
+                    slug: 'user_agent',
+                    description: 'Browser or device used to perform the login.',
+                },
+            }
+        },
+
+        payment_info: {
+            tabName: 'Payment Info',
+            description: 'Bindings for invoices, payments and financial communication.',
+            bindings: {
+                payment_amount: {
+                    name: 'Payment Amount',
+                    slug: 'payment_amount',
+                    description: 'The amount paid by the customer.',
+                },
+                payment_date: {
+                    name: 'Payment Date',
+                    slug: 'payment_date',
+                    description: 'The date the payment was made.',
+                },
+                payment_method: {
+                    name: 'Payment Method',
+                    slug: 'payment_method',
+                    description: 'The payment channel used (M-Pesa, Cash, Bank).',
+                },
+                invoice_amount: {
+                    name: 'Invoice Amount',
+                    slug: 'invoice_amount',
+                    description: 'The total invoice amount issued to the customer.',
+                },
+                invoice_due_date: {
+                    name: 'Invoice Due Date',
+                    slug: 'invoice_due_date',
+                    description: 'The deadline for paying the invoice.',
+                },
+            }
+        },
+
+        system_info: {
+            tabName: 'System Info',
+            description: 'Auto-generated metadata from the system.',
+            bindings: {
+                current_date: {
+                    name: 'Current Date',
+                    slug: 'current_date',
+                    description: 'The date the notification is generated.',
+                },
+                current_time: {
+                    name: 'Current Time',
+                    slug: 'current_time',
+                    description: 'The time the notification is generated.',
+                },
+                system_name: {
+                    name: 'System Name',
+                    slug: 'system_name',
+                    description: 'Name of the SaaS system sending the notification.',
+                },
+            }
         },
     }
 }

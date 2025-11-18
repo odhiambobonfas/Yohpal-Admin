@@ -7,6 +7,8 @@ class NotificationTemplate extends Master {
     setupNotifactionTemplateView() {   
         // Show/hide associated email based on channel selection
         const templateChannel = document.querySelector('.templateChannel');
+        const templateInstructionCategories = document.querySelectorAll('.templateInstructionCategories'); 
+
         templateChannel.addEventListener('change', function() {
             var selectedChannel = this.value;
             const parentDiv = templateChannel.closest('form');
@@ -18,6 +20,19 @@ class NotificationTemplate extends Master {
             } else {
                 [emailDiv, emailSubjectDiv].forEach(div => div.classList.add('d-none'));
             }
+        });
+
+        templateInstructionCategories.forEach(cat => {
+            cat.addEventListener('change', function() {
+                var selectedCat = this.value; 
+                const parentDiv = cat.closest('.modal-content');
+                var allTargets = parentDiv.querySelectorAll('.binding-category');
+                var targets = parentDiv.querySelectorAll(`[data-category="${selectedCat}"]`);
+                allTargets.forEach(target => target.classList.add('d-none'));
+                if (selectedCat) {
+                    targets.forEach(target => target.classList.remove('d-none'));
+                }
+            });
         });
     }
 

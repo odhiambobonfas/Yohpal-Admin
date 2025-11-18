@@ -194,23 +194,23 @@ class AuthController {
             }); 
             
             req.session.token = token;
-
+            
             EventLogger.dispatch(req.redis, {
                 eventType: 'user_login',
                 eventActor: user.uid,
                 eventChannel: 'email',
                 eventPayload: {
-                    uid: user.uid,
-                    email: user.email,
-                    username: user.userName,
-                    loginAt: new Date().toISOString(),
-                    createdAt: new Date().toISOString(), 
-                    ipAddress: req.ip,
-                    userAgent: req.headers['user-agent'] || '', 
-                    notificationTemplate: 'user_login',
+                    user_id: user.uid,
+                    user_email: user.email,
+                    user_username: user.userName,
+                    login_at: new Date().toISOString(),
+                    created_at: new Date().toISOString(),
+                    ip_address: req.ip,
+                    user_agent: req.headers['user-agent'] || '',
+                    notification_template: 'user_login',
                 }
             });
-            
+
             res.status(200).json({
                 status: 'success',
                 message: LANG_EN.success.auth_login,
