@@ -47,6 +47,7 @@ class NotificationTemplate extends Master {
                 toggleButtonContent(btn);
                 disableElement(btn);
                 let form = btn.closest('form'); 
+                tinymce.triggerSave();
                 let data = new FormData(form);
 
                 try {
