@@ -110,7 +110,7 @@ class CommunicationUtil extends Util {
                     email: emailAddress,
                     encrytpionType: data.encryptionType?.toLowerCase() || 'tls',
                     incomingPort: Number(data.incomingSmtpPort || 993),
-                    ougoingPort: Number(data.outgoingSmtpPort || 465),
+                    outgoingPort: Number(data.outgoingSmtpPort || 465),
                     login: emailAddress,
                     name: data.emailName,
                     password: encryptedPassword, 
@@ -160,7 +160,7 @@ class CommunicationUtil extends Util {
                         password: data?.smtpPassword,
                         encryption: data.encryptionType,
                         incomingPort: emailDoc.incomingPort || 993,
-                        outgoingPort: emailDoc.ougoingPort || 465,
+                        outgoingPort: emailDoc.outgoingPort || 465,
                         diskQuota: emailDoc.diskQuota,
                         quotaValue: emailDoc.diskQuota === 'limited'
                             ? emailDoc.quotaValue
