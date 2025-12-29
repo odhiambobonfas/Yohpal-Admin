@@ -3,9 +3,14 @@
  *
  * @param {Array<string>} userPermissions - List of permissions the user has
  * @param {string} key - The permission key to check
+ * @param {object} userRole - User role object to check for super admin status
  * @returns {boolean} - Returns true if the user has the specified permission, false otherwise
  */
-export function hasPermission(userPermissions, key) {
+export function hasPermission(userPermissions, key, userRole = null) {
+    // Super admins have all permissions
+    if (userRole && userRole.isSuperAdmin) {
+        return true;
+    }
     return userPermissions.includes(key);
 }
 

@@ -34,31 +34,31 @@ class UsersController {
                     let id = col['uid'] || col['id'];
                     let status = col['status'] || 'unset';  
                     
-                    if (hasPermission(user?.permissions || [], 'users.edit')) {
+                    if (hasPermission(user?.permissions || [], 'users.edit', user?.role)) {
                         actions += `<a class="btn btn-sm dropdown-item" href="/users/edit/${id}">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>`
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.delete')) {
+                    if (hasPermission(user?.permissions || [], 'users.delete', user?.role)) {
                         actions += `<a class="btn btn-sm dropdown-item delete" href="javascript:void(0)" data-id="${id}">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </a>`
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.activate') && ['inactive', 'pending', 'unset'].includes(status)) { 
+                    if (hasPermission(user?.permissions || [], 'users.activate', user?.role) && ['inactive', 'pending', 'unset'].includes(status)) { 
                         actions += `<a class="btn btn-sm dropdown-item activate" href="javascript:void(0)" data-id="${id}" data-status="active">
                                 <i class="fas fa-check-circle me-1"></i> Activate
                             </a>` 
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.deactivate') && ['active', 'unset'].includes(status)) { 
+                    if (hasPermission(user?.permissions || [], 'users.deactivate', user?.role) && ['active', 'unset'].includes(status)) { 
                         actions += `<a class="btn btn-sm dropdown-item deactivate" href="javascript:void(0)" data-id="${id}" data-status="inactive">
                                 <i class="fas fa-times-circle me-1"></i> Deactivate
                             </a>` 
                     }
 
-                    if (hasPermission(user?.permissions || [], 'users.suspend') && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
+                    if (hasPermission(user?.permissions || [], 'users.suspend', user?.role) && ['active', 'inactive', 'pending', 'unset'].includes(status)) { 
                         actions += `<a class="btn btn-sm dropdown-item suspend" href="javascript:void(0)" data-id="${id}" data-status="suspended">
                                 <i class="fas fa-user-slash me-1"></i> Suspend
                             </a>` 
