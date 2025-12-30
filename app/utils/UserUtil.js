@@ -22,80 +22,22 @@ class UserUtil extends Util {
 
     async getAllUsers(redis, filters={}) {    
         try { 
-            const filtersKey = 'yp:users:filters';
-            const cacheKey = 'yp:users:filtered';
-
-            const cachedFilters = await redis.getFunc(filtersKey);
-            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
-            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+            const cacheKey = 'yp:users:all';
             
-            // If filters changed, have to invalidate the cache
-            if (savedFilters !== currentFilters) {
-                await redis.deleteFunc(filtersKey);
-                await redis.deleteFunc(cacheKey);
-
-                await redis.cacheParser(filtersKey, async () => filters, 2000);
-            } 
             let users = await redis?.cacheParser(
                 cacheKey,
-                async () => {  
+                async () => {
                     let query = FirestoreDatabase.collection(User.collection);
-
-                    if (filters?.userName?.length) {
-                        query = query.where("username", "==", filters.userName);
-                    }
-
-                    if (filters?.email?.length) {
-                        query = query.where("email", "==", filters.email);
-                    } 
-
-                    if (filters?.country?.length) {
-                        query = query.where("country", "==", filters.country);
-                    }
-
-                    if (filters?.phoneNumber?.length) {
-                        query = query.where("phoneNumber", "==", filters.phoneNumber);
-                    }
-                    
-                    if (filters?.adminType?.length) {
-                        query = query.where("adminType", "==", filters.adminType);
-                    }
-
-                    if (filters?.Status?.length) {
-                        query = query.where("status", "==", filters.Status);
-                    } 
-
-                    if (filters?.roleId?.length) {
-                        query = query.where("roleId", "==", filters.roleId);
-                    } 
-
-                    if (filters?.createdAt?.length || filters?.daterange?.length) {
-                        let createdAt = parseDateRange(filters?.createdAt || filters?.daterange, true); 
-                        if (createdAt.start && createdAt.end) { 
-                            query = query.where("createdAt", ">=", createdAt.start);
-                            query = query.where("createdAt", "<=", createdAt.end);
-                        }
-                    }
-                    
-                    if (filters.orderBy && filters.orderByDirection) {
-                        query = query.orderBy(filters.orderBy, filters.orderByDirection); 
-                    }
-
-                    if (filters.limit) {
-                        query = query.limit(filters.limit);
-                    }
-
                     const snapshot = await query.get(); 
 
                     if (snapshot.empty) {
                         return [];
                     }
 
-                    let fetched =  fbCollectionParser(snapshot); 
+                    let users = fbCollectionParser(snapshot); 
 
-                    fetched = await Promise.all(fetched.map( async (user) => {
+                    users = await Promise.all(users.map(async (user) => {
                         let role = {};      
-                        // if user has a role reference
                         if (user.roleRef && user.roleRef.get) {
                             const roleSnap = await user.roleRef.get();
                             if (roleSnap.exists) {
@@ -103,17 +45,17 @@ class UserUtil extends Util {
                             }
                         }
                         
+                        if (!role.name) {
+                            role = { name: 'No Role', description: 'User without assigned role' };
+                        }
+                        
                         user.role = role; 
                         return user;
                     }));  
 
-                    if (filters?.roleExists && filters.roleExists) {
-                        fetched = fetched.filter(user => user.roleRef !== null && user.roleRef !== undefined && user.roleRef !== '');
-                    }
-
-                    return fetched;
+                    return users;
                 },
-                7200
+                300 // Cache for 5 minutes
             );
 
             return users;
