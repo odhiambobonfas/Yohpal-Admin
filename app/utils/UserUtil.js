@@ -28,6 +28,14 @@ class UserUtil extends Util {
                 cacheKey,
                 async () => {
                     let query = FirestoreDatabase.collection(User.collection);
+                    
+                    // Filter users created by Super Admin (users with addedBy field)
+                    // This excludes users without addedBy (not created through admin panel)
+                    if (filters?.createdBySuperAdmin) {
+                        // Only get users that have an addedBy field (created by admins)
+                        query = query.where('addedBy', '!=', null);
+                    }
+                    
                     const snapshot = await query.get(); 
 
                     if (snapshot.empty) {
@@ -45,13 +53,13 @@ class UserUtil extends Util {
                             }
                         }
                         
-                        if (!role.name) {
-                            role = { name: 'No Role', description: 'User without assigned role' };
-                        }
-                        
+                        // Only include users with valid roles (created by Super Admin)
                         user.role = role; 
                         return user;
                     }));  
+                    
+                    // Filter out users without roles (not created by Super Admin)
+                    users = users.filter(user => user.role && user.role.name);
 
                     return users;
                 },

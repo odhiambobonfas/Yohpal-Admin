@@ -25,8 +25,8 @@ class UsersController {
             let users = [];
             let user = req.session.user; 
             try {  
-                req.query.roleExists = true;
-                users = await UsersUtil.getAllUsers(req?.redis, req.query); 
+                // Filter to show only users created by Super Admin
+                users = await UsersUtil.getAllUsers(req?.redis, { createdBySuperAdmin: true }); 
                 
                 let mex = new mexDtParser(users);
                 users = mex.addColumn('actions', (col) => {
