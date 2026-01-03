@@ -298,6 +298,15 @@
                      </li>
                      <% } %>
 
+                     <!-- Video Management -->
+                     <% if (hasPermission('videos.access')) { %>
+                     <li class="nav-item">
+                         <a class="nav-link" href="/videos">
+                             <i class="fa fa-video me-2"></i> Video Management
+                         </a>
+                     </li>
+                     <% } %>
+
                      <!-- Notification Templates Dropdown --> 
                      <% if (hasAnyPermission(['notifications.access', 'notifications.view_templates', 'notifications.manage_templates', 'notifications.manage_categories'])) { %>
                      <li class="nav-item">
