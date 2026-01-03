@@ -26,6 +26,7 @@ import MpesaController from "@app/controllers/web/MpesaController";
 import CommunicationController from "@app/controllers/web/CommunicationController";
 import FollowerController from "@app/controllers/yohpal/FollowerController";
 import NotificationController from "@app/controllers/web/NotificationController";
+import VideosController from "@app/controllers/web/VideosController";
 import authMiddleware from "@app/mwares/authMiddleware";
 import routeMiddleware from "@app/mwares/routeMiddleware";
 
@@ -160,5 +161,10 @@ router.route('/notification/templates/edit/:id')
 
 // TINYMCE settings
 router.get('/tinymce/settings', authMiddleware, SettingsController.tinyMceSetting);
+
+// Videos routes
+router.get('/videos', authMiddleware, VideosController.index);
+router.post('/videos/:videoId/flag', authMiddleware, VideosController.flag);
+router.post('/videos/:videoId/unflag', authMiddleware, VideosController.unflag);
 
 export default router;
