@@ -281,6 +281,15 @@ const bindings = {
             upload_updates: 'developer.zip.upload',
             unpack_updates: 'developer.zip.unpack',
         },
+
+        // Videos Management
+        videos: {
+            access: 'videos.access',
+            view: 'videos.view',
+            flag: 'videos.flag',
+            unflag: 'videos.unflag',
+            delete: 'videos.delete',
+        },
     },
 
     templateInstructions: {
