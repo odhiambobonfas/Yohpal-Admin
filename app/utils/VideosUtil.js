@@ -63,6 +63,89 @@ class VideosUtil extends Util {
             return 0;
         }
     }
+
+    async getAllVideos(options = {}) {
+        const {
+            page = 1,
+            limit = 20,
+            flagged = null,
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
+        } = options;
+
+        const cacheKey = `videos:list:${page}:${limit}:${flagged}:${sortBy}:${sortOrder}`;
+        
+        try {
+            const cached = await RedisCache.get(cacheKey);
+            if (cached) return JSON.parse(cached);
+        } catch (error) {
+            console.log('Redis cache miss:', error.message);
+        }
+
+        let query = FirestoreDatabase.collection(Video.collection);
+        
+        if (flagged !== null) {
+            query = query.where('flagged', '==', flagged);
+        }
+        
+        query = query.orderBy(sortBy, sortOrder)
+                    .limit(limit)
+                    .offset((page - 1) * limit);
+
+        const snapshot = await query.get();
+        const videos = [];
+
+        for (const doc of snapshot.docs) {
+            const data = doc.data();
+            let uploaderName = 'Unknown';
+            
+            if (data.uploadedByRef) {
+                try {
+                    const userDoc = await data.uploadedByRef.get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        uploaderName = userData.userName || `${userData.firstName} ${userData.lastName}`;
+                    }
+                } catch (error) {
+                    console.log('Error fetching uploader:', error.message);
+                }
+            }
+
+            videos.push({
+                id: doc.id,
+                ...data,
+                uploaderName
+            });
+        }
+
+        try {
+            await RedisCache.setex(cacheKey, 120, JSON.stringify(videos));
+        } catch (error) {
+            console.log('Redis cache set failed:', error.message);
+        }
+        
+        return videos;
+    }
+
+    async updateVideoFlag(videoId, flagged, reason = null) {
+        const updateData = {
+            flagged,
+            flaggedAt: flagged ? admin.firestore.FieldValue.serverTimestamp() : null,
+            flagReason: reason,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+
+        await FirestoreDatabase.collection(Video.collection).doc(videoId).update(updateData);
+        
+        try {
+            const keys = await RedisCache.keys('videos:list:*');
+            if (keys.length) await RedisCache.del(...keys);
+        } catch (error) {
+            console.log('Cache invalidation failed:', error.message);
+        }
+        
+        return updateData;
+    }
 }
 
 export default new VideosUtil();
