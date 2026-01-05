@@ -14,7 +14,6 @@ $(document).ready(function() {
             ajax: {
                 url: '/videos',
                 type: 'GET',
-                data: { flagged: currentFilter === 'all' ? null : currentFilter },
                 dataSrc: 'data'
             },
             columns: [
@@ -23,8 +22,7 @@ $(document).ready(function() {
                 { data: 'createdAt' },
                 { data: 'flagged' },
                 { data: 'actions' }
-            ],
-            order: [[2, 'desc']]
+            ]
         });
     }
 

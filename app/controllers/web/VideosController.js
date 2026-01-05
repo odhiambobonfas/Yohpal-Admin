@@ -13,11 +13,7 @@ class VideosController {
                 const { page = 1, flagged } = req.query;
                 const user = req.session.user;
                 
-                const videos = await VideosUtil.getAllVideos({
-                    page: parseInt(page),
-                    limit: 20,
-                    flagged: flagged === 'true' ? true : flagged === 'false' ? false : null
-                });
+                const videos = await VideosUtil.getAllVideos();
 
                 let mex = new mexDtParser(videos);
                 const formattedVideos = mex.addColumn('actions', (col) => {

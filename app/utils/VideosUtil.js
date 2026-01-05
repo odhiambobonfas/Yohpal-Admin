@@ -64,35 +64,8 @@ class VideosUtil extends Util {
         }
     }
 
-    async getAllVideos(options = {}) {
-        const {
-            page = 1,
-            limit = 20,
-            flagged = null,
-            sortBy = 'createdAt',
-            sortOrder = 'desc'
-        } = options;
-
-        const cacheKey = `videos:list:${page}:${limit}:${flagged}:${sortBy}:${sortOrder}`;
-        
-        try {
-            const cached = await RedisCache.get(cacheKey);
-            if (cached) return JSON.parse(cached);
-        } catch (error) {
-            console.log('Redis cache miss:', error.message);
-        }
-
-        let query = FirestoreDatabase.collection(Video.collection);
-        
-        if (flagged !== null) {
-            query = query.where('flagged', '==', flagged);
-        }
-        
-        query = query.orderBy(sortBy, sortOrder)
-                    .limit(limit)
-                    .offset((page - 1) * limit);
-
-        const snapshot = await query.get();
+    async getAllVideos() {
+        const snapshot = await FirestoreDatabase.collection(Video.collection).get();
         const videos = [];
 
         for (const doc of snapshot.docs) {
@@ -116,12 +89,6 @@ class VideosUtil extends Util {
                 ...data,
                 uploaderName
             });
-        }
-
-        try {
-            await RedisCache.setex(cacheKey, 120, JSON.stringify(videos));
-        } catch (error) {
-            console.log('Redis cache set failed:', error.message);
         }
         
         return videos;
