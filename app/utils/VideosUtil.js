@@ -54,7 +54,7 @@ class VideosUtil extends Util {
     
                     return snapshot.data().count;
                 },
-                7200
+                5
             );
     
             return count;
@@ -66,9 +66,16 @@ class VideosUtil extends Util {
 
     async getAllVideos() {
         const snapshot = await FirestoreDatabase.collection(Video.collection).get();
+        
+        // Filter out broken videos
+        const validVideos = snapshot.docs.filter(doc => {
+            const data = doc.data();
+            return data.broken !== true;
+        });
+        
         const videos = [];
 
-        for (const doc of snapshot.docs) {
+        for (const doc of validVideos) {
             const data = doc.data();
             let uploaderName = 'Unknown';
             
@@ -90,6 +97,8 @@ class VideosUtil extends Util {
                 uploaderName
             });
         }
+        
+        // console.log(`📹 Filtered ${validVideos.length} valid videos from ${snapshot.docs.length} total`);
         
         return videos;
     }
