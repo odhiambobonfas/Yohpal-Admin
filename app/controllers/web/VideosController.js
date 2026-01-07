@@ -8,10 +8,28 @@ class VideosController {
     static async index(req, res) {
         if (isAjaxRequest(req)) {
             try {
-                const videos = await VideosUtil.getAllVideos();
+                const limit = Number(req.query.limit) || 20;
+                const cursorPagination = req.query.cursorPagination || null;
+                
+                const filters = {
+                    flagged: req.query.flagged,
+                    daterange: req.query.daterange
+                };
+
+                const result = await VideosUtil.getPaginatedVideos({
+                    limit,
+                    cursorPagination,
+                    filters
+                });
+
                 return res.status(200).json({
                     status: 'success',
-                    data: videos
+                    data: result.videos,
+                    page: {
+                        limit,
+                        nextCursorPagination: result.nextCursorPagination,
+                        hasMore: result.hasMore
+                    }
                 });
             } catch (error) {
                 return res.status(500).json({
