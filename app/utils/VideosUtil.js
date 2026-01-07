@@ -64,43 +64,91 @@ class VideosUtil extends Util {
         }
     }
 
-    async getAllVideos() {
-        const snapshot = await FirestoreDatabase.collection(Video.collection).get();
-        
-        // Filter out broken videos
-        const validVideos = snapshot.docs.filter(doc => {
-            const data = doc.data();
-            return data.broken !== true;
-        });
-        
-        const videos = [];
+    async getPaginatedVideos({ limit = 20, cursorPagination = null, filters = {} }) {
+        try {
+            // Defensive limits
+            limit = Math.min(Math.max(limit, 1), 100);
 
-        for (const doc of validVideos) {
-            const data = doc.data();
-            let uploaderName = 'Unknown';
-            
-            if (data.uploadedByRef) {
-                try {
-                    const userDoc = await data.uploadedByRef.get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        uploaderName = userData.userName || `${userData.firstName} ${userData.lastName}`;
-                    }
-                } catch (error) {
-                    console.log('Error fetching uploader:', error.message);
+            let query = FirestoreDatabase.collection(Video.collection);
+
+            // Filter out broken videos - MUST REMAIN
+            query = query.where('broken', '!=', true);
+
+            // Apply filters before ordering
+            if (filters.flagged !== undefined) {
+                query = query.where('flagged', '==', filters.flagged === 'true');
+            }
+
+            // Date range filter
+            if (filters.daterange?.length) {
+                let daterange = parseDateRange(filters.daterange, true);   
+                if (daterange.start && daterange.end) { 
+                    query = query.where("timestamp", ">=", daterange.start);
+                    query = query.where("timestamp", "<=", daterange.end);
                 }
             }
 
-            videos.push({
-                id: doc.id,
-                ...data,
-                uploaderName
-            });
+            // Order by broken first (required for != filter), then timestamp
+            query = query.orderBy('broken').orderBy('timestamp', 'desc').limit(limit);
+
+            // Cursor logic using broken + timestamp
+            if (cursorPagination) {
+                try {
+                    const cursor = JSON.parse(cursorPagination);
+                    if (cursor.broken !== undefined && cursor.timestamp) {
+                        query = query.startAfter(cursor.broken, cursor.timestamp);
+                    }
+                } catch (error) {
+                    console.log('Invalid cursor format, ignoring:', error.message);
+                }
+            }
+
+            const snapshot = await query.get();
+
+            const videos = [];
+            for (const doc of snapshot.docs) {
+                const data = doc.data();
+
+                let uploaderName = 'Unknown';
+                if (data.uploadedByRef) {
+                    try {
+                        const userDoc = await data.uploadedByRef.get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            uploaderName = userData.userName || `${userData.firstName} ${userData.lastName}`;
+                        }
+                    } catch (error) {
+                        console.log('Error fetching uploader:', error.message);
+                    }
+                }
+
+                videos.push({
+                    id: doc.id,
+                    ...data,
+                    uploaderName
+                });
+            }
+
+            // Create next cursor from last document
+            let nextCursorPagination = null;
+            if (snapshot.docs.length === limit && videos.length > 0) {
+                const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                const lastData = lastDoc.data();
+                nextCursorPagination = JSON.stringify({
+                    broken: lastData.broken || false,
+                    timestamp: lastData.timestamp
+                });
+            }
+
+            return {
+                videos,
+                nextCursorPagination,
+                hasMore: snapshot.docs.length === limit
+            };
+        } catch (error) {
+            console.error('Error in getPaginatedVideos:', error);
+            throw error;
         }
-        
-        // console.log(`📹 Filtered ${validVideos.length} valid videos from ${snapshot.docs.length} total`);
-        
-        return videos;
     }
 
     async updateVideoFlag(videoId, flagged, reason = null) {
@@ -114,8 +162,9 @@ class VideosUtil extends Util {
         await FirestoreDatabase.collection(Video.collection).doc(videoId).update(updateData);
         
         try {
-            const keys = await RedisCache.keys('videos:list:*');
-            if (keys.length) await RedisCache.del(...keys);
+            // Invalidate cursorPagination cache patterns
+            const cursorKeys = await RedisCache.keys('videos:cursorPagination:*');
+            if (cursorKeys.length) await RedisCache.del(...cursorKeys);
         } catch (error) {
             console.log('Cache invalidation failed:', error.message);
         }
