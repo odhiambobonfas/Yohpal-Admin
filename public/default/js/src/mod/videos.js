@@ -21,41 +21,60 @@ $(document).ready(function() {
         }
     }
 
-    // Load videos
-    function loadVideos() {
-        $('#loading').show();
-        $('#videos').hide();
-        $('#empty-state').hide();
+    // Load videos with cursorPagination pagination
+    function loadVideos(cursorPagination = null, append = false) {
+        if (!append) {
+            $('#loading').show();
+            $('#videos').hide();
+            $('#empty-state').hide();
+        }
 
         $.ajax({
             url: '/videos',
             type: 'GET',
+            data: {
+                limit: 20,
+                ...(cursorPagination && { cursorPagination: cursorPagination }),
+                ...(currentFilter !== 'all' && { flagged: currentFilter })
+            },
             success: function(response) {
                 if (response.status === 'success') {
-                    allVideos = response.data;
-                    renderVideos(allVideos);
+                    if (append) {
+                        allVideos = allVideos.concat(response.data);
+                    } else {
+                        allVideos = response.data;
+                    }
+                    
+                    renderVideos(allVideos, !append);
+                    
+                    // Handle load more button
+                    if (response.page && response.page.hasMore) {
+                        showLoadMoreButton(response.page.nextCursorPagination);
+                    } else {
+                        hideLoadMoreButton();
+                    }
                 } else {
-                    $('#empty-state').show();
+                    if (!append) $('#empty-state').show();
                 }
             },
             error: function() {
-                $('#empty-state').show();
+                if (!append) $('#empty-state').show();
                 if (typeof toastr !== 'undefined') {
                     toastr.error('Failed to load videos');
                 }
             },
             complete: function() {
-                $('#loading').hide();
+                if (!append) $('#loading').hide();
             }
         });
     }
 
     // Render video cards
-    function renderVideos(videos) {
+    function renderVideos(videos, clear = true) {
         const $container = $('#videos');
-        $container.empty();
+        if (clear) $container.empty();
 
-        if (videos.length === 0) {
+        if (videos.length === 0 && clear) {
             $('#empty-state').show();
             return;
         }
@@ -111,17 +130,38 @@ $(document).ready(function() {
         });
     }
 
+    // Load more functionality
+    function showLoadMoreButton(nextCursorPagination) {
+        $('#load-more-container').remove();
+        $('#videos').after(`
+            <div id="load-more-container" class="text-center mt-4">
+                <button id="load-more-btn" class="btn btn-primary" data-cursor-pagination="${nextCursorPagination}">
+                    <i class="fas fa-plus"></i> Load More Videos
+                </button>
+            </div>
+        `);
+    }
+
+    function hideLoadMoreButton() {
+        $('#load-more-container').remove();
+    }
+
+    // Load more button click handler
+    $(document).on('click', '#load-more-btn', function() {
+        const cursorPagination = $(this).data('cursor-pagination');
+        const $btn = $(this);
+        
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+        
+        loadVideos(cursorPagination, true);
+    });
+
     // Filter videos
     function filterVideos(filter) {
-        let filtered = allVideos;
-        
-        if (filter === 'true') {
-            filtered = allVideos.filter(v => v.flagged === true);
-        } else if (filter === 'false') {
-            filtered = allVideos.filter(v => v.flagged === false);
-        }
-        
-        renderVideos(filtered);
+        currentFilter = filter;
+        allVideos = [];
+        hideLoadMoreButton();
+        loadVideos();
     }
 
     // Filter buttons
@@ -171,6 +211,9 @@ $(document).ready(function() {
                 if (typeof toastr !== 'undefined') {
                     toastr.success('Video flagged successfully');
                 }
+                // Reset and reload from beginning
+                allVideos = [];
+                hideLoadMoreButton();
                 loadVideos();
             },
             error: function(xhr) {
@@ -203,6 +246,9 @@ $(document).ready(function() {
                 if (typeof toastr !== 'undefined') {
                     toastr.success('Video unflagged successfully');
                 }
+                // Reset and reload from beginning
+                allVideos = [];
+                hideLoadMoreButton();
                 loadVideos();
             },
             error: function(xhr) {
