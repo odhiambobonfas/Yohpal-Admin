@@ -109,18 +109,8 @@ class VideosUtil extends Util {
             for (const doc of snapshot.docs) {
                 const data = doc.data();
 
-                let uploaderName = 'Unknown';
-                if (data.uploadedByRef) {
-                    try {
-                        const userDoc = await data.uploadedByRef.get();
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            uploaderName = userData.userName || `${userData.firstName} ${userData.lastName}`;
-                        }
-                    } catch (error) {
-                        console.log('Error fetching uploader:', error.message);
-                    }
-                }
+                // Use userName/fullName directly from video document
+                const uploaderName = data.userName || data.fullName || 'Unknown';
 
                 videos.push({
                     id: doc.id,
