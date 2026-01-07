@@ -81,9 +81,8 @@ $(document).ready(function() {
 
         $('#videos').show();
         videos.forEach(function(video) {
-            const uploadDate = video.createdAt?.seconds 
-                ? new Date(video.createdAt.seconds * 1000).toLocaleDateString()
-                : 'N/A';
+            const date = new Date(video.timestamp?._seconds * 1000);
+            const uploadDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
             
             const isFlagged = video.flagged === true;
             const flaggedClass = isFlagged ? 'border-danger' : '';
