@@ -70,7 +70,8 @@ class VideosUtil extends Util {
             
             // CRITICAL: Dynamic batch sizing based on filter type
             const hasTextFilter = filters.uploader?.trim();
-            const batchSize = hasTextFilter ? 100 : limit;
+            const hasFlaggedFilter = filters.flagged !== undefined;
+            const batchSize = (hasTextFilter || hasFlaggedFilter) ? 100 : limit;
             
             const excludeSet = new Set(excludeIds);
             const videos = [];
@@ -78,7 +79,7 @@ class VideosUtil extends Util {
             let totalFetched = 0;
             let duplicatesSkipped = 0;
             let iterations = 0;
-            const MAX_ITERATIONS = hasTextFilter ? 5 : 1;
+            const MAX_ITERATIONS = (hasTextFilter || hasFlaggedFilter) ? 5 : 1;
             
             // STRATEGY: Keep fetching batches until we have enough matches or reach end
             while (videos.length < limit && iterations < MAX_ITERATIONS) {
@@ -88,11 +89,6 @@ class VideosUtil extends Util {
 
                 // Apply indexed filters
                 query = query.where('broken', '==', false);
-
-                if (filters.flagged !== undefined) {
-                    const isFlagged = filters.flagged === 'true';
-                    query = query.where('flagged', '==', isFlagged);
-                }
 
                 if (filters.daterange?.length) {
                     let daterange = parseDateRange(filters.daterange, true);   
@@ -149,6 +145,15 @@ class VideosUtil extends Util {
                         const fullName = (data.fullName || '').toLowerCase();
                         
                         if (!userName.includes(searchTerm) && !fullName.includes(searchTerm)) {
+                            continue;
+                        }
+                    }
+
+                    // Apply flagged filter (post-query)
+                    if (hasFlaggedFilter) {
+                        const isFlagged = data.flagged === true;
+                        const wantsFlagged = filters.flagged === 'true';
+                        if (isFlagged !== wantsFlagged) {
                             continue;
                         }
                     }
