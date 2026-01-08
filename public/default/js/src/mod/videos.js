@@ -2,26 +2,7 @@ $(document).ready(function() {
     let allVideos = [];
     let currentFilter = 'all';
 
-    // HTML escaping function to prevent XSS
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Validate video URL
-    function isValidVideoUrl(url) {
-        if (!url) return false;
-        try {
-            const urlObj = new URL(url);
-            return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
-        } catch {
-            return false;
-        }
-    }
-
-    // Load videos with cursorPagination pagination
+    // Load videos with cursor pagination
     function loadVideos(cursorPagination = null, append = false) {
         if (!append) {
             $('#loading').show();
@@ -57,11 +38,9 @@ $(document).ready(function() {
                     if (!append) $('#empty-state').show();
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
                 if (!append) $('#empty-state').show();
-                if (typeof toastr !== 'undefined') {
-                    toastr.error('Failed to load videos');
-                }
+                toastr.error('Failed to load videos');
             },
             complete: function() {
                 if (!append) $('#loading').hide();
@@ -90,34 +69,23 @@ $(document).ready(function() {
                 ? '<span class="badge bg-danger"><i class="fas fa-flag"></i> Flagged</span>'
                 : '<span class="badge bg-success"><i class="fas fa-check"></i> Active</span>';
             
-            const videoId = escapeHtml(video.id);
             const actionButton = isFlagged
-                ? `<button class="btn btn-sm btn-success unflag-video" data-id="${videoId}" title="Remove flag">
+                ? `<button class="btn btn-sm btn-success unflag-video" data-id="${video.id}">
                      <i class="fas fa-check"></i> Unflag
                    </button>`
-                : `<button class="btn btn-sm btn-danger flag-video" data-id="${videoId}" title="Flag for review">
+                : `<button class="btn btn-sm btn-danger flag-video" data-id="${video.id}">
                      <i class="fas fa-flag"></i> Flag
                    </button>`;
 
-            const flagReason = isFlagged && video.flagReason 
-                ? `<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${escapeHtml(video.flagReason)}</small>`
-                : '';
-
-            const videoElement = isValidVideoUrl(video.url)
-                ? `<video class="card-img-top" controls style="height: 200px; object-fit: cover;">
-                     <source src="${escapeHtml(video.url)}" type="video/mp4">
-                   </video>`
-                : '<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;"><i class="fas fa-video fa-2x text-muted"></i></div>';
-
             $container.append(`
                 <div class="col">
-                    <div class="card h-100 ${flaggedClass}" data-flagged="${isFlagged}">
-                        ${isFlagged ? '<div class="position-absolute top-0 end-0 p-2"><i class="fas fa-flag text-danger"></i></div>' : ''}
-                        ${videoElement}
+                    <div class="card h-100 ${flaggedClass}">
+                        <video class="card-img-top" controls style="height: 200px; object-fit: cover;">
+                            <source src="${video.url}" type="video/mp4">
+                        </video>
                         <div class="card-body d-flex flex-column">
-                            <h6 class="card-title">${escapeHtml(video.uploaderName || 'Unknown')}</h6>
+                            <h6 class="card-title">${video.uploaderName || 'Unknown'}</h6>
                             <p class="card-text text-muted small">${uploadDate}</p>
-                            ${flagReason}
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 ${statusBadge}
                                 ${actionButton}
@@ -129,16 +97,25 @@ $(document).ready(function() {
         });
     }
 
-    // Load more functionality
+    // Show or update load more button
     function showLoadMoreButton(nextCursorPagination) {
-        $('#load-more-container').remove();
-        $('#videos').after(`
-            <div id="load-more-container" class="text-center mt-4">
-                <button id="load-more-btn" class="btn btn-primary" data-cursor-pagination="${nextCursorPagination}">
-                    <i class="fas fa-plus"></i> Load More Videos
-                </button>
-            </div>
-        `);
+        let $container = $('#load-more-container');
+        
+        if ($container.length === 0) {
+            $('#videos').after(`
+                <div id="load-more-container" class="text-center mt-4">
+                    <button id="load-more-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Load More Videos
+                    </button>
+                </div>
+            `);
+            $container = $('#load-more-container');
+        }
+        
+        const $btn = $('#load-more-btn');
+        $btn.data('cursor-pagination', nextCursorPagination)
+            .prop('disabled', false)
+            .html('<i class="fas fa-plus"></i> Load More Videos');
     }
 
     function hideLoadMoreButton() {
@@ -147,118 +124,61 @@ $(document).ready(function() {
 
     // Load more button click handler
     $(document).on('click', '#load-more-btn', function() {
-        const cursorPagination = $(this).data('cursor-pagination');
         const $btn = $(this);
+        const cursorPagination = $btn.data('cursor-pagination');
         
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+        if (!cursorPagination) {
+            toastr.error('Unable to load more videos');
+            return;
+        }
+        
+        $btn.prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin"></i> Loading...');
         
         loadVideos(cursorPagination, true);
     });
 
-    // Filter videos
-    function filterVideos(filter) {
-        currentFilter = filter;
-        allVideos = [];
-        hideLoadMoreButton();
-        loadVideos();
-    }
-
-    // Filter buttons
+    // Filter functionality
     $('.filter-btn').on('click', function() {
         $('.filter-btn').removeClass('active');
         $(this).addClass('active');
         currentFilter = $(this).data('filter');
-        filterVideos(currentFilter);
+        
+        allVideos = [];
+        hideLoadMoreButton();
+        loadVideos();
     });
 
-    // Setup modal event listener once
-    $('#flagModal').on('hidden.bs.modal', function() {
-        $('.card').removeClass('border-warning');
-    });
-
-    // Flag video with confirmation
+    // Flag video
     $(document).on('click', '.flag-video', function() {
         const videoId = $(this).data('id');
-        const $card = $(this).closest('.card');
+        const reason = prompt('Reason for flagging:');
         
-        $card.addClass('border-warning');
-        $('#flagVideoId').val(videoId);
-        $('#flagReason').val('').focus();
-        $('#flagModal').modal('show');
-    });
-
-    $('#confirmFlag').on('click', function() {
-        const videoId = $('#flagVideoId').val();
-        const reason = $('#flagReason').val().trim();
-
-        if (!reason) {
-            $('#flagReason').addClass('is-invalid');
-            return;
-        }
-
-        $('#flagReason').removeClass('is-invalid');
-        const $btn = $(this);
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Flagging...');
-
-        $.ajax({
-            url: `/videos/${videoId}/flag`,
-            type: 'POST',
-            data: { reason },
-            success: function(response) {
-                $('#flagModal').modal('hide');
-                $('#flagReason').val('');
-                if (typeof toastr !== 'undefined') {
-                    toastr.success('Video flagged successfully');
-                }
-                // Reset and reload from beginning
-                allVideos = [];
-                hideLoadMoreButton();
-                loadVideos();
-            },
-            error: function(xhr) {
-                const message = xhr.responseJSON?.message || 'Failed to flag video';
-                if (typeof toastr !== 'undefined') {
-                    toastr.error(message);
-                }
-            },
-            complete: function() {
-                $btn.prop('disabled', false).html('Flag Video');
-            }
+        if (!reason) return;
+        
+        $.post(`/videos/${videoId}/flag`, { reason }, function() {
+            toastr.success('Video flagged successfully');
+            allVideos = [];
+            hideLoadMoreButton();
+            loadVideos();
+        }).fail(function() {
+            toastr.error('Failed to flag video');
         });
     });
 
-    // Unflag video with confirmation
+    // Unflag video
     $(document).on('click', '.unflag-video', function() {
         const videoId = $(this).data('id');
-        const $btn = $(this);
         
-        if (!confirm('Remove flag from this video?')) {
-            return;
-        }
+        if (!confirm('Remove flag from this video?')) return;
         
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-        
-        $.ajax({
-            url: `/videos/${videoId}/unflag`,
-            type: 'POST',
-            success: function(response) {
-                if (typeof toastr !== 'undefined') {
-                    toastr.success('Video unflagged successfully');
-                }
-                // Reset and reload from beginning
-                allVideos = [];
-                hideLoadMoreButton();
-                loadVideos();
-            },
-            error: function(xhr) {
-                const message = xhr.responseJSON?.message || 'Failed to unflag video';
-                if (typeof toastr !== 'undefined') {
-                    toastr.error(message);
-                }
-            },
-            complete: function() {
-                $btn.prop('disabled', false).html('<i class="fas fa-check"></i> Unflag');
-            }
+        $.post(`/videos/${videoId}/unflag`, function() {
+            toastr.success('Video unflagged successfully');
+            allVideos = [];
+            hideLoadMoreButton();
+            loadVideos();
+        }).fail(function() {
+            toastr.error('Failed to unflag video');
         });
     });
 
