@@ -1,13 +1,31 @@
 $(document).ready(function() {
     let allVideos = [];
+    let displayedVideoIds = new Set();
     let currentFilter = 'all';
+    let uploaderSearch = '';
+    let isLoading = false;
 
-    // Load videos with cursor pagination
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     function loadVideos(cursorPagination = null, append = false) {
+        if (isLoading) return;
+        isLoading = true;
+
         if (!append) {
             $('#loading').show();
             $('#videos').hide();
             $('#empty-state').hide();
+            $('#end-of-results').remove();
         }
 
         $.ajax({
@@ -16,23 +34,51 @@ $(document).ready(function() {
             data: {
                 limit: 20,
                 ...(cursorPagination && { cursorPagination: cursorPagination }),
-                ...(currentFilter !== 'all' && { flagged: currentFilter })
+                ...(currentFilter !== 'all' && { flagged: currentFilter }),
+                ...(uploaderSearch && { uploader: uploaderSearch }),
+                excludeIds: JSON.stringify(Array.from(displayedVideoIds))
             },
             success: function(response) {
                 if (response.status === 'success') {
+                    const newVideos = response.data;
+                    
+                    // Track new video IDs
+                    newVideos.forEach(video => {
+                        displayedVideoIds.add(video.id);
+                    });
+                    
                     if (append) {
-                        allVideos = allVideos.concat(response.data);
+                        allVideos = allVideos.concat(newVideos);
                     } else {
-                        allVideos = response.data;
+                        allVideos = newVideos;
                     }
                     
                     renderVideos(allVideos, !append);
                     
-                    // Handle load more button
+                    // Handle pagination UI
                     if (response.page && response.page.hasMore) {
                         showLoadMoreButton(response.page.nextCursorPagination);
                     } else {
                         hideLoadMoreButton();
+                        
+                        if (allVideos.length > 0 && response.page?.isEndOfResults) {
+                            showEndOfResultsMessage(response.page.filterDescription);
+                        }
+                    }
+
+                    // Debug info
+                    if (response.page?.debug) {
+                        console.log('Pagination debug:', response.page.debug);
+                    }
+
+                    // Auto-fetch if got no new videos but more available
+                    if (append && newVideos.length === 0 && response.page?.hasMore) {
+                        console.log('Auto-fetching next batch...');
+                        setTimeout(() => {
+                            isLoading = false;
+                            loadVideos(response.page.nextCursorPagination, true);
+                        }, 100);
+                        return;
                     }
                 } else {
                     if (!append) $('#empty-state').show();
@@ -44,6 +90,7 @@ $(document).ready(function() {
             },
             complete: function() {
                 if (!append) $('#loading').hide();
+                isLoading = false;
             }
         });
     }
@@ -154,6 +201,19 @@ $(document).ready(function() {
     }
 
     // Load more button click handler
+    function showEndOfResultsMessage(filterDescription) {
+        $('#end-of-results').remove();
+        
+        $('#videos').after(`
+            <div id="end-of-results" class="text-center mt-4 p-3">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>End of results.</strong> No more videos available for <strong>${filterDescription}</strong>.
+                </div>
+            </div>
+        `);
+    }
+
     $(document).on('click', '#load-more-btn', function() {
         const $btn = $(this);
         const cursorPagination = $btn.data('cursor-pagination');
@@ -169,14 +229,31 @@ $(document).ready(function() {
         loadVideos(cursorPagination, true);
     });
 
-    // Filter functionality
+    const debouncedSearch = debounce(() => {
+        allVideos = [];
+        displayedVideoIds.clear();
+        hideLoadMoreButton();
+        $('#end-of-results').remove();
+        loadVideos();
+    }, 500);
+
+    $('#searchUploader').on('input', function() {
+        uploaderSearch = $(this).val().trim();
+        debouncedSearch();
+    });
+
     $('.filter-btn').on('click', function() {
         $('.filter-btn').removeClass('active');
         $(this).addClass('active');
         currentFilter = $(this).data('filter');
         
+        $('#searchUploader').val('');
+        uploaderSearch = '';
+        
         allVideos = [];
+        displayedVideoIds.clear();
         hideLoadMoreButton();
+        $('#end-of-results').remove();
         loadVideos();
     });
 
@@ -206,7 +283,9 @@ $(document).ready(function() {
                 $('#flagModal').modal('hide');
                 toastr.success('Video flagged successfully');
                 allVideos = [];
+                displayedVideoIds.clear();
                 hideLoadMoreButton();
+                $('#end-of-results').remove();
                 loadVideos();
             },
             error: function(xhr) {
@@ -224,7 +303,9 @@ $(document).ready(function() {
         $.post(`/videos/${videoId}/unflag`, function() {
             toastr.success('Video unflagged successfully');
             allVideos = [];
+            displayedVideoIds.clear();
             hideLoadMoreButton();
+            $('#end-of-results').remove();
             loadVideos();
         }).fail(function() {
             toastr.error('Failed to unflag video');
