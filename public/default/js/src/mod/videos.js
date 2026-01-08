@@ -69,6 +69,12 @@ $(document).ready(function() {
                 ? '<span class="badge bg-danger"><i class="fas fa-flag"></i> Flagged</span>'
                 : '<span class="badge bg-success"><i class="fas fa-check"></i> Active</span>';
             
+            const flagReason = isFlagged && video.flagReason 
+                ? `<div class="alert alert-danger alert-sm mt-2 mb-0 p-2">
+                     <small><strong>Reason:</strong> ${video.flagReason}</small>
+                   </div>`
+                : '';
+            
             const actionButton = isFlagged
                 ? `<button class="btn btn-sm btn-success unflag-video" data-id="${video.id}">
                      <i class="fas fa-check"></i> Unflag
@@ -86,6 +92,7 @@ $(document).ready(function() {
                         <div class="card-body d-flex flex-column">
                             <h6 class="card-title">${video.uploaderName || 'Unknown'}</h6>
                             <p class="card-text text-muted small">${uploadDate}</p>
+                            ${flagReason}
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 ${statusBadge}
                                 ${actionButton}
@@ -149,20 +156,38 @@ $(document).ready(function() {
         loadVideos();
     });
 
-    // Flag video
+    // Flag video - show modal
     $(document).on('click', '.flag-video', function() {
         const videoId = $(this).data('id');
-        const reason = prompt('Reason for flagging:');
-        
-        if (!reason) return;
-        
-        $.post(`/videos/${videoId}/flag`, { reason }, function() {
-            toastr.success('Video flagged successfully');
-            allVideos = [];
-            hideLoadMoreButton();
-            loadVideos();
-        }).fail(function() {
-            toastr.error('Failed to flag video');
+        $('#flagVideoId').val(videoId);
+        $('#flagReason').val('').removeClass('is-invalid');
+        $('#flagModal').modal('show');
+    });
+
+    // Confirm flag from modal
+    $('#confirmFlag').on('click', function() {
+        const videoId = $('#flagVideoId').val();
+        const reason = $('#flagReason').val().trim();
+
+        if (!reason) {
+            $('#flagReason').addClass('is-invalid');
+            return;
+        }
+
+        $.ajax({
+            url: `/videos/${videoId}/flag`,
+            type: 'POST',
+            data: { reason },
+            success: function(response) {
+                $('#flagModal').modal('hide');
+                toastr.success('Video flagged successfully');
+                allVideos = [];
+                hideLoadMoreButton();
+                loadVideos();
+            },
+            error: function(xhr) {
+                toastr.error('Failed to flag video');
+            }
         });
     });
 
