@@ -11,15 +11,27 @@ class VideosController {
                 const limit = Number(req.query.limit) || 20;
                 const cursorPagination = req.query.cursorPagination || null;
                 
+                let excludeIds = [];
+                if (req.query.excludeIds) {
+                    try {
+                        excludeIds = JSON.parse(req.query.excludeIds);
+                        if (!Array.isArray(excludeIds)) excludeIds = [];
+                    } catch (e) {
+                        excludeIds = [];
+                    }
+                }
+                
                 const filters = {
                     flagged: req.query.flagged,
-                    daterange: req.query.daterange
+                    daterange: req.query.daterange,
+                    uploader: req.query.uploader?.trim()
                 };
 
                 const result = await VideosUtil.getPaginatedVideos({
                     limit,
                     cursorPagination,
-                    filters
+                    filters,
+                    excludeIds
                 });
 
                 return res.status(200).json({
@@ -28,7 +40,15 @@ class VideosController {
                     page: {
                         limit,
                         nextCursorPagination: result.nextCursorPagination,
-                        hasMore: result.hasMore
+                        hasMore: result.hasMore,
+                        isEndOfResults: result.isEndOfResults,
+                        filterDescription: result.filterDescription,
+                        debug: {
+                            totalFetched: result.totalFetched,
+                            totalVisible: result.totalVisible,
+                            duplicatesSkipped: result.duplicatesSkipped,
+                            iterations: result.iterations
+                        }
                     }
                 });
             } catch (error) {
