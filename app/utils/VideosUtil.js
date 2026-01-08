@@ -120,6 +120,7 @@ class VideosUtil extends Util {
                     id: doc.id,
                     ...data,
                     uploaderName,
+                    url: data.videoUrl || data.url, // Map videoUrl to url for frontend consistency
                     flagged: data.flagged || false,
                     broken: data.broken || false
                 });

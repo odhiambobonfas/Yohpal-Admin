@@ -83,11 +83,35 @@ $(document).ready(function() {
                      <i class="fas fa-flag"></i> Flag
                    </button>`;
 
+            // Check if video URL exists
+            if (!video.url || video.url === 'undefined') {
+                $container.append(`
+                    <div class="col">
+                        <div class="card h-100 ${flaggedClass}">
+                            <div class="alert alert-danger text-center" style="height: 200px; line-height: 200px; margin: 0;">
+                                <i class="fas fa-exclamation-triangle"></i> Video URL missing
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">${video.uploaderName || 'Unknown'}</h6>
+                                <p class="card-text text-muted small">${uploadDate}</p>
+                                ${flagReason}
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    ${statusBadge}
+                                    ${actionButton}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                return;
+            }
+
             $container.append(`
                 <div class="col">
                     <div class="card h-100 ${flaggedClass}">
                         <video class="card-img-top" controls style="height: 200px; object-fit: cover;">
                             <source src="${video.url}" type="video/mp4">
+                            Your browser does not support the video tag.
                         </video>
                         <div class="card-body d-flex flex-column">
                             <h6 class="card-title">${video.uploaderName || 'Unknown'}</h6>
