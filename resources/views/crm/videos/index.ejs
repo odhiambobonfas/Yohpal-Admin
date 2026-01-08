@@ -12,16 +12,23 @@
             <div class="content-body gx-0 px-0 h-100">
                 <!-- Filter Tabs -->
                 <div class="card-header bg-white shadow-sm p-2 mb-3">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
-                            All Videos
-                        </button>
-                        <button type="button" class="btn btn-outline-warning filter-btn" data-filter="false">
-                            Unflagged
-                        </button>
-                        <button type="button" class="btn btn-outline-danger filter-btn" data-filter="true">
-                            Flagged
-                        </button>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                                    All Videos
+                                </button>
+                                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="false">
+                                    Unflagged
+                                </button>
+                                <button type="button" class="btn btn-outline-danger filter-btn" data-filter="true">
+                                    Flagged
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="searchUploader" placeholder="Search by username">
+                        </div>
                     </div>
                 </div>
 
