@@ -66,20 +66,10 @@ class VideosUtil extends Util {
 
     async getPaginatedVideos({ limit = 20, cursorPagination = null, filters = {} }) {
         try {
-            // Defensive limits
             limit = Math.min(Math.max(limit, 1), 100);
-
             let query = FirestoreDatabase.collection(Video.collection);
 
-            // Filter out broken videos - MUST REMAIN
-            query = query.where('broken', '!=', true);
-
-            // Apply filters before ordering
-            if (filters.flagged !== undefined) {
-                query = query.where('flagged', '==', filters.flagged === 'true');
-            }
-
-            // Date range filter
+            // Date range filter (timestamp is consistent)
             if (filters.daterange?.length) {
                 let daterange = parseDateRange(filters.daterange, true);   
                 if (daterange.start && daterange.end) { 
@@ -88,53 +78,71 @@ class VideosUtil extends Util {
                 }
             }
 
-            // Order by broken first (required for != filter), then timestamp
-            query = query.orderBy('broken').orderBy('timestamp', 'desc').limit(limit);
+            // Order by timestamp only (consistent field)
+            query = query.orderBy('timestamp', 'desc').limit(limit);
 
-            // Cursor logic using broken + timestamp
+            // Apply cursor from previous page
             if (cursorPagination) {
                 try {
                     const cursor = JSON.parse(cursorPagination);
-                    if (cursor.broken !== undefined && cursor.timestamp) {
-                        query = query.startAfter(cursor.broken, cursor.timestamp);
+                    if (cursor.timestamp) {
+                        const timestampValue = cursor.timestamp._seconds ? 
+                            new admin.firestore.Timestamp(
+                                cursor.timestamp._seconds, 
+                                cursor.timestamp._nanoseconds
+                            ) : cursor.timestamp;
+                        query = query.startAfter(timestampValue);
                     }
                 } catch (error) {
-                    console.log('Invalid cursor format, ignoring:', error.message);
+                    console.log('Invalid cursor, ignoring:', error.message);
                 }
             }
 
             const snapshot = await query.get();
-
             const videos = [];
+            
+            // Post-query filtering
             for (const doc of snapshot.docs) {
                 const data = doc.data();
+                
+                // Filter broken videos
+                if (data.broken === true) continue;
+                
+                // Filter flagged videos if specified
+                if (filters.flagged !== undefined) {
+                    const isFlagged = data.flagged === true;
+                    const wantsFlagged = filters.flagged === 'true';
+                    if (isFlagged !== wantsFlagged) continue;
+                }
 
-                // Use userName/fullName directly from video document
                 const uploaderName = data.userName || data.fullName || 'Unknown';
-
                 videos.push({
                     id: doc.id,
                     ...data,
-                    uploaderName
+                    uploaderName,
+                    flagged: data.flagged || false,
+                    broken: data.broken || false
                 });
             }
 
-            // Create next cursor from last document
+            // CRITICAL: Use last snapshot document for cursor, not last filtered video
+            // This ensures pagination continuity regardless of application-level filtering
             let nextCursorPagination = null;
-            if (snapshot.docs.length === limit && videos.length > 0) {
-                const lastDoc = snapshot.docs[snapshot.docs.length - 1];
-                const lastData = lastDoc.data();
+            if (snapshot.docs.length === limit) {
+                const lastSnapshotDoc = snapshot.docs[snapshot.docs.length - 1];
                 nextCursorPagination = JSON.stringify({
-                    broken: lastData.broken || false,
-                    timestamp: lastData.timestamp
+                    timestamp: lastSnapshotDoc.data().timestamp
                 });
             }
 
             return {
                 videos,
                 nextCursorPagination,
-                hasMore: snapshot.docs.length === limit
+                hasMore: snapshot.docs.length === limit,
+                totalFetched: snapshot.docs.length,
+                totalVisible: videos.length
             };
+
         } catch (error) {
             console.error('Error in getPaginatedVideos:', error);
             throw error;
