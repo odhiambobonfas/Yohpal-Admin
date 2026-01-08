@@ -64,90 +64,200 @@ class VideosUtil extends Util {
         }
     }
 
-    async getPaginatedVideos({ limit = 20, cursorPagination = null, filters = {} }) {
+    async getPaginatedVideos({ limit = 20, cursorPagination = null, filters = {}, excludeIds = [] }) {
         try {
             limit = Math.min(Math.max(limit, 1), 100);
-            let query = FirestoreDatabase.collection(Video.collection);
-
-            // Date range filter (timestamp is consistent)
-            if (filters.daterange?.length) {
-                let daterange = parseDateRange(filters.daterange, true);   
-                if (daterange.start && daterange.end) { 
-                    query = query.where("timestamp", ">=", daterange.start);
-                    query = query.where("timestamp", "<=", daterange.end);
-                }
-            }
-
-            // Order by timestamp only (consistent field)
-            query = query.orderBy('timestamp', 'desc').limit(limit);
-
-            // Apply cursor from previous page
-            if (cursorPagination) {
-                try {
-                    const cursor = JSON.parse(cursorPagination);
-                    if (cursor.timestamp) {
-                        const timestampValue = cursor.timestamp._seconds ? 
-                            new admin.firestore.Timestamp(
-                                cursor.timestamp._seconds, 
-                                cursor.timestamp._nanoseconds
-                            ) : cursor.timestamp;
-                        query = query.startAfter(timestampValue);
-                    }
-                } catch (error) {
-                    console.log('Invalid cursor, ignoring:', error.message);
-                }
-            }
-
-            const snapshot = await query.get();
-            const videos = [];
             
-            // Post-query filtering
-            for (const doc of snapshot.docs) {
-                const data = doc.data();
+            // CRITICAL: Dynamic batch sizing based on filter type
+            const hasTextFilter = filters.uploader?.trim();
+            const batchSize = hasTextFilter ? 100 : limit;
+            
+            const excludeSet = new Set(excludeIds);
+            const videos = [];
+            let lastMatchingDoc = null;
+            let totalFetched = 0;
+            let duplicatesSkipped = 0;
+            let iterations = 0;
+            const MAX_ITERATIONS = hasTextFilter ? 5 : 1;
+            
+            // STRATEGY: Keep fetching batches until we have enough matches or reach end
+            while (videos.length < limit && iterations < MAX_ITERATIONS) {
+                iterations++;
                 
-                // Filter broken videos
-                if (data.broken === true) continue;
-                
-                // Filter flagged videos if specified
+                let query = FirestoreDatabase.collection(Video.collection);
+
+                // Apply indexed filters
+                query = query.where('broken', '==', false);
+
                 if (filters.flagged !== undefined) {
-                    const isFlagged = data.flagged === true;
-                    const wantsFlagged = filters.flagged === 'true';
-                    if (isFlagged !== wantsFlagged) continue;
+                    const isFlagged = filters.flagged === 'true';
+                    query = query.where('flagged', '==', isFlagged);
                 }
 
-                const uploaderName = data.userName || data.fullName || 'Unknown';
-                videos.push({
-                    id: doc.id,
-                    ...data,
-                    uploaderName,
-                    url: data.videoUrl || data.url, // Map videoUrl to url for frontend consistency
-                    flagged: data.flagged || false,
-                    broken: data.broken || false
-                });
+                if (filters.daterange?.length) {
+                    let daterange = parseDateRange(filters.daterange, true);   
+                    if (daterange.start && daterange.end) { 
+                        query = query.where("timestamp", ">=", daterange.start);
+                        query = query.where("timestamp", "<=", daterange.end);
+                    }
+                }
+
+                query = query.orderBy('timestamp', 'desc').limit(batchSize);
+
+                // Apply cursor for pagination continuity
+                if (cursorPagination) {
+                    try {
+                        const cursor = JSON.parse(cursorPagination);
+                        if (cursor.timestamp) {
+                            const timestampValue = cursor.timestamp._seconds ? 
+                                new admin.firestore.Timestamp(
+                                    cursor.timestamp._seconds, 
+                                    cursor.timestamp._nanoseconds
+                                ) : cursor.timestamp;
+                            query = query.startAfter(timestampValue);
+                        }
+                    } catch (error) {
+                        console.log('Invalid cursor:', error.message);
+                    }
+                }
+
+                const snapshot = await query.get();
+                totalFetched += snapshot.docs.length;
+
+                // No more documents available
+                if (snapshot.docs.length === 0) {
+                    break;
+                }
+
+                // Process batch and apply post-query filters
+                let batchHasMatches = false;
+                
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    const videoId = doc.id;
+
+                    // Skip already displayed videos
+                    if (excludeSet.has(videoId)) {
+                        duplicatesSkipped++;
+                        continue;
+                    }
+
+                    // Apply text filter (case-insensitive)
+                    if (hasTextFilter) {
+                        const searchTerm = filters.uploader.toLowerCase();
+                        const userName = (data.userName || '').toLowerCase();
+                        const fullName = (data.fullName || '').toLowerCase();
+                        
+                        if (!userName.includes(searchTerm) && !fullName.includes(searchTerm)) {
+                            continue;
+                        }
+                    }
+
+                    // Video matches all filters
+                    batchHasMatches = true;
+                    excludeSet.add(videoId);
+                    
+                    const uploaderName = data.userName || data.fullName || 'Unknown';
+                    videos.push({
+                        id: videoId,
+                        ...data,
+                        uploaderName,
+                        url: data.videoUrl || data.url,
+                        flagged: data.flagged || false,
+                        broken: data.broken || false
+                    });
+
+                    lastMatchingDoc = doc;
+
+                    // Stop if we have enough matches
+                    if (videos.length >= limit) {
+                        break;
+                    }
+                }
+
+                // Update cursor for next iteration
+                if (snapshot.docs.length > 0) {
+                    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                    cursorPagination = JSON.stringify({
+                        timestamp: lastDoc.data().timestamp
+                    });
+                }
+
+                // Break if we fetched less than batch size (reached end)
+                if (snapshot.docs.length < batchSize) {
+                    break;
+                }
+
+                // Break if no matches in this batch and we have some results
+                if (!batchHasMatches && videos.length > 0) {
+                    break;
+                }
             }
 
-            // CRITICAL: Use last snapshot document for cursor, not last filtered video
-            // This ensures pagination continuity regardless of application-level filtering
+            // Determine pagination state
             let nextCursorPagination = null;
-            if (snapshot.docs.length === limit) {
-                const lastSnapshotDoc = snapshot.docs[snapshot.docs.length - 1];
+            let hasMore = false;
+            let isEndOfResults = false;
+
+            if (videos.length === limit && lastMatchingDoc) {
+                // Got full page - likely more available
                 nextCursorPagination = JSON.stringify({
-                    timestamp: lastSnapshotDoc.data().timestamp
+                    timestamp: lastMatchingDoc.data().timestamp
                 });
+                hasMore = true;
+            } else if (videos.length < limit && iterations >= MAX_ITERATIONS) {
+                // Hit iteration limit - might have more
+                if (lastMatchingDoc) {
+                    nextCursorPagination = JSON.stringify({
+                        timestamp: lastMatchingDoc.data().timestamp
+                    });
+                    hasMore = true;
+                } else {
+                    isEndOfResults = true;
+                }
+            } else {
+                // Reached end of collection
+                isEndOfResults = true;
             }
+
+            const filterDescription = this.getFilterDescription(filters);
 
             return {
                 videos,
                 nextCursorPagination,
-                hasMore: snapshot.docs.length === limit,
-                totalFetched: snapshot.docs.length,
-                totalVisible: videos.length
+                hasMore,
+                isEndOfResults,
+                filterDescription,
+                totalFetched,
+                totalVisible: videos.length,
+                duplicatesSkipped,
+                iterations
             };
 
         } catch (error) {
             console.error('Error in getPaginatedVideos:', error);
             throw error;
         }
+    }
+
+    getFilterDescription(filters) {
+        const descriptions = [];
+        
+        if (filters.uploader?.trim()) {
+            descriptions.push(`uploader "${filters.uploader}"`);
+        }
+        
+        if (filters.flagged === 'true') {
+            descriptions.push('flagged videos');
+        } else if (filters.flagged === 'false') {
+            descriptions.push('unflagged videos');
+        }
+        
+        if (filters.daterange?.length) {
+            descriptions.push('selected date range');
+        }
+        
+        return descriptions.length > 0 ? descriptions.join(' and ') : 'all videos';
     }
 
     async updateVideoFlag(videoId, flagged, reason = null) {
