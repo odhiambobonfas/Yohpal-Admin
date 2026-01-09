@@ -5,6 +5,24 @@ $(document).ready(function() {
     let uploaderSearch = '';
     let isLoading = false;
 
+    // Persistent sticky button above footer
+    const $stickyLoadMore = $('<button>', {
+        id: 'sticky-load-more-btn',
+        class: 'btn btn-primary position-fixed',
+        css: {
+            bottom: '60px',
+            left: '60.66%',
+            transform: 'translateX(-50%)',
+            zIndex: 1050,
+            display: 'none',
+            padding: '12px 24px',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.2)'
+        },
+        html: '<i class="fas fa-plus"></i> Load More Videos'
+    });
+
+    $('body').append($stickyLoadMore);
+
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -175,32 +193,19 @@ $(document).ready(function() {
         });
     }
 
-    // Show or update load more button
     function showLoadMoreButton(nextCursorPagination) {
-        let $container = $('#load-more-container');
-        
-        if ($container.length === 0) {
-            $('#videos').after(`
-                <div id="load-more-container" class="text-center mt-4">
-                    <button id="load-more-btn" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Load More Videos
-                    </button>
-                </div>
-            `);
-            $container = $('#load-more-container');
-        }
-        
-        const $btn = $('#load-more-btn');
-        $btn.data('cursor-pagination', nextCursorPagination)
+        // Show persistent sticky button
+        $stickyLoadMore
+            .data('cursor-pagination', nextCursorPagination)
             .prop('disabled', false)
-            .html('<i class="fas fa-plus"></i> Load More Videos');
+            .html('<i class="fas fa-plus"></i> Load More Videos')
+            .fadeIn();
     }
 
     function hideLoadMoreButton() {
-        $('#load-more-container').remove();
+        $stickyLoadMore.hide();
     }
 
-    // Load more button click handler
     function showEndOfResultsMessage(filterDescription) {
         $('#end-of-results').remove();
         
@@ -214,7 +219,7 @@ $(document).ready(function() {
         `);
     }
 
-    $(document).on('click', '#load-more-btn', function() {
+    $(document).on('click', '#sticky-load-more-btn', function() {
         const $btn = $(this);
         const cursorPagination = $btn.data('cursor-pagination');
         
