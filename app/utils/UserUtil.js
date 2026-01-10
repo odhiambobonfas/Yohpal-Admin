@@ -277,17 +277,6 @@ class UserUtil extends Util {
         }
     }
 
-    async getPromotedAccountsCount(redis, filters={}) {
-        try {
-            // No "promoted" field exists in User collection yet
-            // Return 0 until feature is implemented
-            return 0;
-        } catch (error) {
-            console.error('Error getting promoted accounts count:', error);
-            return 0;
-        }
-    }    
-
     async createUser(data, redis) { 
         try {  
             // check if email or username already exists
