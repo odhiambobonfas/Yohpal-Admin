@@ -59,15 +59,12 @@ class Dashboard extends Master {
         });
     }
 
-    async getCardStats() { 
+    async getCardStats() {
         this.setUpDashboardUI();
-        this.addlOadingStateToGraphicalElements(true);  
-        const filters = filtersParser('.dashboardFilters');
-        const queryString = new URLSearchParams(filters).toString();
-        const res = await fetch(`/dashboard/card/stats?${queryString}`, {
+        this.addlOadingStateToGraphicalElements(true);
+        const res = await fetch('/dashboard/card/stats', {
             credentials: 'include',
             method: 'GET',
-            data: filters,
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -93,13 +90,10 @@ class Dashboard extends Master {
         });
     }
 
-    async getDemographicStats() { 
-        const filters = filtersParser('.dashboardFilters'); 
-        const queryString = new URLSearchParams(filters).toString();
-        const res = await fetch(`/dashboard/graphical/stats?${queryString}`, {
+    async getDemographicStats() {
+        const res = await fetch('/dashboard/graphical/stats', {
             credentials: 'include',
             method: 'GET',
-            data: filters,
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -354,8 +348,4 @@ document.addEventListener('DOMContentLoaded', () => {
     inst.getDemographicStats();
     inst.getFollowerRankings();
     inst.getListOfPromotedUsersAccounts();
-    watchFilterChanges('.dashboardFilters', () => {
-        inst.getCardStats();
-        inst.getDemographicStats();
-    }); 
 });
