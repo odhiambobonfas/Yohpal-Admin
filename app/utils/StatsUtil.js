@@ -2,6 +2,8 @@ import Util from '@utils/Util';
 import qs from 'qs';
 import config from '@config/config';
 import User from '@models/User';
+import Application from '@models/Application';
+import Transaction from '@models/Transaction';
 import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
