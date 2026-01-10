@@ -1,6 +1,9 @@
 import config from '@config/config';
 import Exception from '@config/exceptions';
 import VideosUtil from '@utils/VideosUtil';
+import ReportUtil from '@utils/ReportUtil';
+import { FirestoreDatabase } from '@utils/FirebaseUtil';
+import User from '@models/User';
 import { isAjaxRequest } from '@config/utils';
 import {hasPermission} from '@funcs/permissions';
 
@@ -230,6 +233,60 @@ class VideosController {
             return res.status((error.status || 500)).json({
                 status: 'error',
                 message: error.message || 'Failed to unblock user'
+            });
+        }
+    }
+
+    static async getReportedVideos(req, res) {
+        try {
+            console.log('Received request for reported videos');
+
+            const reportedVideos = await ReportUtil.getReportedVideos();
+            console.log(`Found ${reportedVideos.length} reported videos`);
+
+            // Transform for frontend - ensure consistent structure
+            const transformedVideos = reportedVideos.map(video => {
+                const userId = video.uid || video.userId || video.userUid;
+                
+                return {
+                    ...video,
+                    id: video.id,
+                    isReported: true,
+                    reportReason: video.reason,
+                    reportedAt: video.reportedAt,
+                    reporterName: video.reporterName,
+                    reporterId: video.reporterId,
+                    reporterEmail: video.reporterEmail,
+                    reportCount: video.reportCount || 1,
+                    reporters: video.reports || [],
+                    uploaderName: video.uploaderName || video.userName || video.fullName || 'Unknown',
+                    url: video.videoUrl || video.url,
+                    flagged: video.flagged || false,
+                    broken: video.broken || false,
+                    uid: userId,
+                    userStatus: video.userStatus || 'active',
+                    banReason: video.banReason || null
+                };
+            });
+
+            console.log(`Returning ${transformedVideos.length} reported videos`);
+
+            return res.status(200).json({
+                status: 'success',
+                data: transformedVideos,
+                count: transformedVideos.length
+            });
+        } catch (error) {
+            console.error('Error fetching reported videos:', error);
+
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Failed to fetch reported videos',
+                error: config.APP.APP_DEBUG ? error.stack : undefined
             });
         }
     }

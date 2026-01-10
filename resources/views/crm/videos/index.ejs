@@ -19,13 +19,13 @@
                                 <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
                                     <i class="fas fa-video"></i> All Videos
                                 </button>
-                                <button type="button" class="btn btn-outline-success filter-btn" data-filter="false">
-                                    <i class="fas fa-check-circle"></i> Unflagged
+                                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="reported">
+                                    <i class="fas fa-exclamation-triangle"></i> Reported
                                 </button>
                                 <button type="button" class="btn btn-outline-danger filter-btn" data-filter="true">
                                     <i class="fas fa-flag"></i> Flagged
                                 </button>
-                                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="blocked">
+                                <button type="button" class="btn btn-outline-secondary filter-btn" data-filter="blocked">
                                     <i class="fas fa-ban"></i> Blocked Users
                                 </button>
                             </div>
@@ -133,6 +133,51 @@
                 <button type="button" class="btn btn-success" id="confirmUnblockUser">
                     <i class="fas fa-unlock"></i> Unblock User
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View All Reports Modal -->
+<div class="modal fade" id="viewReportsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-list"></i> All Reports for this Video
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reportsListContainer">
+                    <!-- Reports will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Details Modal -->
+<div class="modal fade" id="reportDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Report Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reportDetailsContent">
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status"></div>
+                        <p class="mt-2">Loading report details...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

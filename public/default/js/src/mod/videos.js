@@ -46,6 +46,12 @@ $(document).ready(function() {
             $('#end-of-results').remove();
         }
 
+        // Special handling for reported videos
+        if (currentFilter === 'reported') {
+            loadReportedVideos(append);
+            return;
+        }
+
         $.ajax({
             url: '/videos',
             type: 'GET',
@@ -113,6 +119,60 @@ $(document).ready(function() {
         });
     }
 
+    // Load reported videos from dedicated endpoint
+    function loadReportedVideos(append = false) {
+        $.ajax({
+            url: '/videos/reported',
+            type: 'GET',
+            success: function(response) {
+                if (response.status === 'success') {
+                    const reportedVideos = response.data || [];
+
+                    // Use reported videos directly - they already have all necessary fields
+                    const videos = reportedVideos.map(video => {
+                        return {
+                            ...video,
+                            isReported: true,
+                            // Ensure user status is available for blocking functionality
+                            userStatus: video.userStatus || 'active'
+                        };
+                    });
+
+                    if (append) {
+                        allVideos = allVideos.concat(videos);
+                    } else {
+                        allVideos = videos;
+                    }
+
+                    renderVideos(allVideos, !append);
+                    hideLoadMoreButton();
+
+                    if (videos.length > 0) {
+                        $('#videos').after(`
+                            <div id="end-of-results" class="text-center mt-4 p-3">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Showing ${videos.length} reported video(s)</strong>
+                                </div>
+                            </div>
+                        `);
+                    }
+                } else {
+                    if (!append) $('#empty-state').show();
+                    toastr.error(response.message || 'Failed to load reported videos');
+                }
+            },
+            error: function() {
+                if (!append) $('#empty-state').show();
+                toastr.error('Failed to load reported videos');
+            },
+            complete: function() {
+                if (!append) $('#loading').hide();
+                isLoading = false;
+            }
+        });
+    }
+
     // Render video cards - Frontend is strictly a consumer of backend data
     function renderVideos(videos, clear = true) {
         const $container = $('#videos');
@@ -137,24 +197,56 @@ $(document).ready(function() {
 
             // Video flagging status
             const isFlagged = video.flagged === true;
+            const isReported = video.isReported === true;
 
-            // Card border: Red for flagged, Yellow for blocked user, none for normal
-            const flaggedClass = isFlagged ? 'border-danger' : (isUserBlocked ? 'border-warning' : '');
+            // Card border: Orange for reported, Red for flagged, Yellow for blocked user
+            let flaggedClass = '';
+            if (isReported) {
+                flaggedClass = 'border-warning';
+            } else if (isFlagged) {
+                flaggedClass = 'border-danger';
+            } else if (isUserBlocked) {
+                flaggedClass = 'border-warning';
+            }
 
             // Status badges - show BOTH if video is flagged AND user is blocked
             let statusBadges = '';
+            if (isReported) {
+                statusBadges += `<span class="badge bg-warning text-dark me-1"><i class="fas fa-exclamation-triangle"></i> Reported (${video.reportCount || 1})</span>`;
+            }
             if (isFlagged) {
                 statusBadges += '<span class="badge bg-danger me-1"><i class="fas fa-flag"></i> Flagged</span>';
             }
             if (isUserBlocked) {
                 statusBadges += '<span class="badge bg-warning text-dark me-1"><i class="fas fa-user-slash"></i> User Blocked</span>';
             }
-            if (!isFlagged && !isUserBlocked) {
+            if (!isFlagged && !isUserBlocked && !isReported) {
                 statusBadges = '<span class="badge bg-success"><i class="fas fa-check"></i> Active</span>';
             }
 
-            // Alert messages for flagged videos and blocked users
+            // Alert messages for reported, flagged videos and blocked users
             let alertMessages = '';
+            if (isReported && video.reportReason) {
+                const reportDate = video.reportedAt?._seconds
+                    ? new Date(video.reportedAt._seconds * 1000).toLocaleDateString()
+                    : 'Unknown';
+                
+                // Show first report or summary
+                alertMessages += `<div class="alert alert-warning alert-sm mt-2 mb-0 p-2">
+                     <small><strong><i class="fas fa-exclamation-triangle"></i> Report:</strong> ${video.reportReason}</small><br>
+                     <small class="text-muted">Reported by: ${video.reporterName || 'Unknown'} on ${reportDate}</small>`;
+                
+                // Add "View All" button if multiple reports
+                if (video.reportCount > 1 && video.reporters && video.reporters.length > 1) {
+                    alertMessages += `<br><button class="btn btn-sm btn-outline-info mt-1 view-reports" 
+                        data-video-id="${video.id}" 
+                        data-reports='${JSON.stringify(video.reporters)}'>
+                        <i class="fas fa-list"></i> View All (${video.reportCount})
+                    </button>`;
+                }
+                
+                alertMessages += '</div>';
+            }
             if (isFlagged && video.flagReason) {
                 alertMessages += `<div class="alert alert-danger alert-sm mt-2 mb-0 p-2">
                      <small><strong>Flag Reason:</strong> ${video.flagReason}</small>
@@ -458,4 +550,44 @@ $(document).ready(function() {
 
     // Initialize - load videos on page load
     loadVideos();
+
+    // View all reports functionality
+    $(document).on('click', '.view-reports', function() {
+        const reports = JSON.parse($(this).attr('data-reports'));
+        const videoId = $(this).data('video-id');
+        
+        let reportsHtml = '<div class="list-group">';
+        
+        reports.forEach((reporter, index) => {
+            const reportDate = reporter.timestamp?._seconds
+                ? new Date(reporter.timestamp._seconds * 1000).toLocaleString()
+                : 'Unknown date';
+            
+            reportsHtml += `
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">
+                            <span class="badge bg-warning text-dark me-2">#${index + 1}</span>
+                            ${reporter.name}
+                        </h6>
+                        <small class="text-muted">${reportDate}</small>
+                    </div>
+                    <p class="mb-1"><strong>Reason:</strong> ${reporter.reason}</p>
+                    <small class="text-muted">
+                        <i class="fas fa-envelope me-1"></i> ${reporter.email}
+                    </small>
+                </div>
+            `;
+        });
+        
+        reportsHtml += '</div>';
+        reportsHtml += `
+            <div class="alert alert-info mt-3 mb-0">
+                <strong>Total Reports:</strong> ${reports.length}
+            </div>
+        `;
+        
+        $('#reportsListContainer').html(reportsHtml);
+        $('#viewReportsModal').modal('show');
+    });
 });
