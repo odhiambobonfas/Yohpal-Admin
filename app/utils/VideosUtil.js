@@ -23,40 +23,18 @@ class VideosUtil extends Util {
     
     async getAllVideosCount(redis, filters={}) {
         try {
-            const filtersKey = 'yp:videos:filters';
-            const cacheKey = 'yp:videos:filtered';
-
-            const cachedFilters = await redis.getFunc(filtersKey);
-            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
-            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
-            
-            // If filters changed, have to invalidate the cache
-            if (savedFilters !== currentFilters) {
-                await redis.deleteFunc(filtersKey);
-                await redis.deleteFunc(cacheKey);
-                await redis.cacheParser(filtersKey, async () => filters, 2000);
-            }
-             
-            let query = FirestoreDatabase.collection(Video.collection);
-
-            if (filters?.daterange?.length) {
-                let daterange = parseDateRange(filters.daterange, true);   
-                if (daterange.start && daterange.end) { 
-                    query = query.where("timestamp", ">=", daterange.start);
-                    query = query.where("timestamp", "<=", daterange.end);
-                }
-            }
+            const cacheKey = 'yp:videos:count';
 
             const count = await redis.cacheParser(
                 cacheKey,
-                async () => { 
+                async () => {
+                    const query = FirestoreDatabase.collection(Video.collection);
                     const snapshot = await query.count().get();
-    
                     return snapshot.data().count;
                 },
-                7200
+                300
             );
-    
+
             return count;
         } catch (error) {
             console.error('Error getting videos count:', error);

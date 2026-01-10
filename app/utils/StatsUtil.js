@@ -2,6 +2,8 @@ import Util from '@utils/Util';
 import qs from 'qs';
 import config from '@config/config';
 import User from '@models/User';
+import Application from '@models/Application';
+import Transaction from '@models/Transaction';
 import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
@@ -115,6 +117,80 @@ class StatsUtil extends Util {
         }
 
         return [];
+    }
+
+    async getApplicationsCount(redis, filters={}) {
+        try {
+            const cacheKey = 'yp:applications:count';
+
+            const count = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    const query = FirestoreDatabase.collection(Application.collection);
+                    const snapshot = await query.count().get();
+                    return snapshot.data().count;
+                },
+                300
+            );
+
+            return count;
+        } catch (error) {
+            console.error('Error getting applications count:', error);
+            return 0;
+        }
+    }
+
+    async getTransactionsCount(redis, filters={}) {
+        try {
+            const cacheKey = 'yp:transactions:count';
+
+            const count = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    const query = FirestoreDatabase.collection(Transaction.collection);
+                    const snapshot = await query.count().get();
+                    return snapshot.data().count;
+                },
+                300
+            );
+
+            return count;
+        } catch (error) {
+            console.error('Error getting transactions count:', error);
+            return 0;
+        }
+    }
+
+    async getTotalDepositedAmount(redis, filters={}) {
+        try {
+            const cacheKey = 'yp:transactions:deposit:sum';
+
+            const total = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    const query = FirestoreDatabase.collection(Transaction.collection)
+                        .where('status', '==', 'success');
+
+                    const snapshot = await query.get();
+                    let sum = 0;
+                    if (!snapshot.empty) {
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (data.amount && !isNaN(data.amount)) {
+                                sum += Number(data.amount);
+                            }
+                        });
+                    }
+                    return sum;
+                },
+                300
+            );
+
+            return total;
+        } catch (error) {
+            console.error('Error getting total deposited amount:', error);
+            return 0;
+        }
     }
 }
 
