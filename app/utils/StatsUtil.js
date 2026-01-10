@@ -116,6 +116,47 @@ class StatsUtil extends Util {
 
         return [];
     }
+
+    async getApplicationsCount(redis, filters={}) {
+        try {
+            const filtersKey = 'yp:applications:count:filters';
+            const cacheKey = 'yp:applications:count';
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+
+            let query = FirestoreDatabase.collection(Application.collection);
+
+            if (filters?.daterange?.length) {
+                let daterange = parseDateRange(filters.daterange, true);   
+                if (daterange.start && daterange.end) { 
+                    query = query.where("timestamp", ">=", daterange.start);
+                    query = query.where("timestamp", "<=", daterange.end);
+                }
+            }
+
+            const count = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    const snapshot = await query.count().get();
+                    return snapshot.data().count;
+                },
+                300
+            );
+
+            return count;
+        } catch (error) {
+            console.error('Error getting applications count:', error);
+            return 0;
+        }
+    }
 }
 
 export default new StatsUtil();
