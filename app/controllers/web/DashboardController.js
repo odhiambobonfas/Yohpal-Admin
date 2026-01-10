@@ -9,11 +9,11 @@ import Exception from '@config/exceptions';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 
 class DashboardController {
-    static async index(req, res) {  
+    static async index(req, res) {
         if (isAjaxRequest(req)) {
             const filters = req?.query || req?.params
             let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis, filters);
-            let totalPromotedAccounts = null;
+            let totalPromotedAccounts = await UsersUtil.getPromotedAccountsCount(req?.redis, filters);
             let totalApplications = await StatsUtil.getApplicationsCount(req?.redis, filters);
             let totalDepositedAmount = await StatsUtil.getTotalDepositedAmount(req?.redis, filters);
             let totalYpReviews = null;
