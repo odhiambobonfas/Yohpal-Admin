@@ -14,11 +14,11 @@ class DashboardController {
             const filters = req?.query || req?.params
             let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis, filters);
             let totalPromotedAccounts = null;
-            let totalApplications = null;
-            let totalDepositedAmount = null;
+            let totalApplications = await StatsUtil.getApplicationsCount(req?.redis, filters);
+            let totalDepositedAmount = await StatsUtil.getTotalDepositedAmount(req?.redis, filters);
             let totalYpReviews = null;
             let totalUploadedVideos = await VideosUtil.getAllVideosCount(req?.redis, filters);
-            let totalYpTransactions = null;
+            let totalYpTransactions = await StatsUtil.getTransactionsCount(req?.redis, filters);
 
             const response = [
                 {
