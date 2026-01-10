@@ -4,7 +4,8 @@ import User from '@models/User';
 import UsersUtil from '@utils/UserUtil';
 import StatsUtil from '@utils/StatsUtil';
 import VideosUtil from '@utils/VideosUtil';
-import mexDtParser from '@config/mexDtParser'; 
+import PromotionUtil from '@utils/PromotionUtil';
+import mexDtParser from '@config/mexDtParser';
 import Exception from '@config/exceptions';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 
@@ -13,7 +14,7 @@ class DashboardController {
         if (isAjaxRequest(req)) {
             const filters = req?.query || req?.params
             let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis, filters);
-            let totalPromotedAccounts = await UsersUtil.getPromotedAccountsCount(req?.redis, filters);
+            let totalPromotedAccounts = await PromotionUtil.getPromotionsCount(req?.redis, filters);
             let totalApplications = await StatsUtil.getApplicationsCount(req?.redis, filters);
             let totalDepositedAmount = await StatsUtil.getTotalDepositedAmount(req?.redis, filters);
             let totalYpReviews = null;
