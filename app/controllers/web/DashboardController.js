@@ -5,6 +5,7 @@ import UsersUtil from '@utils/UserUtil';
 import StatsUtil from '@utils/StatsUtil';
 import VideosUtil from '@utils/VideosUtil';
 import PromotionUtil from '@utils/PromotionUtil';
+import LiveSessionUtil from '@utils/LiveSessionUtil';
 import mexDtParser from '@config/mexDtParser';
 import Exception from '@config/exceptions';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
@@ -18,6 +19,7 @@ class DashboardController {
             let totalDepositedAmount = await StatsUtil.getTotalDepositedAmount(req?.redis, filters);
             let totalUploadedVideos = await VideosUtil.getAllVideosCount(req?.redis, filters);
             let totalYpTransactions = await StatsUtil.getTransactionsCount(req?.redis, filters);
+            let totalLiveSessions = await LiveSessionUtil.getActiveLiveSessionsCount(req?.redis, filters);
 
             const response = [
                 {
@@ -39,6 +41,10 @@ class DashboardController {
                 {
                     name: 'total-yohpal-transactions',
                     value: totalYpTransactions || 0
+                },
+                {
+                    name: 'total-live_sessions',
+                    value: totalLiveSessions || 0
                 }
             ];
 
