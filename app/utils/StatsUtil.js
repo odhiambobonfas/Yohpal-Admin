@@ -215,24 +215,6 @@ class StatsUtil extends Util {
             }
 
             let query = FirestoreDatabase.collection(Transaction.collection)
-             //   .where('type', '==', 'deposit'); // Assuming 'type' field distinguishes deposits
-             // For now, let's just sum all successful positive transactions or check if there is a specific type
-             // Based on AccountUtil, types like "openingBalance" exist. 
-             // Without knowing exact "deposit" type, I might just sum all for now or check for "CREDIT" in AccountTransaction? 
-             // But Transaction model is what I'm using. Let's assume there isn't a strict 'deposit' type yet and just return 0 
-             // OR construct a query that sums 'amount'. Firestore doesn't support sum aggregation directly in older SDKs but 
-             // count() is supported. Summing might need client-side iteration or newer Node SDK.
-             // Given the constraints and "safe" approach, I will try to fetch and sum.
-            
-            // Re-reading AccountUtil: it creates a Transaction with type: "openingBalance". 
-            // It also creates AccountTransaction with type: "CREDIT".
-            // I should probably query AccountTransaction for explicit credits/deposits? 
-            // But the user asked for "Total Deposited Amount". 
-            // Let's stick to Transaction collection and maybe sum all for now to show movement, 
-            // or if I can't filter safely, just sum everything.
-            
-            // Wait, looking at AccountUtil line 174: type: "openingBalance".
-            // I will filter by 'status' == 'success' to be safe.
             query = query.where('status', '==', 'success');
 
             if (filters?.daterange?.length) {
