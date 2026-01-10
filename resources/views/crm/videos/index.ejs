@@ -13,20 +13,24 @@
                 <!-- Filter Tabs -->
                 <div class="card-header bg-white shadow-sm p-2 mb-3">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-6">
+                        <!-- Filter buttons with icons for better UX -->
+                        <div class="col-md-7">
                             <div class="btn-group" role="group">
                                 <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
-                                    All Videos
+                                    <i class="fas fa-video"></i> All Videos
                                 </button>
-                                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="false">
-                                    Unflagged
+                                <button type="button" class="btn btn-outline-success filter-btn" data-filter="false">
+                                    <i class="fas fa-check-circle"></i> Unflagged
                                 </button>
                                 <button type="button" class="btn btn-outline-danger filter-btn" data-filter="true">
-                                    Flagged
+                                    <i class="fas fa-flag"></i> Flagged
+                                </button>
+                                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="blocked">
+                                    <i class="fas fa-ban"></i> Blocked Users
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <input type="text" class="form-control" id="searchUploader" placeholder="Search by username">
                         </div>
                     </div>
@@ -71,6 +75,64 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-danger" id="confirmFlag">Flag Video</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Block User Modal -->
+<div class="modal fade" id="blockUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-ban"></i> Block User Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="blockUserId">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This will suspend the user's account and prevent them from uploading new content.
+                </div>
+                <div class="mb-3">
+                    <label for="blockReason" class="form-label">Reason for blocking <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="blockReason" rows="3" placeholder="Enter reason for blocking this user..." required>Account under review</textarea>
+                    <div class="invalid-feedback">
+                        Please provide a reason for blocking this user.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmBlockUser">
+                    <i class="fas fa-ban"></i> Block User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unblock User Modal -->
+<div class="modal fade" id="unblockUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-unlock"></i> Unblock User Account</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="unblockUserId">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    This will reactivate the user's account and allow them to upload content again.
+                </div>
+                <p>Are you sure you want to unblock this user?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmUnblockUser">
+                    <i class="fas fa-unlock"></i> Unblock User
+                </button>
             </div>
         </div>
     </div>

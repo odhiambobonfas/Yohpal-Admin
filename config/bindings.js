@@ -289,6 +289,8 @@ const bindings = {
             flag: 'videos.flag',
             unflag: 'videos.unflag',
             delete: 'videos.delete',
+            block_user: 'videos.block_user',
+            unblock_user: 'videos.unblock_user',
         },
     },
 

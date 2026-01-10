@@ -521,8 +521,8 @@ class UserUtil extends Util {
     }
 
     async updateUserStatus(data, redis) {
-        let { uid, status, userLoggedInUserName, userLoggedInUid } = data; 
-        
+        let { uid, status, userLoggedInUserName, userLoggedInUid, banReason } = data;
+
         try {
             if (!uid || !status) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.uid_and_status_required, "Invalid input data");
@@ -530,23 +530,37 @@ class UserUtil extends Util {
 
             const usersRef = FirestoreDatabase.collection(User.collection);
             const userSnapshot = await usersRef.where('uid', '==', uid).get();
-            
+
             if (userSnapshot.empty) {
                 throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.operation_failed, `User with UID: ${ucwords(uid)} does not exist!`);
             }
 
             const userDoc = userSnapshot.docs[0];
             console.log(data);
-            await usersRef.doc(userDoc.id).update({
-                status: status, 
+
+            const updateData = {
+                status: status,
                 updatedBy: userLoggedInUserName,
                 updatedByRefUser: userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(userLoggedInUid) : null,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
+            };
 
+            if (status === 'inactive' && banReason) {
+                updateData.banReason = banReason;
+            } else if (status === 'active') {
+                updateData.banReason = null;
+            }
+
+            await usersRef.doc(userDoc.id).update(updateData);
+
+            // Invalidate caches for immediate consistency across user and video interfaces
             if (redis) {
                 await redis.deleteFunc('yp:users:filtered');
                 await redis.deleteFunc('yp:users:count');
+                const cacheKeys = await redis.keys('videos:cursorPagination:*');
+                for (const key of cacheKeys) {
+                    await redis.deleteFunc(key);
+                }
             }
 
             return true;
@@ -588,6 +602,7 @@ class UserUtil extends Util {
             throw new Exception(error.status || 500, error.code, error.message, error.reason);
         }
     }
+
 }
 
 export default new UserUtil();

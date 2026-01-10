@@ -85,7 +85,8 @@ class VideosController {
                 });
             }
 
-            if (!hasPermission(user?.permissions || [], 'videos.flag')) {
+            // Check permission - super admins bypass this check
+            if (!hasPermission(user?.permissions || [], 'videos.flag', user?.role)) {
                 throw new Exception(403, 'PERMISSION_DENIED', 'You do not have permission to flag videos');
             }
 
@@ -119,7 +120,8 @@ class VideosController {
                 });
             }
 
-            if (!hasPermission(user?.permissions || [], 'videos.unflag')) {
+            // Check permission - super admins bypass this check
+            if (!hasPermission(user?.permissions || [], 'videos.unflag', user?.role)) {
                 throw new Exception(403, 'PERMISSION_DENIED', 'You do not have permission to unflag videos');
             }
 
@@ -137,6 +139,97 @@ class VideosController {
             return res.status((error.status || 500)).json({
                 status: 'error',
                 message: error.message || 'Failed to unflag video'
+            });
+        }
+    }
+
+    /**
+     * Block a user from the video management interface
+     * Endpoint: POST /videos/user/:userId/block
+     * Body: { reason: string }
+     */
+    static async blockUser(req, res) {
+        try {
+            const { userId } = req.params;
+            const { reason } = req.body;
+            const user = req.session.user;
+
+            // Validate input
+            if (!userId) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'User ID is required'
+                });
+            }
+
+            if (!reason || !reason.trim()) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Block reason is required'
+                });
+            }
+
+            // Check permission - super admins bypass this check
+            if (!hasPermission(user?.permissions || [], 'videos.block_user', user?.role)) {
+                throw new Exception(403, 'PERMISSION_DENIED', 'You do not have permission to block users');
+            }
+
+            // Call business logic layer to block user
+            await VideosUtil.blockUserFromVideo(userId, reason.trim(), user?.username || 'Admin');
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'User blocked successfully'
+            });
+        } catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Failed to block user'
+            });
+        }
+    }
+
+    /**
+     * Unblock a previously blocked user
+     * Endpoint: POST /videos/user/:userId/unblock
+     */
+    static async unblockUser(req, res) {
+        try {
+            const { userId } = req.params;
+            const user = req.session.user;
+
+            // Validate input
+            if (!userId) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'User ID is required'
+                });
+            }
+
+            // Check permission - super admins bypass this check
+            if (!hasPermission(user?.permissions || [], 'videos.unblock_user', user?.role)) {
+                throw new Exception(403, 'PERMISSION_DENIED', 'You do not have permission to unblock users');
+            }
+
+            // Call business logic layer to unblock user
+            await VideosUtil.unblockUserFromVideo(userId, user?.username || 'Admin');
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'User unblocked successfully'
+            });
+        } catch (error) {
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
+                error.mexLogger();
+            }
+
+            return res.status((error.status || 500)).json({
+                status: 'error',
+                message: error.message || 'Failed to unblock user'
             });
         }
     }

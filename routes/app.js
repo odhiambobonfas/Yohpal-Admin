@@ -166,5 +166,7 @@ router.get('/tinymce/settings', authMiddleware, SettingsController.tinyMceSettin
 router.get('/videos', authMiddleware, VideosController.index);
 router.post('/videos/:videoId/flag', authMiddleware, VideosController.flag);
 router.post('/videos/:videoId/unflag', authMiddleware, VideosController.unflag);
+router.post('/videos/user/:userId/block', authMiddleware, VideosController.blockUser);
+router.post('/videos/user/:userId/unblock', authMiddleware, VideosController.unblockUser);
 
 export default router;
