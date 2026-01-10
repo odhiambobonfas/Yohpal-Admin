@@ -15,9 +15,7 @@ class DashboardController {
             const filters = req?.query || req?.params
             let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis, filters);
             let totalPromotedAccounts = await PromotionUtil.getPromotionsCount(req?.redis, filters);
-            let totalApplications = await StatsUtil.getApplicationsCount(req?.redis, filters);
             let totalDepositedAmount = await StatsUtil.getTotalDepositedAmount(req?.redis, filters);
-            let totalYpReviews = null;
             let totalUploadedVideos = await VideosUtil.getAllVideosCount(req?.redis, filters);
             let totalYpTransactions = await StatsUtil.getTransactionsCount(req?.redis, filters);
 
@@ -31,16 +29,8 @@ class DashboardController {
                     value: totalPromotedAccounts || 0
                 },
                 {
-                    name: 'total-applications',
-                    value: totalApplications || 0
-                },
-                {
                     name: 'total-deposited-amount',
                     value: totalDepositedAmount || 0
-                },
-                {
-                    name: 'total-yohpal-reviews',
-                    value: totalYpReviews || 0
                 },
                 {
                     name: 'total-uploaded-videos',
@@ -51,7 +41,7 @@ class DashboardController {
                     value: totalYpTransactions || 0
                 }
             ];
-            
+
             return res.status(200).json({data: response})
         }
 
