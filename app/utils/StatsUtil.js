@@ -66,24 +66,16 @@ class StatsUtil extends Util {
 
     async getFollowersStats(redis, filters={}) {
         try { 
-            const filtersKey = 'yp:usersFollowersStats:filters';
-            const cacheKey = 'yp:usersFollowersStats:filtered';
+            // Handle pagination
+            const limit = parseInt(filters.limit) || parseInt(filters.length) || 10;
+            let offset = 0;
+            if (filters.start !== undefined) {
+                 offset = parseInt(filters.start);
+            }
 
-            const cachedFilters = await redis.getFunc(filtersKey);
-            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
-            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
-            
-            // If filters changed, have to invalidate the cache
-            await redis.deleteFunc(filtersKey);
-            await redis.deleteFunc(cacheKey);
-            if (savedFilters !== currentFilters) {
-                await redis.deleteFunc(filtersKey);
-                await redis.deleteFunc(cacheKey);
+            const cacheKey = `yp:usersFollowersStats:v2:${JSON.stringify(filters)}`;
 
-                await redis.cacheParser(filtersKey, async () => filters, 2000);
-            } 
-
-            let users = await redis?.cacheParser(
+            let result = await redis?.cacheParser(
                 cacheKey,
                 async () => {  
                     let query = FirestoreDatabase.collection(User.collection);
