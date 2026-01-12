@@ -585,16 +585,27 @@ class UserUtil extends Util {
 
             const userDoc = userSnapshot.docs[0];
 
-            // Delete user from Firebase Authentication
-            await admin.auth().deleteUser(uid);
+            /*
+             * Soft Delete Implementation
+             * Update status to 'deleted' to track accounts set for deletion.
+             */
+            const updateData = {
+                status: 'deleted',
+                deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            };
 
-            // Delete user document from Firestore
-            await usersRef.doc(userDoc.id).delete();
+            await usersRef.doc(userDoc.id).update(updateData);
 
-            if (redis) {
-                await redis.deleteFunc('yp:users:filtered');
-                await redis.deleteFunc('yp:users:count');
+            // Disable the user in Firebase Auth instead of deleting
+            try {
+                await admin.auth().updateUser(uid, { disabled: true });
+            } catch (authError) {
+                console.error('Error disabling auth user:', authError);
+                // Continue even if auth update fails (e.g. user not found in auth)
             }
+
+            await this._invalidateUserCache(uid, redis);
 
             return true;
         } catch (error) {
