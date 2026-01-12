@@ -50,13 +50,18 @@ router.get('/reports/users', authMiddleware, UsersController.getAllUsers);
 router.route('/users/create')
     .get(authMiddleware, UsersController.createUser)
     .post(authMiddleware, upload.single('profile_picture'), UsersController.createUser);
-    
+
 router.route('/users/edit/:id')
     .get(authMiddleware, UsersController.editUser)
     .post(authMiddleware, upload.single('profile_picture'), UsersController.editUser);
 
-router.patch('/users/update/:id', authMiddleware, UsersController.updateUserStatus); 
-router.delete('/users/delete/:id', authMiddleware, UsersController.deleteUser); 
+router.patch('/users/update/:id', authMiddleware, UsersController.updateUserStatus);
+router.delete('/users/delete/:id', authMiddleware, UsersController.deleteUser);
+
+router.post('/users/block/:id', authMiddleware, UsersController.blockUser);
+router.post('/users/unblock/:id', authMiddleware, UsersController.unblockUser);
+router.post('/users/flag/:id', authMiddleware, UsersController.flagUser);
+router.post('/users/unflag/:id', authMiddleware, UsersController.unflagUser);
 
 // RBAC routes
 router.get('/roles', authMiddleware, RolesController.index);
@@ -66,7 +71,7 @@ router.route('/roles/edit/:id')
     .get(authMiddleware, RolesController.updateRoles)
     .post(authMiddleware, RolesController.updateRoles)
     .patch(authMiddleware, RolesController.updateRoleStatus);
-router.delete('/roles/delete/:id', authMiddleware, RolesController.deleteRole); 
+router.delete('/roles/delete/:id', authMiddleware, RolesController.deleteRole);
 
 // Dashboard routes
 router.get('/dashboard/card/stats', authMiddleware, DashboardController.index);
