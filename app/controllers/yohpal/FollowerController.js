@@ -26,8 +26,14 @@ class FollowerController {
                 req.query.roleExists = true;
                 req.query.orderBy = 'followersCount';
                 req.query.orderByDirection = 'desc';
-                req.query.limit = 10;
-                users = await StatsUtil.getFollowersStats(req?.redis, req.query); 
+                req.query.roleExists = true;
+                req.query.orderBy = 'followersCount';
+                req.query.orderByDirection = 'desc';
+                // Remove hardcoded limit, let StatsUtil handle it from req.query (start/length)
+
+                const result = await StatsUtil.getFollowersStats(req?.redis, req.query); 
+                users = result.data;
+                const total = result.total;
 
                 let mex = new mexDtParser(users);
                 users = mex.addColumn('profile', (col) => {  
