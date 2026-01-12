@@ -322,11 +322,64 @@ class Dashboard extends Master {
             ordering: true,
             info: true,
             lengthChange: true,
-            // ajax: ajaxDtParser(
-            //     'GET', 
-            //     '/accounts/promoted', 
-            //     filtersParser('.promotedUsersAccountsFilters')
-            // ), 
+            ajax: ajaxDtParser(
+                'GET', 
+                '/accounts/promoted', 
+                filtersParser('.promotedUsersAccountsFilters')
+            ), 
+            columns: [
+                {
+                    data: 'user',
+                    render: function(data, type, row) {
+                        const name =
+  data?.firstName && data?.lastName
+    ? `${data.firstName} ${data.lastName}`
+    : data?.userName || 'Unknown User';
+
+                        const email = data?.email || 'No Email';
+                        
+                        let avatarUrl = '/store/images/avatars/default-avatar.jpg';
+                        if (data?.profilePictureFbPath?.trim()) {
+                            avatarUrl = data.profilePictureFbPath;
+                        } else if (data?.profilePictureLocalPath?.trim()) {
+                            avatarUrl = data.profilePictureLocalPath;
+                        } else if (data?.profile_picture?.trim()) {
+                            avatarUrl = data.profile_picture;
+                        }
+
+                        return `
+                        <div class="d-flex align-items-center">
+                            <img src="${avatarUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;" alt="${name}">
+                            <div>
+                                <div class="fw-semibold">${name}</div>
+                                <small class="text-muted">${email}</small>
+                            </div>
+                        </div>`;
+                    }
+                },
+                { 
+                    data: 'package',
+                    render: function(data) {
+                        let color = 'secondary';
+                        if (data === 'gold') color = 'warning';
+                        else if (data === 'silver') color = 'info';
+                        else if (data === 'bronze') color = 'danger';
+                        return `<span class="badge bg-${color}">${(data || 'N/A').toUpperCase()}</span>`;
+                    }
+                },
+                { 
+                    data: 'followers_left',
+                    render: function(data) {
+                        return `<span class="fw-semibold">${data || 0}</span>`;
+                    }
+                },
+                { 
+                    data: 'promoted',
+                    render: function(data) {
+                        return data ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>';
+                    }
+                }
+            ], 
             fnDrawCallback: () => {
                 const inst = new Dashboard();
                 inst.actionOnpromotedUsersAccountsRes();
