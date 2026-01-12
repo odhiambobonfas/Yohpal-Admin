@@ -1,10 +1,108 @@
 import Util from '@utils/Util';
-import Promotion from '@models/Promotion';
+import User from '@models/User';
+import Promotion from '@models/Promotion'; 
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
 
 class PromotionUtil extends Util {
     constructor() {
         super();
+    }
+
+    /**
+     * Get list of promoted users with their profile data
+     * Assumes Promotion Document ID == User UID
+     */
+    async getPromotedUsers(redis, filters = {}) {
+        try {
+            console.log('getPromotedUsers Filters:', JSON.stringify(filters));
+            const limit = parseInt(filters.limit) || parseInt(filters.length) || 10;
+            let offset = 0;
+            let page = 1;
+
+            if (filters.start !== undefined) {
+                 offset = parseInt(filters.start);
+                 page = Math.floor(offset / limit) + 1;
+            } else {
+                 page = parseInt(filters.page) || 1;
+                 offset = (page - 1) * limit;
+            }
+            console.log(`Pagination: Offset ${offset}, Limit ${limit}, Page ${page}`);
+            
+            // Create a unique cache key based on filters (v2 to burst cache)
+            const cacheKey = `yp:promotions:list:v2:${JSON.stringify(filters)}`;
+
+            const result = await redis.cacheParser(
+                cacheKey,
+                async () => {
+                    let query = FirestoreDatabase.collection(Promotion.collection)
+                        .where('promoted', '==', true);
+
+                    // Apply filters if needed (e.g. by package)
+                    if (filters.package) {
+                        query = query.where('package', '==', filters.package);
+                    }
+
+                    // Count total for pagination
+                    const countSnapshot = await query.count().get();
+                    const total = countSnapshot.data().count;
+                    query = query.orderBy('__name__'); 
+                    
+                    query = query.offset(offset).limit(limit);
+
+                    console.log(`Executing Firestore Query with offset: ${offset}, limit: ${limit}`);
+                    const snapshot = await query.get();
+
+                    if (snapshot.empty) {
+                        console.log('Firestore returned empty snapshot.');
+                        return { data: [], pagination: { total, page: (offset/limit)+1, limit, pages: 0 } };
+                    }
+
+                    // 1. Get promotions for this page
+                    const promotions = snapshot.docs.map(doc => ({
+                        id: doc.id, // This is the UID
+                        ...doc.data(),
+                        createdAt: doc.data().timestamp?.toDate?.() || doc.data().timestamp
+                    }));
+
+                    // 2. Fetch corresponding Users
+                    const userPromises = promotions.map(async (promo) => {
+                        try {
+                            const userDoc = await FirestoreDatabase.collection(User.collection).doc(promo.id).get();
+                            if (userDoc.exists) {
+                                return {
+                                    ...promo,
+                                    user: {
+                                        id: userDoc.id,
+                                        ...userDoc.data()
+                                    }
+                                };
+                            }
+                            return { ...promo, user: null };
+                        } catch (e) {
+                            return { ...promo, user: null };
+                        }
+                    });
+
+                    const joinedData = await Promise.all(userPromises);
+
+                    return {
+                        data: joinedData,
+                        pagination: {
+                            total,
+                            page,
+                            limit,
+                            pages: Math.ceil(total / limit)
+                        }
+                    };
+                },
+                300
+            );
+
+            return result;
+        } catch (error) {
+            console.error('Error getting promoted users:', error);
+            return { data: [], pagination: { total: 0, page: 1, limit: 10, pages: 0 } };
+        }
     }
 
     /**
