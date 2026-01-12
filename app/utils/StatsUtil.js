@@ -79,14 +79,21 @@ class StatsUtil extends Util {
                 cacheKey,
                 async () => {  
                     let query = FirestoreDatabase.collection(User.collection);
+                    let countQuery = FirestoreDatabase.collection(User.collection);
                     
                     if (filters.orderBy && filters.orderByDirection) {
                         query = query.orderBy(filters.orderBy, filters.orderByDirection); 
+                    } else {
+                        // Default sort if not specified
+                        query = query.orderBy('followersCount', 'desc');
                     }
 
-                    if (filters.limit) {
-                        query = query.limit(filters.limit);
-                    }
+                    // Get total count
+                    const countSnapshot = await countQuery.count().get();
+                    const total = countSnapshot.data().count;
+
+                    // Apply pagination
+                    query = query.offset(offset).limit(limit);
 
                     const snapshot = await query.get(); 
 
