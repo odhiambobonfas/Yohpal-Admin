@@ -80,7 +80,7 @@ class StatsUtil extends Util {
                 async () => {  
                     let query = FirestoreDatabase.collection(User.collection);
                     let countQuery = FirestoreDatabase.collection(User.collection);
-                    
+
                     if (filters.orderBy && filters.orderByDirection) {
                         query = query.orderBy(filters.orderBy, filters.orderByDirection); 
                     } else {
@@ -98,24 +98,20 @@ class StatsUtil extends Util {
                     const snapshot = await query.get(); 
 
                     if (snapshot.empty) {
-                        return [];
+                        return { data: [], total };
                     }
 
-                    let fetched =  fbCollectionParser(snapshot);  
-
-                    return fetched;
+                    let fetched = fbCollectionParser(snapshot);  
+                    return { data: fetched, total };
                 },
-                7200
+                300
             );
 
-            const filtered = [...users].sort((a, b) => (Number(b.followersCount) || 0) - (Number(a.followersCount) || 0));
-            
-            return filtered;
+            return result;
         } catch (error) {
             console.error('Error getting users:', error);
+            return { data: [], total: 0 };
         }
-
-        return [];
     }
 
     async getApplicationsCount(redis, filters={}) {
