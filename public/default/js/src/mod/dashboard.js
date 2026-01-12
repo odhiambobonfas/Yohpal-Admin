@@ -316,6 +316,8 @@ class Dashboard extends Master {
         $('.promoted-users-accounts-table').DataTable({
             destroy: true,
             paging: true,
+            serverSide: true, // Enable server-side processing
+            processing: true, // Enable loading indicator
             searching: true,
             ordering: true,
             info: true,
