@@ -84,6 +84,29 @@ class DashboardController {
             });
         }
     } 
+
+    static async getPromotedAccounts(req, res) {
+        try {
+            const filters = req?.query || req?.params;
+            const response = await PromotionUtil.getPromotedUsers(req?.redis, filters);
+            return res.status(200).json({
+                draw: parseInt(filters.draw) || 1,
+                recordsTotal: response.pagination.total,
+                recordsFiltered: response.pagination.total,
+                data: response.data.map(item => ({
+                    id: item.id,
+                    user: item.user,
+                    package: item.package,
+                    followers_left: item.followers_left,
+                    promoted: item.promoted
+                }))
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ data: [] });
+        }
+    } 
 }
 
 export default DashboardController;
