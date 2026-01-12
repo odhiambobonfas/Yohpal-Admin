@@ -8,27 +8,38 @@ class ReportUtil extends Util {
         super();
     }
 
-    async getAllUsers(params = {}) {
+    async getAllUsers(redis, params = {}) {
         try {
             console.log('ENTER getAllUsers', params);
 
-            const { start = 0, length = 10, search = '' } = params;
+            const { start = 0, length = 10, search = '', status = '' } = params;
             const limit = parseInt(length);
             const offset = parseInt(start);
 
-            // 1. Get Total Count of records (approximate or filtered by basic criteria)
-            // We optimize by checking non-deleted users with emails (since we sort/filter by email)
-            const totalCountSnapshot = await FirestoreDatabase
-                .collection(User.collection)
-                .where('email', '>=', '')
-                .count()
-                .get();
+            const cacheKey = 'yp:users:total:count';
 
-            const recordsTotal = totalCountSnapshot.data().count;
+            // 1. Get Total Count (Cached)
+            const recordsTotal = await redis?.cacheParser(
+                cacheKey,
+                async () => {
+                    const snapshot = await FirestoreDatabase
+                        .collection(User.collection)
+                        .where('email', '>=', '')
+                        .count()
+                        .get();
+                    return snapshot.data().count;
+                },
+                300
+            ) || 0;
+
+
             let recordsFiltered = recordsTotal;
+
+
 
             // 2. Build Query
             let query = FirestoreDatabase.collection(User.collection);
+            let hasFilters = false;
 
             // 3. Apply Search
             if (search && search.toString().trim().length > 0) {
@@ -37,15 +48,27 @@ class ReportUtil extends Util {
                 query = query.where('email', '>=', searchTerm)
                     .where('email', '<=', searchTerm + '\uf8ff');
 
-                // Recalculate filtered count
+                hasFilters = true;
+            }
+
+            // 3.1 Apply Status Filter
+            if (status && status !== 'all' && ['active', 'inactive', 'suspended', 'deleted', 'pending'].includes(status)) {
+                query = query.where('status', '==', status);
+                hasFilters = true;
+            }
+
+            // Only Recalculate filtered count if filters were actually applied
+            if (hasFilters) {
                 const filteredCountSnapshot = await query.count().get();
                 recordsFiltered = filteredCountSnapshot.data().count;
-            } else {
-                query = query.where('email', '>=', '');
             }
 
             // 4. Apply Pagination
-            query = query.orderBy('email');
+            // Only order by email if we are NOT filtering by status, or if we are searching (which implies email filter/sort logic might vary)
+            // This avoids "missing index" errors for 'status' + 'email' composite queries if the index doesn't exist.
+            if (!status || status === 'all') {
+                query = query.orderBy('email');
+            }
 
             const usersSnapshot = await query
                 .limit(limit)

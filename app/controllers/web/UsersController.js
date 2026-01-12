@@ -486,11 +486,13 @@ class UsersController {
                 const length = parseInt(req.query.length) || 10;
                 const search = req.query.search && req.query.search.value ? req.query.search.value : '';
                 const draw = parseInt(req.query.draw) || 1;
+                const status = req.query.status || '';
 
-                const result = await ReportUtil.getAllUsers({
+                const result = await ReportUtil.getAllUsers(req?.redis, {
                     start,
                     length,
-                    search
+                    search,
+                    status
                 });
 
                 return res.status(200).json({
