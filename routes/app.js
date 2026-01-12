@@ -46,6 +46,7 @@ router.get('/dashboard', authMiddleware, DashboardController.index);
 
 // Users routes
 router.get('/users', authMiddleware, UsersController.index);
+router.get('/reports/users', authMiddleware, UsersController.getAllUsers);
 router.route('/users/create')
     .get(authMiddleware, UsersController.createUser)
     .post(authMiddleware, upload.single('profile_picture'), UsersController.createUser);
