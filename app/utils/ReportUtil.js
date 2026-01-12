@@ -8,6 +8,32 @@ class ReportUtil extends Util {
         super();
     }
 
+    async getAllUsers() {
+        try {
+            console.log('ENTER getAllUsers');
+            
+            const usersSnapshot = await FirestoreDatabase
+                .collection(User.collection)
+                .get();
+
+            console.log(`Found ${usersSnapshot.docs.length} users in database`);
+
+            const users = usersSnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    email: data.email || 'N/A',
+                    userName: data.userName || data.firstName || 'Anonymous'
+                };
+            });
+
+            console.log(`EXIT getAllUsers - returning ${users.length} users`);
+            return users;
+        } catch (error) {
+            console.error('Error in getAllUsers:', error);
+            throw error;
+        }
+    }
+
     async getReportedVideos() {
         try {
             console.log('ENTER getReportedVideos');
