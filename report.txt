@@ -1,0 +1,34 @@
+# Daily Report - 2026-01-12
+
+## Commits Today
+- 3c368e4 - kevwasonga, 2 hours ago : feat: Add UI for user blocking and flagging with toastr notifications
+- e7fefae - kevwasonga, 2 hours ago : feat: Register routes for user blocking and flagging
+- effd16e - kevwasonga, 2 hours ago : feat: Add controller endpoints for user blocking and flagging
+- aa93e6c - kevwasonga, 2 hours ago : feat: Include status and flag data in user report
+- 91ffd46 - kevwasonga, 2 hours ago : feat: Add block/flag logic and refactor with helper methods
+- 79ec188 - kevwasonga, 2 hours ago : fix: Allow tracking of reports view directory
+- 94ceb89 - kevwasonga, 5 hours ago : Add /reports/users route to app.js
+- 8a68993 - kevwasonga, 5 hours ago : Add getAllUsers endpoint to UsersController for reports/users API
+- 1d95eea - kevwasonga, 5 hours ago : Add getAllUsers method to ReportUtil with email and username fields
+
+## Uncommitted Changes
+- M app/controllers/web/UsersController.js
+- M app/utils/ReportUtil.js
+- M app/utils/UserUtil.js
+
+## Summary of Achievements
+
+### 1. User "Soft Delete" Implementation
+- **Goal**: Track accounts set for deletion instead of permanently removing them immediately.
+- **Change**: Modified `UserUtil.deleteUser` to update the user's status to `'deleted'` and set a `deletedAt` timestamp. The user is also disabled in Firebase Auth.
+
+### 2. User Report Status Filtering
+- **Goal**: Allow admins to view users based on their status (Active, Inactive, Suspended, Deleted).
+- **Frontend**: Added a "Status" dropdown filter to the `/reports/users` page and updated the DataTable to display a "Deleted" badge.
+- **Backend**: Updated `ReportUtil` and `UsersController` to handle the `status` query parameter.
+
+### 3. Performance Optimization & Reliability
+- **Goal**: Reduce page load time and prevent database errors.
+- **Caching**: Implemented Redis caching for the "Total Users" count (5-minute TTL), significantly reducing Firestore read operations.
+- **Query Optimization**: Refactored `ReportUtil` to execute only a single Firestore `count()` query per request instead of multiple.
+- **Bug Fix**: Resolved a 500 Internal Server Error by removing redundant query filters that triggered complex index requirements in Firestore.
