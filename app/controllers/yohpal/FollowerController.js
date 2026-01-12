@@ -80,8 +80,9 @@ class FollowerController {
                 .make();
                 
                 return res.status(200).json({
-                    status: 'success',
-                    message: 'Users retrieved successfully.',
+                    draw: parseInt(req.query.draw) || 1,
+                    recordsTotal: total,
+                    recordsFiltered: total,
                     data: users
                 });
             } catch (error) {
