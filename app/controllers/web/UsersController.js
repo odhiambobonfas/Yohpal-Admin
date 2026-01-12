@@ -12,6 +12,7 @@ import {hasPermission, hasAnyPermission} from '@funcs/permissions';
 import UsersUtil from '@utils/UserUtil';  
 import HRMUtil from '@utils/HRMUtil';  
 import PayrollUtil from '@utils/PayrollUtil';
+import ReportUtil from '@utils/ReportUtil';
 import LANG_EN from '@lang/en'; 
 import { departments, designations, employees } from "@funcs/hrm";
 import { getAllRoles, isAdmin, isSuperAdmin } from "@funcs/roles";
@@ -475,6 +476,32 @@ class UsersController {
                 title: error.title || 'Unexpected Error'
             });
         } 
+    }
+
+    static async getAllUsers(req, res) {
+        if (isAjaxRequest(req)) {
+            try {
+                const users = await ReportUtil.getAllUsers();
+                
+                return res.status(200).json({
+                    success: true,
+                    count: users.length,
+                    data: users
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to fetch users',
+                    message: error.message
+                });
+            }
+        }
+
+        return res.render("crm/reports/users", { 
+            title: `${ config.APP.APP_NAME } || Users Report`,
+            user: req.session.user
+        });
     }
 
     static async deleteUser(req, res) {
