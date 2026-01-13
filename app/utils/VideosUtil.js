@@ -6,9 +6,9 @@ import Video from '@models/Video';
 import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
-import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';  
-import { FirestoreDatabase } from '@utils/FirebaseUtil';  
+import LANG_EN from '@lang/en';
+import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';
+import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import { parseDateRange } from '@funcs/global_funcs';
 import Role from '@models/Role';
 import Permission from '@models/Permissions';
@@ -20,8 +20,8 @@ class VideosUtil extends Util {
     constructor() {
         super();
     }
-    
-    async getAllVideosCount(redis, filters={}) {
+
+    async getAllVideosCount(redis, filters = {}) {
         try {
             const filtersKey = 'yp:videos:filters';
             const cacheKey = 'yp:videos:filtered';
@@ -29,19 +29,19 @@ class VideosUtil extends Util {
             const cachedFilters = await redis.getFunc(filtersKey);
             const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
             const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
-            
+
             // If filters changed, have to invalidate the cache
             if (savedFilters !== currentFilters) {
                 await redis.deleteFunc(filtersKey);
                 await redis.deleteFunc(cacheKey);
                 await redis.cacheParser(filtersKey, async () => filters, 2000);
             }
-             
+
             let query = FirestoreDatabase.collection(Video.collection);
 
             if (filters?.daterange?.length) {
-                let daterange = parseDateRange(filters.daterange, true);   
-                if (daterange.start && daterange.end) { 
+                let daterange = parseDateRange(filters.daterange, true);
+                if (daterange.start && daterange.end) {
                     query = query.where("timestamp", ">=", daterange.start);
                     query = query.where("timestamp", "<=", daterange.end);
                 }
@@ -49,14 +49,14 @@ class VideosUtil extends Util {
 
             const count = await redis.cacheParser(
                 cacheKey,
-                async () => { 
+                async () => {
                     const snapshot = await query.count().get();
-    
+
                     return snapshot.data().count;
                 },
                 5
             );
-    
+
             return count;
         } catch (error) {
             console.error('Error getting videos count:', error);
@@ -67,13 +67,13 @@ class VideosUtil extends Util {
     async getPaginatedVideos({ limit = 20, cursorPagination = null, filters = {}, excludeIds = [] }) {
         try {
             limit = Math.min(Math.max(limit, 1), 100);
-            
+
             // CRITICAL: Dynamic batch sizing based on filter type
             const hasTextFilter = filters.uploader?.trim();
             const hasFlaggedFilter = filters.flagged !== undefined && filters.flagged !== 'blocked';
             const hasBlockedFilter = filters.flagged === 'blocked'; // Special filter for blocked users
             const batchSize = (hasTextFilter || hasFlaggedFilter || hasBlockedFilter) ? 100 : limit;
-            
+
             const excludeSet = new Set(excludeIds);
             const videos = [];
             let lastMatchingDoc = null;
@@ -81,19 +81,19 @@ class VideosUtil extends Util {
             let duplicatesSkipped = 0;
             let iterations = 0;
             const MAX_ITERATIONS = (hasTextFilter || hasFlaggedFilter || hasBlockedFilter) ? 5 : 1;
-            
+
             // STRATEGY: Keep fetching batches until we have enough matches or reach end
             while (videos.length < limit && iterations < MAX_ITERATIONS) {
                 iterations++;
-                
+
                 let query = FirestoreDatabase.collection(Video.collection);
 
                 // Apply indexed filters
                 query = query.where('broken', '==', false);
 
                 if (filters.daterange?.length) {
-                    let daterange = parseDateRange(filters.daterange, true);   
-                    if (daterange.start && daterange.end) { 
+                    let daterange = parseDateRange(filters.daterange, true);
+                    if (daterange.start && daterange.end) {
                         query = query.where("timestamp", ">=", daterange.start);
                         query = query.where("timestamp", "<=", daterange.end);
                     }
@@ -106,9 +106,9 @@ class VideosUtil extends Util {
                     try {
                         const cursor = JSON.parse(cursorPagination);
                         if (cursor.timestamp) {
-                            const timestampValue = cursor.timestamp._seconds ? 
+                            const timestampValue = cursor.timestamp._seconds ?
                                 new admin.firestore.Timestamp(
-                                    cursor.timestamp._seconds, 
+                                    cursor.timestamp._seconds,
                                     cursor.timestamp._nanoseconds
                                 ) : cursor.timestamp;
                             query = query.startAfter(timestampValue);
@@ -128,7 +128,7 @@ class VideosUtil extends Util {
 
                 // Process batch and apply post-query filters
                 let batchHasMatches = false;
-                
+
                 for (const doc of snapshot.docs) {
                     const data = doc.data();
                     const videoId = doc.id;
@@ -144,7 +144,7 @@ class VideosUtil extends Util {
                         const searchTerm = filters.uploader.toLowerCase();
                         const userName = (data.userName || '').toLowerCase();
                         const fullName = (data.fullName || '').toLowerCase();
-                        
+
                         if (!userName.includes(searchTerm) && !fullName.includes(searchTerm)) {
                             continue;
                         }
@@ -180,7 +180,7 @@ class VideosUtil extends Util {
                             }
                         }
 
-                        if (userStatus !== 'inactive') {
+                        if (!['inactive', 'suspended', 'blocked'].includes(userStatus)) {
                             continue;
                         }
                     }
@@ -428,7 +428,7 @@ class VideosUtil extends Util {
 
             const userData = userSnapshot.docs[0].data();
 
-            if (userData.status === 'inactive') {
+            if (['inactive', 'suspended', 'blocked'].includes(userData.status)) {
                 return {
                     canUpload: false,
                     reason: userData.banReason || "Account is blocked"
