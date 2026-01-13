@@ -232,10 +232,15 @@ class UserUtil extends Util {
                     query = query.where("timestamp", "<=", daterange.end);
                 }
             }
+    
+    async getAllUsersCount(redis, filters={}) {
+        try {
+            const cacheKey = 'yp:users:count';
 
             const count = await redis.cacheParser(
                 cacheKey,
                 async () => {
+                    const query = FirestoreDatabase.collection(User.collection);
                     const snapshot = await query.count().get();
                     return snapshot.data().count;
                 },

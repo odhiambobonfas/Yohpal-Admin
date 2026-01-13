@@ -4,21 +4,22 @@ import User from '@models/User';
 import UsersUtil from '@utils/UserUtil';
 import StatsUtil from '@utils/StatsUtil';
 import VideosUtil from '@utils/VideosUtil';
-import mexDtParser from '@config/mexDtParser'; 
+import PromotionUtil from '@utils/PromotionUtil';
+import LiveSessionUtil from '@utils/LiveSessionUtil';
+import mexDtParser from '@config/mexDtParser';
 import Exception from '@config/exceptions';
 import { isAjaxRequest, ucfirst, ucwords } from '@config/utils';
 
 class DashboardController {
-    static async index(req, res) {  
+    static async index(req, res) {
         if (isAjaxRequest(req)) {
             const filters = req?.query || req?.params
             let totalYpUsers = await UsersUtil.getAllUsersCount(req?.redis, filters);
-            let totalPromotedAccounts = null;
-            let totalApplications = null;
-            let totalDepositedAmount = null;
-            let totalYpReviews = null;
+            let totalPromotedAccounts = await PromotionUtil.getPromotionsCount(req?.redis, filters);
+            let totalDepositedAmount = await StatsUtil.getTotalDepositedAmount(req?.redis, filters);
             let totalUploadedVideos = await VideosUtil.getAllVideosCount(req?.redis, filters);
-            let totalYpTransactions = null;
+            let totalYpTransactions = await StatsUtil.getTransactionsCount(req?.redis, filters);
+            let totalLiveSessions = await LiveSessionUtil.getActiveLiveSessionsCount(req?.redis, filters);
 
             const response = [
                 {
@@ -30,16 +31,8 @@ class DashboardController {
                     value: totalPromotedAccounts || 0
                 },
                 {
-                    name: 'total-applications',
-                    value: totalApplications || 0
-                },
-                {
                     name: 'total-deposited-amount',
                     value: totalDepositedAmount || 0
-                },
-                {
-                    name: 'total-yohpal-reviews',
-                    value: totalYpReviews || 0
                 },
                 {
                     name: 'total-uploaded-videos',
@@ -48,9 +41,13 @@ class DashboardController {
                 {
                     name: 'total-yohpal-transactions',
                     value: totalYpTransactions || 0
+                },
+                {
+                    name: 'total-live_sessions',
+                    value: totalLiveSessions || 0
                 }
             ];
-            
+
             return res.status(200).json({data: response})
         }
 

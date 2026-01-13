@@ -46,6 +46,7 @@ class VideosUtil extends Util {
                     query = query.where("timestamp", "<=", daterange.end);
                 }
             }
+            const cacheKey = 'yp:videos:count';
 
             const count = await redis.cacheParser(
                 cacheKey,
@@ -55,6 +56,11 @@ class VideosUtil extends Util {
                     return snapshot.data().count;
                 },
                 5
+                    const query = FirestoreDatabase.collection(Video.collection);
+                    const snapshot = await query.count().get();
+                    return snapshot.data().count;
+                },
+                300
             );
 
             return count;

@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import config from '@config/config';
-import AppModel from '@models/AppModel';  
+import AppModel from '@models/AppModel';
 import SettingsUtil from '@utils/SettingsUtil';
 
-class Transaction extends AppModel {
-    static table = ''; 
+class Application extends AppModel {
+    static table = '';
 
     static collection = 'ypApplications';
 
@@ -278,4 +278,4 @@ class Transaction extends AppModel {
     }
 }
 
-export default Transaction;
+export default Application;
