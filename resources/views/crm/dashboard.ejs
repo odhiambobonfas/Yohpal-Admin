@@ -1,136 +1,149 @@
-<%- include('crm/partials/header') %> 
-<%- include('crm/partials/navbar') %>
+<%- include('crm/partials/header') %>
+	<%- include('crm/partials/navbar') %>
 
-<div class="container-fluid gx-0 px-0">
-	<div class="row gap-0 gx-0">
-		<div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
-		<div class="col-md-9 mt-2 content-body">
-			<%- include('crm/partials/topbar') %> <% if (message) { %>
-			<div class="form-group">
-				<div class="alert alert-<%= status && status == 'success' ? 'danger' : 'danger' %>" role="alert">
-					<strong>Alert:</strong> <%= message %>
-				</div>
-			</div>
-			<% } %>
-			<div class="container-fluid m-0 p-0 pb-5">
-				<div class="row m-1 mt-3 g-3">
-					<div class="col-12 col-md-6 col-lg-4">
-						<div class="text-start p-4 shadow-sm bg-white rounded">
-							<h5 class="stat-count" data-id="total-yohpal-users">0</h5>
-							<p class="mb-0 text-muted">Total Yohpal Users</p>
-						</div>
-					</div>
-					<div class="col-12 col-md-6 col-lg-4">
-						<div class="text-start p-4 shadow-sm bg-white rounded">
-							<h5 class="stat-count" data-id="total-promoted-accounts">0</h5>
-							<p class="mb-0 text-muted">Total Promoted Accounts</p>
-						</div>
-					</div>
-					<div class="col-12 col-md-6 col-lg-4">
-						<div class="text-start p-4 shadow-sm bg-white rounded">
-							<h5 class="stat-count" data-id="total-deposited-amount">0</h5>
-							<p class="mb-0 text-muted">Total Deposited Amount</p>
-						</div>
-					</div>
-					<div class="col-12 col-md-6 col-lg-4">
-						<div class="text-start p-4 shadow-sm bg-white rounded">
-							<h5 class="stat-count" data-id="total-uploaded-videos">0</h5>
-							<p class="mb-0 text-muted">Total Uploaded Videos</p>
-						</div>
-					</div>
-					<div class="col-12 col-md-6 col-lg-4">
-						<div class="text-start p-4 shadow-sm bg-white rounded">
-							<h5 class="stat-count" data-id="total-yohpal-transactions">0</h5>
-							<p class="mb-0 text-muted">Total Yohpal Transactions</p>
-						</div>
-					</div>
-					<div class="col-12 col-md-6 col-lg-4">
-						<div class="text-start p-4 shadow-sm bg-white rounded">
-							<h5 class="stat-count" data-id="total-live_sessions">0</h5>
-							<p class="mb-0 text-muted">Total Live Sessions</p>
-						</div>
-					</div>
-				</div>
+		<div class="container-fluid gx-0 px-0">
+			<div class="row gap-0 gx-0">
+				<div class="col-md-3"><%- include('crm/partials/sidebar') %></div>
+				<div class="col-md-9 mt-2 content-body">
+					<%- include('crm/partials/topbar') %>
+						<% if (message) { %>
+							<div class="form-group">
+								<div class="alert alert-<%= status && status == 'success' ? 'danger' : 'danger' %>"
+									role="alert">
+									<strong>Alert:</strong>
+									<%= message %>
+								</div>
+							</div>
+							<% } %>
+								<div class="container-fluid m-0 p-0 pb-5">
+									<div class="row m-1 mt-3 g-3">
+										<div class="col-12 col-md-6 col-lg-4">
+											<div class="text-start p-4 shadow-sm bg-white rounded">
+												<h5 class="stat-count" data-id="total-yohpal-users">0</h5>
+												<p class="mb-0 text-muted">Total Yohpal Users</p>
+											</div>
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											<div class="text-start p-4 shadow-sm bg-white rounded">
+												<h5 class="stat-count" data-id="total-promoted-accounts">0</h5>
+												<p class="mb-0 text-muted">Total Promoted Accounts</p>
+											</div>
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											<div class="text-start p-4 shadow-sm bg-white rounded">
+												<h5 class="stat-count" data-id="total-deposited-amount">0</h5>
+												<p class="mb-0 text-muted">Total Deposited Amount</p>
+											</div>
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											<div class="text-start p-4 shadow-sm bg-white rounded">
+												<h5 class="stat-count" data-id="total-uploaded-videos">0</h5>
+												<p class="mb-0 text-muted">Total Uploaded Videos</p>
+											</div>
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											<div class="text-start p-4 shadow-sm bg-white rounded">
+												<h5 class="stat-count" data-id="total-yohpal-transactions">0</h5>
+												<p class="mb-0 text-muted">Total Yohpal Transactions</p>
+											</div>
+										</div>
+										<div class="col-12 col-md-6 col-lg-4">
+											<a href="/live/active" class="text-decoration-none text-dark">
+												<div
+													class="text-start p-4 shadow-sm bg-white rounded border-start border-danger border-4">
+													<h5 class="stat-count" data-id="total-live_sessions">0</h5>
+													<p class="mb-0 text-muted"><span class="pulse-dot"></span>Active
+														Live Sessions</p>
+												</div>
+											</a>
+										</div>
+									</div>
 
-				<div class="d-flex m-1 mt-3 gap-1">
-					<div class="card col-6 d-none">
-						<div class="header p-1 bg-light-gray shadow-sm">
-							<h5 class="ms-2">Consumer Demographics(Age Breakdown)</h5>
-						</div>
-						<div class="card-body d-block">
-							<div class="loading-spinner d-none"></div>
-							<div class="chart-container">
-								<canvas class="stat-charts ageChart" id="ageChart"></canvas>
-							</div> 
-						</div>
-					</div>
-					<div class="card col-12 d-block">
-						<div class="header p-1 bg-light-gray shadow-sm">
-							<h5 class="ms-2">Market Size Growth</h5>
-						</div>
-						<div class="card-body">
-							<div class="loading-spinner d-none"></div>
-							<div class="chart-container growth-chart">
-								<canvas class="stat-charts growthChart" id="growthChart"></canvas>
-							</div>
-						</div>
-					</div>
-				</div>
+									<div class="d-flex m-1 mt-3 gap-1">
+										<div class="card col-6 d-none">
+											<div class="header p-1 bg-light-gray shadow-sm">
+												<h5 class="ms-2">Consumer Demographics(Age Breakdown)</h5>
+											</div>
+											<div class="card-body d-block">
+												<div class="loading-spinner d-none"></div>
+												<div class="chart-container">
+													<canvas class="stat-charts ageChart" id="ageChart"></canvas>
+												</div>
+											</div>
+										</div>
+										<div class="card col-12 d-block">
+											<div class="header p-1 bg-light-gray shadow-sm">
+												<h5 class="ms-2">Market Size Growth</h5>
+											</div>
+											<div class="card-body">
+												<div class="loading-spinner d-none"></div>
+												<div class="chart-container growth-chart">
+													<canvas class="stat-charts growthChart" id="growthChart"></canvas>
+												</div>
+											</div>
+										</div>
+									</div>
 
-				<div class="d-flex m-1 mt-3 gap-1">
-					<!-- Top Followed Users Section -->
-					<div class="card col-6">
-						<div class="header p-3 bg-light-gray shadow-sm border-bottom">
-							<h5 class="m-0 text-dark"><i class="fas fa-user-friends me-2 text-danger"></i>Top Followed Users</h5>
-						</div>
-						<div class="card-body p-1">
-							<div class="table-responsive">
-								<table class="table table-hover mb-0 followed-users-table" id="followed-users-table">
-									<thead class="table-light">
-										<tr>
-											<th class="ps-3">User</th>
-											<th>Followers</th>  
-										</tr>
-									</thead>
-									<tbody>
-										<!-- Content sits in here! -->
-									</tbody>
-								</table>
-							</div>
-						</div> 
-					</div>
-				
-					<!-- Top Account Promoted Section -->
-					<div class="card col-6">
-						<div class="header p-3 bg-light-gray shadow-sm border-bottom">
-							<h5 class="m-0 text-dark"><i class="fas fa-chart-line me-2 text-success"></i>Top Promoted Accounts</h5>
-						</div>
-						<div class="card-body p-1">
-							<div class="table-responsive">
-								<table class="table table-hover mb-0 promoted-users-accounts-table" id="promoted-users-accounts-table">
-									<thead class="table-light">
-										<tr>
-											<th class="ps-3">Account</th>
-											<th>Package</th>
-											<th>Followers Left</th>
-											<th>Status</th>
-										</tr>
-									</thead>
-									<tbody>
-										<!-- Content populated by DataTables Ajax -->
-									</tbody>
-								</table>
-							</div>
-						</div> 
-					</div>
+									<div class="d-flex m-1 mt-3 gap-1">
+										<!-- Top Followed Users Section -->
+										<div class="card col-6">
+											<div class="header p-3 bg-light-gray shadow-sm border-bottom">
+												<h5 class="m-0 text-dark"><i
+														class="fas fa-user-friends me-2 text-danger"></i>Top Followed
+													Users</h5>
+											</div>
+											<div class="card-body p-1">
+												<div class="table-responsive">
+													<table class="table table-hover mb-0 followed-users-table"
+														id="followed-users-table">
+														<thead class="table-light">
+															<tr>
+																<th class="ps-3">User</th>
+																<th>Followers</th>
+															</tr>
+														</thead>
+														<tbody>
+															<!-- Content sits in here! -->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+
+										<!-- Top Account Promoted Section -->
+										<div class="card col-6">
+											<div class="header p-3 bg-light-gray shadow-sm border-bottom">
+												<h5 class="m-0 text-dark"><i
+														class="fas fa-chart-line me-2 text-success"></i>Top Promoted
+													Accounts</h5>
+											</div>
+											<div class="card-body p-1">
+												<div class="table-responsive">
+													<table class="table table-hover mb-0 promoted-users-accounts-table"
+														id="promoted-users-accounts-table">
+														<thead class="table-light">
+															<tr>
+																<th class="ps-3">Account</th>
+																<th>Package</th>
+																<th>Followers Left</th>
+																<th>Status</th>
+															</tr>
+														</thead>
+														<tbody>
+															<!-- Content populated by DataTables Ajax -->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</div>
 
-<%- include('crm/partials/footer') %>
+		<%- include('crm/partials/footer') %>
 
-<script type="text/javascript" src="/default/js/src/mod/dashboard.js"></script>
+			<script type="text/javascript" src="/default/js/src/mod/dashboard.js"></script>
 
-<%- include('crm/partials/closure') %>
+			<%- include('crm/partials/closure') %>
