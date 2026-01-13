@@ -16,7 +16,7 @@
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                     <option value="suspended">Suspended</option>
-                                    <option value="deleted">Deleted</option>
+                                    <option value="deleted">Scheduled for Deletion</option>
                                 </select>
                             </div>
                             <div class="badge-span d-flex justify-content-center align-items-center gap-2">
@@ -105,6 +105,79 @@
                 </div>
             </div>
         </div>
+        </div>
+        </div>
+
+        <!-- Account Deletion Details Modal -->
+        <div class="modal fade" id="deletionDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title"><i class="fas fa-clock"></i> Account Deletion Details</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> This view is <strong>informational only</strong>. It
+                            allows administrators to monitor user-initiated account deletions during the grace period.
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-12 text-center">
+                                <h6 class="text-uppercase text-muted fw-bold">Time Remaining Until Permanent Deletion
+                                </h6>
+                                <div id="deletionCountdown" class="display-4 fw-bold text-danger">--d --h</div>
+                                <small class="text-muted">Calculated from scheduled permanent deletion date relative to
+                                    now.</small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold text-muted small text-uppercase">Username</label>
+                                <div id="delModalUsername" class="fs-5"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold text-muted small text-uppercase">User Email</label>
+                                <div id="delModalEmail" class="fs-5"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold text-muted small text-uppercase">User ID (UID)</label>
+                                <div id="delModalUid" class="font-monospace"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="fw-bold text-muted small text-uppercase">Account Status</label>
+                                <div id="delModalStatus"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold text-muted small text-uppercase">Account Deactivation Date</label>
+                            <div id="delModalDeactivatedAt"></div>
+                            <small class="text-muted">Date user requested deletion</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold text-muted small text-uppercase">Scheduled Permanent Deletion
+                                Date</label>
+                            <div id="delModalDeletionDate"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold text-muted small text-uppercase">Deletion Initiated By</label>
+                            <div id="delModalUpdatedBy"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold text-muted small text-uppercase">Account Creation Date</label>
+                            <div id="delModalUpdatedAt"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+        </div>
 
         <%- include('../partials/footer') %>
             <script>
@@ -133,7 +206,9 @@
                                 data: null,
                                 render: function (data, type, row) {
                                     let badges = '';
-                                    if (row.status === 'suspended' || row.status === 'inactive') {
+                                    if (row.scheduledForDeletion) {
+                                        badges += '<span class="badge bg-dark me-1">Scheduled for Deletion</span>';
+                                    } else if (row.status === 'suspended' || row.status === 'inactive') {
                                         badges += '<span class="badge bg-danger me-1">Blocked</span>';
                                     } else if (row.status === 'active') {
                                         badges += '<span class="badge bg-success me-1">Active</span>';
@@ -171,6 +246,24 @@
                                     }
 
                                     buttons += '</div>';
+                                    buttons += '</div>';
+
+                                    // View Deletion Details Button
+                                    if (row.status === 'deleted' || row.scheduledForDeletion) {
+                                        buttons += `<button class="btn btn-sm btn-dark ms-1 view-deletion-details" 
+                                            data-username="${row.userName}"
+                                            data-email="${row.email}"
+                                            data-uid="${row.uid}"
+                                            data-status="${row.status}"
+                                            data-deactivated="${row.deactivatedAt}"
+                                            data-deletion="${row.deletionDate}"
+                                            data-updatedby="${row.updatedBy || 'user'}" 
+                                            data-updatedat="${row.createdAt}" 
+                                            title="View Deletion Details">
+                                            <i class="fas fa-clock"></i> Details
+                                        </button>`;
+                                    }
+
                                     return buttons;
                                 }
                             }
@@ -263,6 +356,69 @@
                                     toastr.error('Error: ' + (xhr.responseJSON?.message || 'Failed to unflag user'));
                                 });
                         }
+                    });
+
+                    // View Deletion Details Logic
+                    let countdownInterval;
+
+                    $('#users-report-table').on('click', '.view-deletion-details', function () {
+                        const btn = $(this);
+
+                        // Populate Modal Fields
+                        $('#delModalUsername').text(btn.data('username'));
+                        $('#delModalEmail').text(btn.data('email'));
+                        $('#delModalUid').text(btn.data('uid'));
+
+                        const status = btn.data('status');
+                        $('#delModalStatus').html(`<span class="badge bg-dark">${status}</span>`);
+
+                        const deactivatedAt = btn.data('deactivated');
+                        const deletionDate = btn.data('deletion');
+
+                        $('#delModalDeactivatedAt').text(deactivatedAt ? new Date(deactivatedAt).toLocaleString() : 'N/A');
+                        $('#delModalDeletionDate').text(deletionDate ? new Date(deletionDate).toLocaleString() : 'N/A');
+                        $('#delModalUpdatedBy').text(btn.data('updatedby'));
+                        // Using createdAt as a proxy for "Account Creation Date" as per prompt req, mapped to data-updatedat above for simplicity or fix mapping
+                        // Actually the prompt asked for "Account Creation Date". In ReportUtil we mapped createdAt. 
+                        // In the button data attributes above I mapped data-updatedat="${row.createdAt}".
+                        // Let's fix the label in the modal to say "Account Creation Date" to match prompt perfectly
+                        $('#delModalUpdatedAt').text(btn.data('updatedat') ? new Date(btn.data('updatedat')).toLocaleString() : 'N/A');
+
+
+                        // Countdown Logic
+                        if (countdownInterval) clearInterval(countdownInterval);
+
+                        if (deletionDate) {
+                            const targetDate = new Date(deletionDate).getTime();
+
+                            const updateCountdown = () => {
+                                const now = new Date().getTime();
+                                const distance = targetDate - now;
+
+                                if (distance < 0) {
+                                    $('#deletionCountdown').text("EXPIRED").addClass('text-muted').removeClass('text-danger');
+                                    clearInterval(countdownInterval);
+                                    return;
+                                }
+
+                                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                                $('#deletionCountdown').text(`${days}d ${hours}h`).addClass('text-danger').removeClass('text-muted');
+                            };
+
+                            updateCountdown(); // Run immediately
+                            countdownInterval = setInterval(updateCountdown, 1000 * 60); // Update every minute
+                        } else {
+                            $('#deletionCountdown').text("N/A");
+                        }
+
+                        $('#deletionDetailsModal').modal('show');
+                    });
+
+                    // Clear interval when modal closes
+                    $('#deletionDetailsModal').on('hidden.bs.modal', function () {
+                        if (countdownInterval) clearInterval(countdownInterval);
                     });
                 });
             </script>
