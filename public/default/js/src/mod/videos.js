@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function () {
     let allVideos = [];
     let displayedVideoIds = new Set();
     let currentFilter = 'all';
@@ -47,7 +47,7 @@ $(document).ready(function() {
         }
 
         // Special handling for reported videos
-        if (currentFilter === 'reported') {
+        if (currentFilter.startsWith('reported')) {
             loadReportedVideos(append);
             return;
         }
@@ -62,29 +62,29 @@ $(document).ready(function() {
                 ...(uploaderSearch && { uploader: uploaderSearch }),
                 excludeIds: JSON.stringify(Array.from(displayedVideoIds))
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.status === 'success') {
                     const newVideos = response.data;
-                    
+
                     // Track new video IDs
                     newVideos.forEach(video => {
                         displayedVideoIds.add(video.id);
                     });
-                    
+
                     if (append) {
                         allVideos = allVideos.concat(newVideos);
                     } else {
                         allVideos = newVideos;
                     }
-                    
+
                     renderVideos(allVideos, !append);
-                    
+
                     // Handle pagination UI
                     if (response.page && response.page.hasMore) {
                         showLoadMoreButton(response.page.nextCursorPagination);
                     } else {
                         hideLoadMoreButton();
-                        
+
                         if (allVideos.length > 0 && response.page?.isEndOfResults) {
                             showEndOfResultsMessage(response.page.filterDescription);
                         }
@@ -108,11 +108,11 @@ $(document).ready(function() {
                     if (!append) $('#empty-state').show();
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 if (!append) $('#empty-state').show();
                 toastr.error('Failed to load videos');
             },
-            complete: function() {
+            complete: function () {
                 if (!append) $('#loading').hide();
                 isLoading = false;
             }
@@ -121,56 +121,215 @@ $(document).ready(function() {
 
     // Load reported videos from dedicated endpoint
     function loadReportedVideos(append = false) {
+        if (append) return; // Cannot append to this structured view
+
         $.ajax({
             url: '/videos/reported',
             type: 'GET',
-            success: function(response) {
+            success: function (response) {
                 if (response.status === 'success') {
-                    const reportedVideos = response.data || [];
-
-                    // Use reported videos directly - they already have all necessary fields
-                    const videos = reportedVideos.map(video => {
-                        return {
-                            ...video,
-                            isReported: true,
-                            // Ensure user status is available for blocking functionality
-                            userStatus: video.userStatus || 'active'
-                        };
-                    });
-
-                    if (append) {
-                        allVideos = allVideos.concat(videos);
-                    } else {
-                        allVideos = videos;
-                    }
-
-                    renderVideos(allVideos, !append);
+                    const data = response.data;
+                    renderReportedSections(data, currentFilter);
                     hideLoadMoreButton();
-
-                    if (videos.length > 0) {
-                        $('#videos').after(`
-                            <div id="end-of-results" class="text-center mt-4 p-3">
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Showing ${videos.length} reported video(s)</strong>
-                                </div>
-                            </div>
-                        `);
-                    }
                 } else {
-                    if (!append) $('#empty-state').show();
+                    $('#empty-state').show();
                     toastr.error(response.message || 'Failed to load reported videos');
                 }
             },
-            error: function() {
-                if (!append) $('#empty-state').show();
+            error: function () {
+                $('#empty-state').show();
                 toastr.error('Failed to load reported videos');
             },
-            complete: function() {
-                if (!append) $('#loading').hide();
+            complete: function () {
+                $('#loading').hide();
                 isLoading = false;
             }
         });
+    }
+
+    function renderReportedSections(data, filterType) {
+        const $container = $('#videos');
+        $container.empty();
+        $container.show();
+
+        if (!data.videos.length && !data.creators.length && !data.reporters.length) {
+            $('#empty-state').show();
+            return;
+        }
+
+        const { videos, creators, reporters } = data;
+        let anythingShown = false;
+
+        // SECTION 1: VIDEOS REPORTED
+        if (videos.length > 0 && (filterType === 'reported_videos' || filterType === 'reported')) {
+            anythingShown = true;
+            $container.append(`
+                <div class="col-12 mt-4 mb-2">
+                    <h4 class="border-bottom pb-2 text-warning">
+                        <i class="fas fa-video me-2"></i> Reported Videos
+                    </h4>
+                    <p class="text-muted small">Videos that have been flagged for review</p>
+                </div>
+            `);
+            videos.forEach(video => $container.append(generateReportedVideoCard(video)));
+        }
+
+        // SECTION 2: REPORTED CREATORS
+        if (creators.length > 0 && (filterType === 'reported_creators' || filterType === 'reported')) {
+            anythingShown = true;
+            $container.append(`
+                <div class="col-12 mt-5 mb-2">
+                    <h4 class="border-bottom pb-2 text-danger">
+                        <i class="fas fa-user-times me-2"></i> Reported Creators
+                    </h4>
+                    <p class="text-muted small">Creators whose content or behavior has been reported</p>
+                </div>
+            `);
+            creators.forEach(creator => $container.append(generateReportedCreatorCard(creator)));
+        }
+
+        // SECTION 3: REPORTERS
+        if (reporters.length > 0 && (filterType === 'reported_reporters' || filterType === 'reported')) {
+            anythingShown = true;
+            $container.append(`
+                <div class="col-12 mt-5 mb-2">
+                    <h4 class="border-bottom pb-2 text-info">
+                        <i class="fas fa-users me-2"></i> Report Submissions
+                    </h4>
+                    <p class="text-muted small">Users who submitted reports</p>
+                </div>
+            `);
+            reporters.forEach(reporter => $container.append(generateReporterCard(reporter)));
+        }
+
+        if (!anythingShown) {
+            $container.append(`
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                    <h5>No items found for this category</h5>
+                </div>
+            `);
+        }
+    }
+
+    // --- Helper Functions for HTML Generation ---
+
+    function generateReportedVideoCard(video) {
+        const reportsHtml = video.reports.map((r, i) => `
+            <div class="bg-light p-2 mb-1 rounded small">
+                <strong>#${i + 1} By:</strong> ${r.reporterInfo?.userName || 'Unknown'} (${r.reporterId})<br>
+                <strong>Reason:</strong> ${r.reason}<br>
+                <span class="text-muted text-xs">${r.timestamp?._seconds ? new Date(r.timestamp._seconds * 1000).toLocaleString() : 'Unknown'}</span>
+            </div>
+        `).join('');
+
+        const isFlagged = video.isFlagged === true;
+        const flagBtn = isFlagged
+            ? `<button class="btn btn-sm btn-success unflag-video w-100" data-id="${video.id}"><i class="fas fa-check"></i> Unflag</button>`
+            : `<button class="btn btn-sm btn-danger flag-video w-100" data-id="${video.id}"><i class="fas fa-flag"></i> Flag / Action</button>`;
+
+        const flaggedBadge = isFlagged
+            ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">Flagged</span>`
+            : '';
+
+        return `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-warning">
+                     <div class="position-relative">
+                        <video class="card-img-top" controls style="height: 200px; object-fit: cover;">
+                            <source src="${video.url}" type="video/mp4">
+                        </video>
+                        ${flaggedBadge}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" title="${video.title}">${video.title || 'No Title'}</h6>
+                        <p class="text-muted small mb-2">ID: ${video.id}</p>
+                        
+                        <div class="reports-list" style="max-height: 200px; overflow-y: auto;">
+                            <h6 class="small font-weight-bold">Reports (${video.reports.length}):</h6>
+                            ${reportsHtml}
+                        </div>
+                    </div>
+                     <div class="card-footer bg-transparent border-top-0">
+                        ${flagBtn}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateReportedCreatorCard(creator) {
+        const uniqueVideos = [...new Set(creator.reportsOnVideos.map(r => r.videoId))];
+        const videosHtml = uniqueVideos.map(vid => {
+            const vInfo = creator.reportsOnVideos.find(r => r.videoId === vid)?.videoInfo || {};
+            return `<li>ID: ${vid} (${vInfo.title || 'No Title'})</li>`;
+        }).join('');
+
+        const isBlocked = creator.isBlocked === true;
+        const blockBtn = isBlocked
+            ? `<button class="btn btn-sm btn-success unblock-user flex-grow-1" data-userid="${creator.id}"><i class="fas fa-unlock"></i> Unblock User</button>`
+            : `<button class="btn btn-sm btn-warning block-user flex-grow-1" data-userid="${creator.id}"><i class="fas fa-ban"></i> Block User</button>`;
+
+        const statusBadge = isBlocked
+            ? `<span class="badge bg-danger mb-2">Suspended</span>`
+            : `<span class="badge bg-success mb-2">Active</span>`;
+
+        return `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                             <h5 class="card-title">
+                                <i class="fas fa-user me-2"></i>${creator.userName || 'Unknown'}
+                            </h5>
+                            ${statusBadge}
+                        </div>
+                        <p class="small text-muted mb-3">ID: ${creator.id}</p>
+                        
+                        <div class="alert alert-danger bg-danger-subtle text-danger border-0">
+                            <strong>Reported on ${uniqueVideos.length} Video(s)</strong>
+                        </div>
+
+                        <ul class="small mb-3 ps-3">
+                            ${videosHtml}
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 d-flex gap-2">
+                        ${blockBtn}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateReporterCard(reporter) {
+        const reportedListHtml = reporter.reportedVideos.map(v => `
+            <div class="mb-2 pb-2 border-bottom border-light">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="small font-weight-bold">Video: ${v.videoId}</span>
+                    <span class="badge bg-light text-dark border">${v.timestamp?._seconds ? new Date(v.timestamp._seconds * 1000).toLocaleDateString() : 'N/A'}</span>
+                </div>
+                <p class="small text-muted mb-0 fst-italic">"${v.reason}"</p>
+            </div>
+        `).join('');
+
+        return `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-info">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">
+                            <i class="fas fa-user-shield me-2"></i>${reporter.userName || 'Unknown'}
+                        </h5>
+                        <p class="small text-muted mb-3">ID: ${reporter.id}</p>
+                        
+                        <h6 class="small font-weight-bold">Report History (${reporter.reportedVideos.length}):</h6>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            ${reportedListHtml}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     // Render video cards - Frontend is strictly a consumer of backend data
@@ -184,7 +343,7 @@ $(document).ready(function() {
         }
 
         $('#videos').show();
-        videos.forEach(function(video) {
+        videos.forEach(function (video) {
             const date = new Date(video.timestamp?._seconds * 1000);
             const uploadDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
 
@@ -230,12 +389,12 @@ $(document).ready(function() {
                 const reportDate = video.reportedAt?._seconds
                     ? new Date(video.reportedAt._seconds * 1000).toLocaleDateString()
                     : 'Unknown';
-                
+
                 // Show first report or summary
                 alertMessages += `<div class="alert alert-warning alert-sm mt-2 mb-0 p-2">
                      <small><strong><i class="fas fa-exclamation-triangle"></i> Report:</strong> ${video.reportReason}</small><br>
                      <small class="text-muted">Reported by: ${video.reporterName || 'Unknown'} on ${reportDate}</small>`;
-                
+
                 // Add "View All" button if multiple reports
                 if (video.reportCount > 1 && video.reporters && video.reporters.length > 1) {
                     alertMessages += `<br><button class="btn btn-sm btn-outline-info mt-1 view-reports" 
@@ -244,7 +403,7 @@ $(document).ready(function() {
                         <i class="fas fa-list"></i> View All (${video.reportCount})
                     </button>`;
                 }
-                
+
                 alertMessages += '</div>';
             }
             if (isFlagged && video.flagReason) {
@@ -363,7 +522,7 @@ $(document).ready(function() {
 
     function showEndOfResultsMessage(filterDescription) {
         $('#end-of-results').remove();
-        
+
         $('#videos').after(`
             <div id="end-of-results" class="text-center mt-4 p-3">
                 <div class="alert alert-info mb-0">
@@ -374,18 +533,18 @@ $(document).ready(function() {
         `);
     }
 
-    $(document).on('click', '#sticky-load-more-btn', function() {
+    $(document).on('click', '#sticky-load-more-btn', function () {
         const $btn = $(this);
         const cursorPagination = $btn.data('cursor-pagination');
-        
+
         if (!cursorPagination) {
             toastr.error('Unable to load more videos');
             return;
         }
-        
+
         $btn.prop('disabled', true)
             .html('<i class="fas fa-spinner fa-spin"></i> Loading...');
-        
+
         loadVideos(cursorPagination, true);
     });
 
@@ -397,19 +556,19 @@ $(document).ready(function() {
         loadVideos();
     }, 500);
 
-    $('#searchUploader').on('input', function() {
+    $('#searchUploader').on('input', function () {
         uploaderSearch = $(this).val().trim();
         debouncedSearch();
     });
 
-    $('.filter-btn').on('click', function() {
+    $('.filter-btn').on('click', function () {
         $('.filter-btn').removeClass('active');
         $(this).addClass('active');
         currentFilter = $(this).data('filter');
-        
+
         $('#searchUploader').val('');
         uploaderSearch = '';
-        
+
         allVideos = [];
         displayedVideoIds.clear();
         hideLoadMoreButton();
@@ -418,7 +577,7 @@ $(document).ready(function() {
     });
 
     // Flag video - show modal
-    $(document).on('click', '.flag-video', function() {
+    $(document).on('click', '.flag-video', function () {
         const videoId = $(this).data('id');
         $('#flagVideoId').val(videoId);
         $('#flagReason').val('').removeClass('is-invalid');
@@ -426,7 +585,7 @@ $(document).ready(function() {
     });
 
     // Confirm flag from modal
-    $('#confirmFlag').on('click', function() {
+    $('#confirmFlag').on('click', function () {
         const videoId = $('#flagVideoId').val();
         const reason = $('#flagReason').val().trim();
 
@@ -439,7 +598,7 @@ $(document).ready(function() {
             url: `/videos/${videoId}/flag`,
             type: 'POST',
             data: { reason },
-            success: function(response) {
+            success: function (response) {
                 $('#flagModal').modal('hide');
                 toastr.success('Video flagged successfully');
                 allVideos = [];
@@ -448,32 +607,32 @@ $(document).ready(function() {
                 $('#end-of-results').remove();
                 loadVideos();
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 toastr.error('Failed to flag video');
             }
         });
     });
 
     // Unflag video
-    $(document).on('click', '.unflag-video', function() {
+    $(document).on('click', '.unflag-video', function () {
         const videoId = $(this).data('id');
 
         if (!confirm('Remove flag from this video?')) return;
 
-        $.post(`/videos/${videoId}/unflag`, function() {
+        $.post(`/videos/${videoId}/unflag`, function () {
             toastr.success('Video unflagged successfully');
             allVideos = [];
             displayedVideoIds.clear();
             hideLoadMoreButton();
             $('#end-of-results').remove();
             loadVideos();
-        }).fail(function() {
+        }).fail(function () {
             toastr.error('Failed to unflag video');
         });
     });
 
     // Block user - show modal
-    $(document).on('click', '.block-user', function() {
+    $(document).on('click', '.block-user', function () {
         const userId = $(this).data('userid');
         $('#blockUserId').val(userId);
         $('#blockReason').val('Account under review').removeClass('is-invalid');
@@ -481,7 +640,7 @@ $(document).ready(function() {
     });
 
     // Confirm block user from modal
-    $('#confirmBlockUser').on('click', function() {
+    $('#confirmBlockUser').on('click', function () {
         const userId = $('#blockUserId').val();
         const reason = $('#blockReason').val().trim();
 
@@ -497,7 +656,7 @@ $(document).ready(function() {
             url: `/videos/user/${userId}/block`,
             type: 'POST',
             data: { reason },
-            success: function(response) {
+            success: function (response) {
                 $('#blockUserModal').modal('hide');
                 toastr.success('User blocked successfully');
                 // Clear cache and reload videos to show blocked status
@@ -507,7 +666,7 @@ $(document).ready(function() {
                 $('#end-of-results').remove();
                 loadVideos();
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const errorMsg = xhr.responseJSON?.message || 'Failed to block user';
                 toastr.error(errorMsg);
                 console.error('Block user error:', xhr);
@@ -516,21 +675,21 @@ $(document).ready(function() {
     });
 
     // Unblock user - show modal
-    $(document).on('click', '.unblock-user', function() {
+    $(document).on('click', '.unblock-user', function () {
         const userId = $(this).data('userid');
         $('#unblockUserId').val(userId);
         $('#unblockUserModal').modal('show');
     });
 
     // Confirm unblock user from modal
-    $('#confirmUnblockUser').on('click', function() {
+    $('#confirmUnblockUser').on('click', function () {
         const userId = $('#unblockUserId').val();
 
         // Call backend API to unblock user
         $.ajax({
             url: `/videos/user/${userId}/unblock`,
             type: 'POST',
-            success: function(response) {
+            success: function (response) {
                 $('#unblockUserModal').modal('hide');
                 toastr.success('User unblocked successfully');
                 // Clear cache and reload videos to remove blocked status
@@ -540,7 +699,7 @@ $(document).ready(function() {
                 $('#end-of-results').remove();
                 loadVideos();
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const errorMsg = xhr.responseJSON?.message || 'Failed to unblock user';
                 toastr.error(errorMsg);
                 console.error('Unblock user error:', xhr);
@@ -552,17 +711,17 @@ $(document).ready(function() {
     loadVideos();
 
     // View all reports functionality
-    $(document).on('click', '.view-reports', function() {
+    $(document).on('click', '.view-reports', function () {
         const reports = JSON.parse($(this).attr('data-reports'));
         const videoId = $(this).data('video-id');
-        
+
         let reportsHtml = '<div class="list-group">';
-        
+
         reports.forEach((reporter, index) => {
             const reportDate = reporter.timestamp?._seconds
                 ? new Date(reporter.timestamp._seconds * 1000).toLocaleString()
                 : 'Unknown date';
-            
+
             reportsHtml += `
                 <div class="list-group-item">
                     <div class="d-flex w-100 justify-content-between">
@@ -579,14 +738,14 @@ $(document).ready(function() {
                 </div>
             `;
         });
-        
+
         reportsHtml += '</div>';
         reportsHtml += `
             <div class="alert alert-info mt-3 mb-0">
                 <strong>Total Reports:</strong> ${reports.length}
             </div>
         `;
-        
+
         $('#reportsListContainer').html(reportsHtml);
         $('#viewReportsModal').modal('show');
     });
