@@ -5,7 +5,7 @@ import ReportUtil from '@utils/ReportUtil';
 import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import User from '@models/User';
 import { isAjaxRequest } from '@config/utils';
-import {hasPermission} from '@funcs/permissions';
+import { hasPermission } from '@funcs/permissions';
 
 class VideosController {
     static async index(req, res) {
@@ -13,7 +13,7 @@ class VideosController {
             try {
                 const limit = Number(req.query.limit) || 20;
                 const cursorPagination = req.query.cursorPagination || null;
-                
+
                 let excludeIds = [];
                 if (req.query.excludeIds) {
                     try {
@@ -23,7 +23,7 @@ class VideosController {
                         excludeIds = [];
                     }
                 }
-                
+
                 const filters = {
                     flagged: req.query.flagged,
                     daterange: req.query.daterange,
@@ -63,7 +63,7 @@ class VideosController {
         }
 
         try {
-            return res.render("crm/videos/index", { 
+            return res.render("crm/videos/index", {
                 title: `${config.APP.APP_NAME} || Video Gallery`,
                 user: req.session.user
             });
@@ -100,10 +100,10 @@ class VideosController {
                 message: 'Video flagged successfully'
             });
         } catch (error) {
-            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
                 error.mexLogger();
             }
-            
+
             return res.status((error.status || 500)).json({
                 status: 'error',
                 message: error.message || 'Failed to flag video'
@@ -135,10 +135,10 @@ class VideosController {
                 message: 'Video unflagged successfully'
             });
         } catch (error) {
-            if (error instanceof Exception && config.APP.APP_DEBUG) { 
+            if (error instanceof Exception && config.APP.APP_DEBUG) {
                 error.mexLogger();
             }
-            
+
             return res.status((error.status || 500)).json({
                 status: 'error',
                 message: error.message || 'Failed to unflag video'
@@ -241,40 +241,12 @@ class VideosController {
         try {
             console.log('Received request for reported videos');
 
-            const reportedVideos = await ReportUtil.getReportedVideos();
-            console.log(`Found ${reportedVideos.length} reported videos`);
-
-            // Transform for frontend - ensure consistent structure
-            const transformedVideos = reportedVideos.map(video => {
-                const userId = video.uid || video.userId || video.userUid;
-                
-                return {
-                    ...video,
-                    id: video.id,
-                    isReported: true,
-                    reportReason: video.reason,
-                    reportedAt: video.reportedAt,
-                    reporterName: video.reporterName,
-                    reporterId: video.reporterId,
-                    reporterEmail: video.reporterEmail,
-                    reportCount: video.reportCount || 1,
-                    reporters: video.reports || [],
-                    uploaderName: video.uploaderName || video.userName || video.fullName || 'Unknown',
-                    url: video.videoUrl || video.url,
-                    flagged: video.flagged || false,
-                    broken: video.broken || false,
-                    uid: userId,
-                    userStatus: video.userStatus || 'active',
-                    banReason: video.banReason || null
-                };
-            });
-
-            console.log(`Returning ${transformedVideos.length} reported videos`);
+            const result = await ReportUtil.getReportedVideos();
+            console.log(`Returning reported data: ${result.videos.length} videos, ${result.reporters.length} reporters, ${result.creators.length} creators`);
 
             return res.status(200).json({
                 status: 'success',
-                data: transformedVideos,
-                count: transformedVideos.length
+                data: result
             });
         } catch (error) {
             console.error('Error fetching reported videos:', error);
