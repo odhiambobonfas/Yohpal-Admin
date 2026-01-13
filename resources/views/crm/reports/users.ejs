@@ -1,0 +1,269 @@
+<%- include('../partials/header') %>
+    <%- include('../partials/navbar') %>
+
+        <div class="container-fluid gx-0 px-0">
+            <div class="row gap-0 gx-0">
+                <div class="col-md-3"><%- include('../partials/sidebar') %></div>
+                <div class="col-md-9 mt-2 content-body">
+                    <div
+                        class="shadow-lg bg-light-gray p-2 text-dark d-flex justify-content-between align-items-center mb-3">
+                        <h4>Users Report</h4>
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="input-group input-group-sm" style="width: 200px;">
+                                <label class="input-group-text" for="statusFilter">Status</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="all">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="deleted">Deleted</option>
+                                </select>
+                            </div>
+                            <div class="badge-span d-flex justify-content-center align-items-center gap-2">
+                                <a class="text-decoration-line-none text-dark" href="/">Dashboard</a>
+                                <span>|</span>
+                                <span class="badge bg-info text-light rounded-4">Users by Email</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-body gx-0 px-0 h-100">
+                        <div class="container-fluid col-12 p-0">
+                            <div class="table-responsive m-1">
+                                <table class="table users-report-table" id="users-report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Username</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- dynamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flag User Modal -->
+        <div class="modal fade" id="flagUserModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Flag User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="flagUserId">
+                        <div class="mb-3">
+                            <label for="flagUserReason" class="form-label">Reason for flagging <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="flagUserReason" rows="3"
+                                placeholder="Enter reason for flagging this user..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmFlagUser">Flag User</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block User Modal -->
+        <div class="modal fade" id="blockUserModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title"><i class="fas fa-ban"></i> Block User Account</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="blockUserId">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Warning:</strong> This will suspend the user's account.
+                        </div>
+                        <div class="mb-3">
+                            <label for="blockUserReason" class="form-label">Reason for blocking <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="blockUserReason" rows="3"
+                                placeholder="Enter reason for blocking this user..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="confirmBlockUser">
+                            <i class="fas fa-ban"></i> Block User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <%- include('../partials/footer') %>
+            <script>
+                $(document).ready(function () {
+                    var table = $('#users-report-table').DataTable({
+                        serverSide: true,
+                        processing: true,
+                        ajax: {
+                            url: '/reports/users',
+                            type: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            data: function (d) {
+                                d.status = $('#statusFilter').val();
+                            },
+                            error: function (xhr, error, thrown) {
+                                console.error('AJAX Error:', error, thrown);
+                                console.error('Response:', xhr.responseText);
+                            }
+                        },
+                        columns: [
+                            { data: 'email', defaultContent: 'N/A' },
+                            { data: 'userName', defaultContent: 'N/A' },
+                            {
+                                data: null,
+                                render: function (data, type, row) {
+                                    let badges = '';
+                                    if (row.status === 'suspended' || row.status === 'inactive') {
+                                        badges += '<span class="badge bg-danger me-1">Blocked</span>';
+                                    } else if (row.status === 'active') {
+                                        badges += '<span class="badge bg-success me-1">Active</span>';
+                                    } else if (row.status === 'deleted') {
+                                        badges += '<span class="badge bg-dark me-1">Deleted</span>';
+                                    } else {
+                                        badges += '<span class="badge bg-secondary me-1">' + row.status + '</span>';
+                                    }
+
+                                    if (row.flagged) {
+                                        badges += '<span class="badge bg-warning text-dark"><i class="fas fa-flag"></i> Flagged</span>';
+                                    }
+                                    return badges;
+                                }
+                            },
+                            {
+                                data: null,
+                                orderable: false,
+                                searchable: false,
+                                render: function (data, type, row) {
+                                    let buttons = '<div class="btn-group btn-group-sm" role="group">';
+
+                                    // Block/Unblock
+                                    if (row.status === 'suspended' || row.status === 'inactive') {
+                                        buttons += `<button class="btn btn-success unblock-user" data-id="${row.id}" title="Unblock"><i class="fas fa-unlock"></i></button>`;
+                                    } else {
+                                        buttons += `<button class="btn btn-warning block-user" data-id="${row.id}" title="Block"><i class="fas fa-ban"></i></button>`;
+                                    }
+
+                                    // Flag/Unflag
+                                    if (row.flagged) {
+                                        buttons += `<button class="btn btn-info unflag-user" data-id="${row.id}" title="Unflag"><i class="fas fa-check"></i></button>`;
+                                    } else {
+                                        buttons += `<button class="btn btn-danger flag-user" data-id="${row.id}" title="Flag"><i class="fas fa-flag"></i></button>`;
+                                    }
+
+                                    buttons += '</div>';
+                                    return buttons;
+                                }
+                            }
+                        ],
+                        order: [[0, 'asc']],
+                        responsive: true,
+                        searchDelay: 500
+                    });
+
+                    // Reload table when status filter changes
+                    $('#statusFilter').on('change', function () {
+                        table.ajax.reload();
+                    });
+
+                    // Block User
+                    $('#users-report-table').on('click', '.block-user', function () {
+                        $('#blockUserId').val($(this).data('id'));
+                        $('#blockUserReason').val('');
+                        $('#blockUserModal').modal('show');
+                    });
+
+                    $('#confirmBlockUser').click(function () {
+                        const userId = $('#blockUserId').val();
+                        const reason = $('#blockUserReason').val();
+                        if (!reason) {
+                            toastr.error('Reason is required');
+                            return;
+                        }
+
+                        $.post('/users/block/' + userId, { reason: reason })
+                            .done(function () {
+                                $('#blockUserModal').modal('hide');
+                                table.ajax.reload(null, false);
+                                toastr.success('User blocked successfully');
+                            })
+                            .fail(function (xhr) {
+                                toastr.error('Error: ' + (xhr.responseJSON?.message || 'Failed to block user'));
+                            });
+                    });
+
+                    // Unblock User
+                    $('#users-report-table').on('click', '.unblock-user', function () {
+                        if (confirm('Are you sure you want to unblock this user?')) {
+                            $.post('/users/unblock/' + $(this).data('id'))
+                                .done(function () {
+                                    table.ajax.reload(null, false);
+                                    toastr.success('User unblocked successfully');
+                                })
+                                .fail(function (xhr) {
+                                    toastr.error('Error: ' + (xhr.responseJSON?.message || 'Failed to unblock user'));
+                                });
+                        }
+                    });
+
+                    // Flag User
+                    $('#users-report-table').on('click', '.flag-user', function () {
+                        $('#flagUserId').val($(this).data('id'));
+                        $('#flagUserReason').val('');
+                        $('#flagUserModal').modal('show');
+                    });
+
+                    $('#confirmFlagUser').click(function () {
+                        const userId = $('#flagUserId').val();
+                        const reason = $('#flagUserReason').val();
+                        if (!reason) {
+                            toastr.error('Reason is required');
+                            return;
+                        }
+
+                        $.post('/users/flag/' + userId, { reason: reason })
+                            .done(function () {
+                                $('#flagUserModal').modal('hide');
+                                table.ajax.reload(null, false);
+                                toastr.success('User flagged successfully');
+                            })
+                            .fail(function (xhr) {
+                                toastr.error('Error: ' + (xhr.responseJSON?.message || 'Failed to flag user'));
+                            });
+                    });
+
+                    // Unflag User
+                    $('#users-report-table').on('click', '.unflag-user', function () {
+                        if (confirm('Are you sure you want to remove the flag from this user?')) {
+                            $.post('/users/unflag/' + $(this).data('id'))
+                                .done(function () {
+                                    table.ajax.reload(null, false);
+                                    toastr.success('User flag removed successfully');
+                                })
+                                .fail(function (xhr) {
+                                    toastr.error('Error: ' + (xhr.responseJSON?.message || 'Failed to unflag user'));
+                                });
+                        }
+                    });
+                });
+            </script>
+            <%- include('../partials/closure') %>

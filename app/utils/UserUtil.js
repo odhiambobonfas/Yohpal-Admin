@@ -5,9 +5,9 @@ import User from '@models/User';
 import RedisCache from '@config/redisCache';
 import admin from 'firebase-admin';
 import Exception from '@config/exceptions';
-import LANG_EN from '@lang/en'; 
-import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';  
-import { FirestoreDatabase } from '@utils/FirebaseUtil';  
+import LANG_EN from '@lang/en';
+import { ucwords, fbCollectionParser, normalizeFilters } from '@config/utils';
+import { FirestoreDatabase } from '@utils/FirebaseUtil';
 import { parseDateRange } from '@funcs/global_funcs';
 import Role from '@models/Role';
 import Permission from '@models/Permissions';
@@ -20,100 +20,50 @@ class UserUtil extends Util {
         super();
     }
 
-    async getAllUsers(redis, filters={}) {    
-        try { 
-            const filtersKey = 'yp:users:filters';
-            const cacheKey = 'yp:users:filtered';
+    async getAllUsers(redis, filters = {}) {
+        try {
+            const cacheKey = 'yp:users:all';
 
-            const cachedFilters = await redis.getFunc(filtersKey);
-            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
-            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
-            
-            // If filters changed, have to invalidate the cache
-            if (savedFilters !== currentFilters) {
-                await redis.deleteFunc(filtersKey);
-                await redis.deleteFunc(cacheKey);
-
-                await redis.cacheParser(filtersKey, async () => filters, 2000);
-            } 
             let users = await redis?.cacheParser(
                 cacheKey,
-                async () => {  
+                async () => {
                     let query = FirestoreDatabase.collection(User.collection);
 
-                    if (filters?.userName?.length) {
-                        query = query.where("username", "==", filters.userName);
+                    // Filter users created by Super Admin (users with addedBy field)
+                    // This excludes users without addedBy (not created through admin panel)
+                    if (filters?.createdBySuperAdmin) {
+                        // Only get users that have an addedBy field (created by admins)
+                        query = query.where('addedBy', '!=', null);
                     }
 
-                    if (filters?.email?.length) {
-                        query = query.where("email", "==", filters.email);
-                    } 
-
-                    if (filters?.country?.length) {
-                        query = query.where("country", "==", filters.country);
-                    }
-
-                    if (filters?.phoneNumber?.length) {
-                        query = query.where("phoneNumber", "==", filters.phoneNumber);
-                    }
-                    
-                    if (filters?.adminType?.length) {
-                        query = query.where("adminType", "==", filters.adminType);
-                    }
-
-                    if (filters?.Status?.length) {
-                        query = query.where("status", "==", filters.Status);
-                    } 
-
-                    if (filters?.roleId?.length) {
-                        query = query.where("roleId", "==", filters.roleId);
-                    } 
-
-                    if (filters?.createdAt?.length || filters?.daterange?.length) {
-                        let createdAt = parseDateRange(filters?.createdAt || filters?.daterange, true); 
-                        if (createdAt.start && createdAt.end) { 
-                            query = query.where("createdAt", ">=", createdAt.start);
-                            query = query.where("createdAt", "<=", createdAt.end);
-                        }
-                    }
-                    
-                    if (filters.orderBy && filters.orderByDirection) {
-                        query = query.orderBy(filters.orderBy, filters.orderByDirection); 
-                    }
-
-                    if (filters.limit) {
-                        query = query.limit(filters.limit);
-                    }
-
-                    const snapshot = await query.get(); 
+                    const snapshot = await query.get();
 
                     if (snapshot.empty) {
                         return [];
                     }
 
-                    let fetched =  fbCollectionParser(snapshot); 
+                    let users = fbCollectionParser(snapshot);
 
-                    fetched = await Promise.all(fetched.map( async (user) => {
-                        let role = {};      
-                        // if user has a role reference
+                    users = await Promise.all(users.map(async (user) => {
+                        let role = {};
                         if (user.roleRef && user.roleRef.get) {
                             const roleSnap = await user.roleRef.get();
                             if (roleSnap.exists) {
-                                role = roleSnap.data(); 
+                                role = roleSnap.data();
                             }
                         }
-                        
-                        user.role = role; 
+
+                        // Only include users with valid roles (created by Super Admin)
+                        user.role = role;
                         return user;
-                    }));  
+                    }));
 
-                    if (filters?.roleExists && filters.roleExists) {
-                        fetched = fetched.filter(user => user.roleRef !== null && user.roleRef !== undefined && user.roleRef !== '');
-                    }
+                    // Filter out users without roles (not created by Super Admin)
+                    users = users.filter(user => user.role && user.role.name);
 
-                    return fetched;
+                    return users;
                 },
-                7200
+                300 // Cache for 5 minutes
             );
 
             return users;
@@ -123,8 +73,8 @@ class UserUtil extends Util {
 
         return [];
     }
-    
-    async getUserByUid(redis, uid) { 
+
+    async getUserByUid(redis, uid) {
         let user = {};
         let role = {};
         let permissions = {};
@@ -133,12 +83,12 @@ class UserUtil extends Util {
 
         const usersRef = FirestoreDatabase.collection(User.collection)
             .where("uid", "==", uid);
-        
+
         const cacheKey = `yp:user:filtered:${uid}`;
 
         let userResult = await redis?.cacheParser(
             cacheKey,
-            async () => { 
+            async () => {
                 const snapshot = await usersRef.get();
                 if (snapshot.empty) {
                     return {};
@@ -146,7 +96,7 @@ class UserUtil extends Util {
 
                 const userDoc = snapshot.docs[0];
                 user = userDoc.data() ?? {};
-                
+
                 // if user has a role reference
                 if (user.roleRef && user.roleRef.get) {
                     const roleSnap = await user.roleRef.get();
@@ -162,19 +112,19 @@ class UserUtil extends Util {
                         }
                     }
                 }
-                
+
                 linkedPayComponents = [];
-                departmentDesignationData = {};  
+                departmentDesignationData = {};
 
                 // Fetch department and designation details if user is an employee
                 if (user.isEmployee) {
-                    if (user?.departmentDesignationPairs?.length) { 
+                    if (user?.departmentDesignationPairs?.length) {
                         for (let pair of user.departmentDesignationPairs) {
                             let departmentData = {};
                             let designationData = {};
                             if (pair?.departmentRef && pair.departmentRef.get) {
                                 const deptSnap = await pair.departmentRef.get();
-                                if (deptSnap.exists) { 
+                                if (deptSnap.exists) {
                                     departmentData = deptSnap.data();
                                 }
                             }
@@ -184,10 +134,10 @@ class UserUtil extends Util {
                                 if (desgSnap.exists) {
                                     designationData = desgSnap.data();
                                 }
-                            }   
-                            
+                            }
+
                             // push pair to departmentDesignationData object
-                            departmentDesignationData[pair.departmentCode] = {departmentData, designationData};
+                            departmentDesignationData[pair.departmentCode] = { departmentData, designationData };
                         }
                     }
 
@@ -210,35 +160,35 @@ class UserUtil extends Util {
                 return {
                     user,
                     role,
-                    permissions, 
+                    permissions,
                     departmentDesignationData,
                     linkedPayComponents
-                }; 
+                };
             }
         );
 
-        return userResult; 
+        return userResult;
     }
 
-    async getUserByDocid(uid) {  
+    async getUserByDocid(uid) {
         let usersRef = FirestoreDatabase.collection(User.collection).doc(uid);
-        const snapshot = await usersRef.get();  
-        
+        const snapshot = await usersRef.get();
+
         if (!snapshot.exists) {
-            return {}; 
+            return {};
         }
-    
-        let user = snapshot.data() ?? {}; 
-    
+
+        let user = snapshot.data() ?? {};
+
         let role = {};
         let permissions = {};
-    
+
         // if user has a role reference
         if (user.roleRef && user.roleRef.get) {
             const roleSnap = await user.roleRef.get();
             if (roleSnap.exists) {
                 role = roleSnap.data();
-    
+
                 // if role has a permissions reference
                 if (role.refPermissions && role.refPermissions.get) {
                     const permSnap = await role.refPermissions.get();
@@ -248,13 +198,40 @@ class UserUtil extends Util {
                 }
             }
         }
-    
+
         return {
             user,
             role,
             permissions
         };
     }
+
+    async getAllUsersCount(redis, filters = {}) {
+        try {
+            const filtersKey = 'yp:users:count:filters';
+            const cacheKey = 'yp:users:count';
+
+            const cachedFilters = await redis.getFunc(filtersKey);
+            const currentFilters = JSON.stringify(normalizeFilters(filters) || {});
+            const savedFilters = cachedFilters ? JSON.stringify(normalizeFilters(cachedFilters)) : null;
+
+            // If filters changed, have to invalidate the cache
+            if (savedFilters !== currentFilters) {
+                await redis.deleteFunc(filtersKey);
+                await redis.deleteFunc(cacheKey);
+
+                await redis.cacheParser(filtersKey, async () => filters, 2000);
+            }
+
+            let query = FirestoreDatabase.collection(User.collection);
+
+            if (filters?.daterange?.length) {
+                let daterange = parseDateRange(filters.daterange, true);
+                if (daterange.start && daterange.end) {
+                    query = query.where("timestamp", ">=", daterange.start);
+                    query = query.where("timestamp", "<=", daterange.end);
+                }
+            }
     
     async getAllUsersCount(redis, filters={}) {
         try {
@@ -277,16 +254,16 @@ class UserUtil extends Util {
         }
     }
 
-    async createUser(data, redis) { 
-        try {  
+    async createUser(data, redis) {
+        try {
             // check if email or username already exists
             const existingUsersRef = FirestoreDatabase.collection(User.collection);
             const emailSnapshot = await existingUsersRef
-                .where('email', '==', data.email) 
+                .where('email', '==', data.email)
                 .get();
-                
+
             if (!emailSnapshot.empty) {
-                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.user_email_already_exists, `User with same email: ${ucwords(data.email)}, exists!`);
+                throw new Exception(201, "USER_ALREADY_EXISTS", LANG_EN.req.user_email_already_exists, `User with same email: ${ucwords(data.email)}, exists!`);
             }
 
             const usernameSnapshot = await FirestoreDatabase.collection(User.collection)
@@ -294,7 +271,7 @@ class UserUtil extends Util {
                 .get();
 
             if (!usernameSnapshot.empty) {
-                throw new Exception( 201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username: ${ucwords(data.userName)}, exists!`);
+                throw new Exception(201, "USER_ALREADY_EXISTS", LANG_EN.req.userName_already_exists, `User with same username: ${ucwords(data.userName)}, exists!`);
             }
 
             let userRecord = await admin.auth().createUser({
@@ -303,7 +280,7 @@ class UserUtil extends Util {
                 displayName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
             });
 
-            userRecord = qs.parse(userRecord); 
+            userRecord = qs.parse(userRecord);
 
             if (!userRecord && !userRecord.uid) {
                 throw new Exception(200, "USER_CREATION_FAILED", LANG_EN.req.user_creation_failed, "User Creation Error");
@@ -316,14 +293,14 @@ class UserUtil extends Util {
                     paymentComponentRefs.push(ref);
                 });
             }
-            
+
             if (data?.departmentDesignationPairs?.length) {
                 data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
-                    return { 
+                    return {
                         departmentCode: pair.department || '',
-                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) :  '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) : '',
                         designationCode: pair.designation || '',
-                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
+                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) : '',
                     }
                 });
             }
@@ -331,25 +308,25 @@ class UserUtil extends Util {
             if (data.isEmployee) {
                 data.employeeId = data.employeeId && data.employeeId.trim().length ? data.employeeId.trim() : this.generateEmployeeNumber();
             }
-            
-            let newUser = { 
+
+            let newUser = {
                 uid: userRecord.uid,
-                firstName: ucwords(data.firstName) || "", 
-                lastName: ucwords(data.lastName) || "", 
-                userName: data.userName.toLowerCase() || "", 
+                firstName: ucwords(data.firstName) || "",
+                lastName: ucwords(data.lastName) || "",
+                userName: data.userName.toLowerCase() || "",
                 isEmployee: data.isEmployee ? true : false,
-                employeeId: data.employeeId || '', 
-                email: data.email.toLowerCase() || "", 
+                employeeId: data.employeeId || '',
+                email: data.email.toLowerCase() || "",
                 country: data.country || "",
                 phoneNumber: data.phoneNumber || "",
                 roleRef: data.roleId ? FirestoreDatabase.collection(Role.collection).doc(data.roleId) : null,
                 refPermissions: data.permissionId ? FirestoreDatabase.collection(Permission.collection).doc(data.permissionId) : null,
-                profile_picture: data.profilePicture || '/store/images/avatars/default-avatar.jpg', 
+                profile_picture: data.profilePicture || '/store/images/avatars/default-avatar.jpg',
                 profilePictureLocalPath: data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg',
                 profilePictureFbPath: data.profilePictureFbPath,
                 address: data.address || "",
                 bio: (data?.bio && data?.bio?.length) ? data.bio.trim() : "",
-                status: data.status || "active", 
+                status: data.status || "active",
 
                 // HRM information 
                 basicSalary: data?.basicSalary || 0,
@@ -358,9 +335,9 @@ class UserUtil extends Util {
                 // End of HRM information
 
                 addedBy: data.userLoggedInUserName,
-                addedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null, 
+                addedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null,
                 updatedBy: data.userLoggedInUserName,
-                updatedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null, 
+                updatedByRefUser: data.userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
             };
@@ -383,10 +360,10 @@ class UserUtil extends Util {
                 await redis.deleteFunc('yp:users:filtered');
                 await redis.deleteFunc('yp:users:count');
             }
-            
+
             return newUser;
         } catch (error) {
-            console.error('Error creating user:', error); 
+            console.error('Error creating user:', error);
             throw new Exception((error.status || 500), error.code, error.message, error.reason);
         }
     }
@@ -407,10 +384,10 @@ class UserUtil extends Util {
             const userDoc = userSnapshot.docs[0];
             let updatedData = {};
 
-            if (data.password) { 
-                let updateReq = await admin.auth().updateUser(uid, { 
-                    password: data.password, 
-                }); 
+            if (data.password) {
+                let updateReq = await admin.auth().updateUser(uid, {
+                    password: data.password,
+                });
 
                 if (!updateReq) {
                     throw new Exception(200, "USER_UPDATE_FAILED", LANG_EN.req.request_denied, "User password update Error");
@@ -469,11 +446,11 @@ class UserUtil extends Util {
                 updatedData.refPermissions = FirestoreDatabase.collection('permissions').doc(data.permissionId);
             }
 
-            if (data.profilePicture) { 
+            if (data.profilePicture) {
                 updatedData.profile_picture = data.profilePicture || '/store/images/avatars/default-avatar.jpg';
                 updatedData.profilePictureLocalPath = data.profilePictureLocalPath || '/store/images/avatars/default-avatar.jpg';
                 updatedData.profilePictureFbPath = data.profilePictureFbPath;
-            } 
+            }
 
             if (data.address) {
                 updatedData.address = data.address;
@@ -486,12 +463,12 @@ class UserUtil extends Util {
             if (data.status) {
                 updatedData.status = data.status;
             }
-            
+
             if (data.userLoggedInUid) {
                 updatedData.updatedBy = data.userLoggedInUserName.toLowerCase();
-                updatedData.updatedByRefUser = data.userLoggedInUid ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null; 
+                updatedData.updatedByRefUser = data.userLoggedInUid ? FirestoreDatabase.collection(User.collection).doc(data.userLoggedInUid) : null;
             }
-            
+
             let paymentComponentRefs = [];
             if (data?.paymentComponents?.length) {
                 data.paymentComponents.map(componentId => {
@@ -505,22 +482,22 @@ class UserUtil extends Util {
             }
 
             if (data?.departmentDesignationPairs?.length) {
-                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => { 
-                    return { 
+                data.departmentDesignationPairs = data.departmentDesignationPairs.map(pair => {
+                    return {
                         departmentCode: pair.department || '',
-                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) :  '',
+                        departmentRef: pair.department ? FirestoreDatabase.collection(Department.collection).doc(pair.department) : '',
                         designationCode: pair.designation || '',
-                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) :  '',
+                        designationRef: pair.designation ? FirestoreDatabase.collection(EmployeeDesignation.collection).doc(pair.designation) : '',
                     }
                 });
             }
-            
+
             let hrmInformation = {
                 // HRM information 
                 departmentDesignationPairs: data?.departmentDesignationPairs || [],
-                
+
                 paymentComponentRefs: paymentComponentRefs,
-                
+
                 basicSalary: data?.basicSalary || 0,
                 basicSalaryDuration: data?.basicSalaryDuration || '',
                 tokenAmount: data?.tokenAmount || 0,
@@ -529,13 +506,13 @@ class UserUtil extends Util {
 
             updatedData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
 
-            await usersRef.doc(userDoc.id).update({...updatedData, ...hrmInformation}); // fixed doc reference
+            await usersRef.doc(userDoc.id).update({ ...updatedData, ...hrmInformation }); // fixed doc reference
 
             if (redis) {
                 await redis.deleteFunc('yp:users:filtered');
                 await redis.deleteFunc('yp:users:count');
             }
-            
+
             const cacheKey = `yp:user:filtered:${uid}`;
             if (redis) {
                 await redis.deleteFunc(cacheKey);
@@ -549,8 +526,8 @@ class UserUtil extends Util {
     }
 
     async updateUserStatus(data, redis) {
-        let { uid, status, userLoggedInUserName, userLoggedInUid } = data; 
-        
+        let { uid, status, userLoggedInUserName, userLoggedInUid, banReason } = data;
+
         try {
             if (!uid || !status) {
                 throw new Exception(400, "INVALID_INPUT", LANG_EN.uid_and_status_required, "Invalid input data");
@@ -558,23 +535,37 @@ class UserUtil extends Util {
 
             const usersRef = FirestoreDatabase.collection(User.collection);
             const userSnapshot = await usersRef.where('uid', '==', uid).get();
-            
+
             if (userSnapshot.empty) {
                 throw new Exception(404, "USER_NOT_FOUND", LANG_EN.req.operation_failed, `User with UID: ${ucwords(uid)} does not exist!`);
             }
 
             const userDoc = userSnapshot.docs[0];
             console.log(data);
-            await usersRef.doc(userDoc.id).update({
-                status: status, 
+
+            const updateData = {
+                status: status,
                 updatedBy: userLoggedInUserName,
                 updatedByRefUser: userLoggedInUserName ? FirestoreDatabase.collection(User.collection).doc(userLoggedInUid) : null,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
+            };
 
+            if (status === 'inactive' && banReason) {
+                updateData.banReason = banReason;
+            } else if (status === 'active') {
+                updateData.banReason = null;
+            }
+
+            await usersRef.doc(userDoc.id).update(updateData);
+
+            // Invalidate caches for immediate consistency across user and video interfaces
             if (redis) {
                 await redis.deleteFunc('yp:users:filtered');
                 await redis.deleteFunc('yp:users:count');
+                const cacheKeys = await redis.keys('videos:cursorPagination:*');
+                for (const key of cacheKeys) {
+                    await redis.deleteFunc(key);
+                }
             }
 
             return true;
@@ -599,16 +590,27 @@ class UserUtil extends Util {
 
             const userDoc = userSnapshot.docs[0];
 
-            // Delete user from Firebase Authentication
-            await admin.auth().deleteUser(uid);
+            /*
+             * Soft Delete Implementation
+             * Update status to 'deleted' to track accounts set for deletion.
+             */
+            const updateData = {
+                status: 'deleted',
+                deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            };
 
-            // Delete user document from Firestore
-            await usersRef.doc(userDoc.id).delete();
+            await usersRef.doc(userDoc.id).update(updateData);
 
-            if (redis) {
-                await redis.deleteFunc('yp:users:filtered');
-                await redis.deleteFunc('yp:users:count');
+            // Disable the user in Firebase Auth instead of deleting
+            try {
+                await admin.auth().updateUser(uid, { disabled: true });
+            } catch (authError) {
+                console.error('Error disabling auth user:', authError);
+                // Continue even if auth update fails (e.g. user not found in auth)
             }
+
+            await this._invalidateUserCache(uid, redis);
 
             return true;
         } catch (error) {
@@ -616,6 +618,117 @@ class UserUtil extends Util {
             throw new Exception(error.status || 500, error.code, error.message, error.reason);
         }
     }
+
+    /**
+     * Helper to get user document or throw error
+     */
+    async _getUserDoc(uid) {
+        const usersRef = FirestoreDatabase.collection(User.collection);
+        const userSnapshot = await usersRef.where('uid', '==', uid).limit(1).get();
+
+        if (userSnapshot.empty) {
+            throw new Exception(404, "USER_NOT_FOUND", "User not found");
+        }
+
+        return { userDoc: userSnapshot.docs[0], usersRef };
+    }
+
+    /**
+     * Helper to invalidate user-related caches
+     */
+    async _invalidateUserCache(uid, redis) {
+        if (redis) {
+            await redis.deleteFunc('yp:users:filtered');
+            await redis.deleteFunc('yp:users:count');
+            await redis.deleteFunc(`yp:user:filtered:${uid}`);
+        }
+    }
+
+    async blockUser(uid, reason, adminName, redis) {
+        try {
+            const { userDoc, usersRef } = await this._getUserDoc(uid);
+            const userData = userDoc.data();
+            const currentBanCount = userData.banCount || 0;
+
+            await usersRef.doc(userDoc.id).update({
+                status: 'suspended',
+                banReason: reason,
+                banCount: currentBanCount + 1,
+                lastBanDate: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: adminName,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            await this._invalidateUserCache(uid, redis);
+
+            return true;
+        } catch (error) {
+            console.error('Error blocking user:', error);
+            throw error;
+        }
+    }
+
+    async unblockUser(uid, adminName, redis) {
+        try {
+            const { userDoc, usersRef } = await this._getUserDoc(uid);
+
+            await usersRef.doc(userDoc.id).update({
+                status: 'active',
+                banReason: null,
+                updatedBy: adminName,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            await this._invalidateUserCache(uid, redis);
+
+            return true;
+        } catch (error) {
+            console.error('Error unblocking user:', error);
+            throw error;
+        }
+    }
+
+    async flagUser(uid, reason, adminName, redis) {
+        try {
+            const { userDoc, usersRef } = await this._getUserDoc(uid);
+
+            await usersRef.doc(userDoc.id).update({
+                flagged: true,
+                flagReason: reason,
+                flaggedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: adminName,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            await this._invalidateUserCache(uid, redis);
+
+            return true;
+        } catch (error) {
+            console.error('Error flagging user:', error);
+            throw error;
+        }
+    }
+
+    async unflagUser(uid, adminName, redis) {
+        try {
+            const { userDoc, usersRef } = await this._getUserDoc(uid);
+
+            await usersRef.doc(userDoc.id).update({
+                flagged: false,
+                flagReason: null,
+                updatedBy: adminName,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            await this._invalidateUserCache(uid, redis);
+
+            return true;
+        } catch (error) {
+            console.error('Error unflagging user:', error);
+            throw error;
+        }
+    }
+
 }
 
 export default new UserUtil();

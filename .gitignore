@@ -12,6 +12,7 @@ tests/none
 public/store/sessions/*.json
 public/store/images/avatars/* 
 projects.code-workspace
+/reports/
 
 # tests to exclude
 tests/integration/simulateTransaction.js
