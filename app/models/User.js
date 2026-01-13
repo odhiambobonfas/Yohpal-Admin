@@ -12,12 +12,13 @@ class User extends AppModel {
         username: 'STRING',
         email: 'STRING',
         password: 'STRING',
-        contact: 'STRING', 
-        role: 'STRING'
+        contact: 'STRING',
+        role: 'STRING',
+        banReason: 'STRING'
     };
 
     static nullableFields = [
-        'contact', 'role'
+        'contact', 'role', 'banReason'
     ];
     
     /**
