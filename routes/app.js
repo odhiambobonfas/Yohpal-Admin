@@ -145,6 +145,7 @@ router.route('/settings/cpanel/edit/:id')
 
 // Folowers/Following
 router.get('/followers/top/followed', authMiddleware, FollowerController.getTopFollowersListing);
+router.get('/accounts/promoted', authMiddleware, DashboardController.getPromotedAccounts);
 
 // Settings CRUD Operations
 router.route('/callbacks/register')
