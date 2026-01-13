@@ -105,92 +105,133 @@ class ReportUtil extends Util {
 
     async getReportedVideos() {
         try {
-            console.log('ENTER getReportedVideos');
+            console.log('ENTER getReportedVideos (Optimized)');
 
-            // Get videos that have reports subcollection
-            const videosSnapshot = await FirestoreDatabase
-                .collection(Video.collection)
-                .orderBy('timestamp', 'desc')
-                .limit(20)
-                .get();
+            // Query reports using Collection Group Query
+            const reportsSnapshot = await FirestoreDatabase.collectionGroup('reports').get();
 
-            console.log(`Checking ${videosSnapshot.docs.length} videos for reports`);
+            if (reportsSnapshot.empty) {
+                return { videos: [], reporters: [], creators: [] };
+            }
 
-            const reportedVideos = [];
+            const reportsData = [];
+            const videoIds = new Set();
+            const userIds = new Set();
 
-            // Check each video for reports subcollection
-            for (const videoDoc of videosSnapshot.docs) {
-                const videoId = videoDoc.id;
+            for (const reportDoc of reportsSnapshot.docs) {
+                const parentPath = reportDoc.ref.parent.parent.path;
+                if (!parentPath.startsWith(Video.collection + '/')) continue;
 
-                try {
-                    const reportsSnapshot = await FirestoreDatabase
-                        .collection(Video.collection)
-                        .doc(videoId)
-                        .collection('reports')
-                        .get();
+                const videoId = reportDoc.ref.parent.parent.id;
+                const reporterId = reportDoc.id;
 
-                    if (reportsSnapshot.empty) continue;
+                videoIds.add(videoId);
+                userIds.add(reporterId);
 
-                    const videoData = { id: videoId, ...videoDoc.data() };
-                    const reports = [];
+                reportsData.push({
+                    videoId,
+                    reporterId,
+                    data: reportDoc.data()
+                });
+            }
 
-                    // Process each report
-                    for (const reportDoc of reportsSnapshot.docs) {
-                        const reportData = reportDoc.data();
+            const [videosSnapshot, usersSnapshot] = await Promise.all([
+                Promise.all(Array.from(videoIds).map(id =>
+                    FirestoreDatabase.collection(Video.collection).doc(id).get()
+                )),
+                Promise.all(Array.from(userIds).map(id =>
+                    FirestoreDatabase.collection(User.collection).doc(id).get()
+                ))
+            ]);
 
-                        // Get reporter user info
-                        let reporterName = 'Unknown';
-                        let reporterEmail = 'Unknown';
+            const videoLookup = new Map();
+            videosSnapshot.forEach(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    videoLookup.set(doc.id, { id: doc.id, ...data });
+                    const creatorId = data.userId || data.uid || data.userUid;
+                    if (creatorId) userIds.add(creatorId);
+                }
+            });
 
-                        if (reportData.uid) {
-                            try {
-                                const userSnapshot = await FirestoreDatabase
-                                    .collection(User.collection)
-                                    .where('uid', '==', reportData.uid)
-                                    .limit(1)
-                                    .get();
+            const creatorsToFetch = Array.from(userIds).filter(id =>
+                !usersSnapshot.some(u => u.id === id)
+            );
 
-                                if (!userSnapshot.empty) {
-                                    const userData = userSnapshot.docs[0].data();
-                                    reporterName = userData.userName || userData.firstName || userData.fullName || 'Unknown';
-                                    reporterEmail = userData.email || 'Unknown';
-                                }
-                            } catch (error) {
-                                console.log('Error fetching reporter info:', error.message);
-                            }
-                        }
+            let extraUsersSnapshot = [];
+            if (creatorsToFetch.length > 0) {
+                extraUsersSnapshot = await Promise.all(creatorsToFetch.map(id =>
+                    FirestoreDatabase.collection(User.collection).doc(id).get()
+                ));
+            }
 
-                        reports.push({
-                            reason: reportData.reason || 'No reason provided',
-                            timestamp: reportData.timestamp,
-                            reporterUid: reportData.uid,
-                            reporterName,
-                            reporterEmail
-                        });
+            const userLookup = new Map();
+            [...usersSnapshot, ...extraUsersSnapshot].forEach(doc => {
+                if (doc.exists) userLookup.set(doc.id, doc.data());
+            });
+
+            const videosMap = new Map();
+            const reportersMap = new Map();
+            const creatorsMap = new Map();
+
+            for (const item of reportsData) {
+                const { videoId, reporterId, data } = item;
+                const reason = data.reason || 'No reason provided';
+                const timestamp = data.timestamp;
+
+                const videoInfo = videoLookup.get(videoId) || { title: 'Unknown', id: videoId };
+                const reporterInfo = userLookup.get(reporterId) || { userName: 'Unknown' };
+
+                const creatorId = videoInfo.userId || videoInfo.uid || videoInfo.userUid;
+                let creatorInfo = { userName: 'Unknown Creator' };
+                if (creatorId && userLookup.has(creatorId)) {
+                    creatorInfo = userLookup.get(creatorId);
+                }
+
+                if (!videosMap.has(videoId)) {
+                    videosMap.set(videoId, { videoInfo, reports: [] });
+                }
+                videosMap.get(videoId).reports.push({ reporterId, reporterInfo, reason, timestamp });
+
+                if (!reportersMap.has(reporterId)) {
+                    reportersMap.set(reporterId, { reporterInfo, reportedVideos: [] });
+                }
+                reportersMap.get(reporterId).reportedVideos.push({ videoId, videoInfo, reason, timestamp });
+
+                if (creatorId) {
+                    if (!creatorsMap.has(creatorId)) {
+                        creatorsMap.set(creatorId, { creatorInfo, creatorId, reportsOnVideos: [] });
                     }
-
-                    const firstReport = reports[0] || {};
-
-                    const reportedVideo = {
-                        ...videoData,
-                        reports,
-                        reportCount: reports.length,
-                        reason: firstReport.reason,
-                        reportedAt: firstReport.timestamp,
-                        reporterName: firstReport.reporterName,
-                        reporterId: firstReport.reporterUid,
-                        reporterEmail: firstReport.reporterEmail
-                    };
-
-                    reportedVideos.push(reportedVideo);
-
-                } catch (error) {
-                    console.log(`Error checking reports for video ${videoId}:`, error.message);
+                    creatorsMap.get(creatorId).reportsOnVideos.push({ videoId, videoInfo, reporterId, reporterInfo, reason, timestamp });
                 }
             }
 
-            console.log(`EXIT getReportedVideos - returning ${reportedVideos.length} videos`);
-            return reportedVideos;
+            const videosArray = Array.from(videosMap.values()).map(v => ({
+                id: v.videoInfo.id,
+                ...v.videoInfo,
+                isFlagged: v.videoInfo.flagged === true,
+                reports: v.reports
+            }));
+
+            const reportersArray = Array.from(reportersMap.entries()).map(([id, val]) => ({
+                id,
+                ...val.reporterInfo,
+                isBlocked: ['suspended', 'blocked', 'inactive'].includes(val.reporterInfo.status),
+                reportedVideos: val.reportedVideos
+            }));
+
+            const creatorsArray = Array.from(creatorsMap.values()).map(c => ({
+                id: c.creatorId,
+                ...c.creatorInfo,
+                isBlocked: ['suspended', 'blocked', 'inactive'].includes(c.creatorInfo.status),
+                reportsOnVideos: c.reportsOnVideos
+            }));
+
+            return {
+                videos: videosArray,
+                reporters: reportersArray,
+                creators: creatorsArray
+            };
 
         } catch (error) {
             console.error('Error in getReportedVideos:', error);
