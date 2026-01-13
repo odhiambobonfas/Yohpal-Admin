@@ -480,13 +480,20 @@
                     <div class="collapse ps-2" id="liveSubMenu">
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <a class="nav-link" href="#active-sessions">
-                                    <i class="fa fa-broadcast-tower me-2"></i> Active Sessions
+                                <a class="nav-link d-flex align-items-center" href="/live/analytics">
+                                    <i class="fas fa-chart-pie me-2"></i> Insights
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#history">
-                                    <i class="fa fa-history me-2"></i> History
+                                <a class="nav-link d-flex align-items-center" href="/live/active">
+                                    <i class="fas fa-broadcast-tower me-2"></i> Active Sessions
+                                    <span class="badge rounded-pill bg-danger ms-auto d-none"
+                                        id="active-live-badge">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center" href="/live/history">
+                                    <i class="fas fa-history me-2"></i> History
                                 </a>
                             </li>
                         </ul>
