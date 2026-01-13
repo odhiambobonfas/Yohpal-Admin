@@ -13,6 +13,35 @@ class Master {
         this.debounceTimer;
         this.initOverlay();
         this.overlay = document.querySelector('.global-overlay');
+        this.updateLiveCount(); // Start periodic live count updates
+    }
+
+    /**
+     * Periodically updates the active live sessions badge in the sidebar
+     */
+    updateLiveCount() {
+        const fetchCount = () => {
+            $.ajax({
+                url: '/live/api/count/active',
+                type: 'GET',
+                dataType: 'json',
+                success: (response) => {
+                    const badge = $('#active-live-badge');
+                    if (badge.length && response.count > 0) {
+                        badge.text(response.count).removeClass('d-none');
+                    } else if (badge.length) {
+                        badge.addClass('d-none');
+                    }
+                },
+                error: (err) => console.log('Err fetching live count:', err)
+            });
+        };
+
+        // Initial fetch
+        fetchCount();
+        
+        // Refresh every 60 seconds
+        setInterval(fetchCount, 60000);
     }
 
     /**
@@ -273,3 +302,8 @@ class Master {
         });
     }
 }
+
+// Instantiate side-wide Master class
+$(document).ready(() => {
+    window.master = new Master();
+});
