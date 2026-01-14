@@ -52,9 +52,16 @@ class ReportUtil extends Util {
             }
 
             // 3.1 Apply Status Filter
-            if (status && status !== 'all' && ['active', 'inactive', 'suspended', 'deleted', 'pending'].includes(status)) {
-                query = query.where('status', '==', status);
-                hasFilters = true;
+            if (status && status !== 'all') {
+                if (status === 'deleted') {
+                    // User requested unique fields for filtering accounts scheduled for deletion
+                    query = query.where('isDeactivated', '==', true)
+                        .where('scheduledForDeletion', '==', true);
+                    hasFilters = true;
+                } else if (['active', 'inactive', 'suspended', 'pending'].includes(status)) {
+                    query = query.where('status', '==', status);
+                    hasFilters = true;
+                }
             }
 
             // Only Recalculate filtered count if filters were actually applied
@@ -79,6 +86,7 @@ class ReportUtil extends Util {
                 const data = doc.data();
                 return {
                     id: doc.id,
+                    uid: data.uid || doc.id,
                     email: data.email || 'N/A',
                     userName: data.userName || data.firstName || 'N/A',
                     createdAt: data.createdAt ? new Date(data.createdAt._seconds * 1000).toISOString() : 'N/A',
@@ -86,7 +94,13 @@ class ReportUtil extends Util {
                     flagged: data.flagged || false,
                     banReason: data.banReason || null,
                     flagReason: data.flagReason || null,
-                    banCount: data.banCount || 0
+                    banCount: data.banCount || 0,
+                    // Deletion fields
+                    deactivatedAt: data.deactivatedAt ? new Date(data.deactivatedAt._seconds * 1000).toISOString() : null,
+                    deletionDate: data.deletionDate ? new Date(data.deletionDate._seconds * 1000).toISOString() : null,
+                    scheduledForDeletion: data.scheduledForDeletion || false,
+                    isDeactivated: data.isDeactivated || false,
+                    updatedBy: data.updatedBy || null
                 };
             });
 
