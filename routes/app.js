@@ -25,6 +25,7 @@ import AccountsController from "@app/controllers/web/AccountsController";
 import MpesaController from "@app/controllers/web/MpesaController";
 import CommunicationController from "@app/controllers/web/CommunicationController";
 import FollowerController from "@app/controllers/yohpal/FollowerController";
+import LiveSessionController from "@app/controllers/yohpal/LiveSessionController";
 import NotificationController from "@app/controllers/web/NotificationController";
 import VideosController from "@app/controllers/web/VideosController";
 import authMiddleware from "@app/mwares/authMiddleware";
@@ -146,6 +147,15 @@ router.route('/settings/cpanel/edit/:id')
 // Folowers/Following
 router.get('/followers/top/followed', authMiddleware, FollowerController.getTopFollowersListing);
 router.get('/accounts/promoted', authMiddleware, DashboardController.getPromotedAccounts);
+
+// Live Sessions
+router.get('/live/active', authMiddleware, LiveSessionController.activeSessions);
+router.get('/live/history', authMiddleware, LiveSessionController.historySessions);
+router.get('/live/analytics', authMiddleware, LiveSessionController.analytics);
+router.get('/live/api/active', authMiddleware, LiveSessionController.getActiveSessionsApi);
+router.get('/live/api/history', authMiddleware, LiveSessionController.getHistorySessionsApi);
+router.get('/live/api/analytics', authMiddleware, LiveSessionController.getAnalyticsApi);
+router.get('/live/api/count/active', authMiddleware, LiveSessionController.getActiveCountApi);
 
 // Settings CRUD Operations
 router.route('/callbacks/register')
