@@ -15,4 +15,21 @@ projects.code-workspace
 /reports/
 
 # tests to exclude
-tests/integration/simulateTransaction.js
+tests/integration/simulateTransaction.jsnode_modules/
+venv/
+.venv/
+dist/
+build/
+.gradle/
+*.deb
+*.zip
+*.tar.gz
+*.tar
+*.iso
+*.apk
+*.aar
+*.exe
+*.pyc
+__pycache__/
+.dart_tool/
+dataconnect-generated/

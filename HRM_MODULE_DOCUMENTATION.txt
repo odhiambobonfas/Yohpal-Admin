@@ -1,0 +1,1173 @@
+================================================================================
+                    YOHPAL ADMIN - HRM MODULE DOCUMENTATION
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. Application Overview
+2. Technology Stack
+3. HRM Module Features
+4. Database Structure (Firestore Collections)
+5. API Endpoints
+6. Backend Workflow
+7. Security & Validation
+8. Caching Strategy
+9. File Upload Handling
+10. Error Handling
+
+
+================================================================================
+1. APPLICATION OVERVIEW
+================================================================================
+
+Application Name: Yohpal Admin
+Purpose: Comprehensive admin panel for managing Yohpal platform
+Architecture: MVC (Model-View-Controller)
+Framework: MyExpress (Custom Express.js Framework)
+
+
+================================================================================
+2. TECHNOLOGY STACK
+================================================================================
+
+Backend:
+- Node.js
+- Express.js (MyExpress Framework)
+- TypeScript/JavaScript (ES6+)
+
+Database:
+- Firebase Firestore (Primary - NoSQL)
+- MySQL (Optional/Secondary)
+
+Caching:
+- Redis (ioredis)
+
+Authentication:
+- JWT (jsonwebtoken)
+- Session-based (express-session)
+- bcryptjs for password hashing
+
+View Engine:
+- EJS (Embedded JavaScript Templates)
+
+File Storage:
+- Firebase Storage
+- Local filesystem
+
+Other Libraries:
+- multer (file uploads)
+- helmet (security)
+- cors (cross-origin)
+- morgan (logging)
+- winston (logging)
+
+
+================================================================================
+3. HRM MODULE FEATURES
+================================================================================
+
+The HRM module manages 6 core areas:
+
+1. DEPARTMENTS MANAGEMENT
+   - Create, read, update, delete departments
+   - Assign department heads
+   - Track department codes
+
+2. EMPLOYEE DESIGNATIONS
+   - Manage job titles/positions
+   - Set basic salary per designation
+   - Unique designation codes
+
+3. ATTENDANCE TRACKING
+   - Clock in/out times
+   - Multiple shift support
+   - Attendance status (present, absent, leave, holiday)
+   - Custom shift creation
+
+4. HOLIDAY MANAGEMENT
+   - Public holidays
+   - Company holidays
+   - Custom holiday types
+   - Date range support
+
+5. LEAVE MANAGEMENT
+   - Multiple leave types (annual, sick, maternity, etc.)
+   - Leave request workflow
+   - Approval system (pending, approved, rejected)
+   - File attachment support
+
+6. PAYROLL SYSTEM
+   - Payment components (earnings/deductions)
+   - Tax brackets
+   - Contribution tiers
+   - Flexible rate types (value/percentage)
+
+
+================================================================================
+4. DATABASE STRUCTURE (FIRESTORE COLLECTIONS)
+================================================================================
+
+--------------------------------------------------------------------------------
+4.1 USERS COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: users
+
+Schema:
+{
+  id: "auto-generated-firestore-id",
+  fullname: "John Doe",
+  username: "johndoe",
+  email: "john@example.com",
+  password: "hashed-password-bcrypt",
+  contact: "+254712345678",
+  role: "employee",
+  isEmployee: true,
+  banReason: null,
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Indexes:
+- isEmployee (for filtering employees)
+- email (unique)
+- username (unique)
+
+
+--------------------------------------------------------------------------------
+4.2 DEPARTMENTS COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: departments
+
+Schema:
+{
+  id: "auto-generated-firestore-id",
+  departmentName: "Human Resources",
+  departmentCode: "HR001",
+  departmentHead: "Jane Smith",
+  departmentDescription: "Manages employee relations and recruitment",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Constraints:
+- departmentName: UNIQUE, REQUIRED
+- departmentCode: UNIQUE, REQUIRED, MAX 10 chars
+- departmentDescription: MAX 500 chars
+
+Indexes:
+- departmentName (unique)
+- departmentCode (unique)
+
+
+--------------------------------------------------------------------------------
+4.3 EMPLOYEE DESIGNATIONS COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: employeeDesignations
+
+Schema:
+{
+  id: "auto-generated-firestore-id",
+  designationName: "Senior Software Engineer",
+  designationCode: "SSE001",
+  basicSalary: 150000,
+  designationDescription: "Leads development projects",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Constraints:
+- designationName: UNIQUE, REQUIRED
+- designationCode: UNIQUE, REQUIRED, MAX 10 chars
+- basicSalary: NUMBER, >= 0
+- designationDescription: MAX 500 chars
+
+Indexes:
+- designationName (unique)
+- designationCode (unique)
+
+
+--------------------------------------------------------------------------------
+4.4 ATTENDANCE COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: attendance
+
+Schema:
+{
+  id: "auto-generated-firestore-id",
+  userId: "user-firestore-id",
+  userRef: DocumentReference(users/user-firestore-id),
+  attendanceDate: "2024-01-15",
+  clockInTime: "08:30 AM",
+  clockOutTime: "05:00 PM",
+  shift: "early_morning_1",
+  status: "present",
+  remarks: "On time",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Status Values:
+- present
+- absent
+- leave
+- holiday
+
+Shift Types:
+- early_morning_1: 8:00 AM - 5:00 PM
+- late_morning_2: 10:00 AM - 8:00 PM
+- custom: User-defined
+
+Constraints:
+- userId: REQUIRED
+- attendanceDate: REQUIRED, VALID DATE
+- status: REQUIRED, ENUM
+- remarks: MAX 500 chars
+
+Indexes:
+- userId
+- attendanceDate (DESC)
+- status
+
+
+--------------------------------------------------------------------------------
+4.5 HOLIDAYS COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: holiday
+
+Schema:
+{
+  id: "auto-generated-firestore-id",
+  holidayName: "New Year's Day",
+  startDate: "2024-01-01",
+  endDate: "2024-01-01",
+  holidayType: "public",
+  customHolidayType: null,
+  holidayDescription: "National holiday",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Holiday Types:
+- public: National/public holidays
+- company: Company-specific holidays
+- custom: Custom type (requires customHolidayType)
+
+Constraints:
+- holidayName: REQUIRED
+- startDate: REQUIRED, VALID DATE
+- endDate: VALID DATE
+- holidayType: REQUIRED, ENUM
+- holidayDescription: MAX 500 chars
+
+Indexes:
+- startDate (DESC)
+
+
+--------------------------------------------------------------------------------
+4.6 LEAVES COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: leaves
+
+Schema:
+{
+  id: "auto-generated-firestore-id",
+  userId: "user-firestore-id",
+  userRef: DocumentReference(users/user-firestore-id),
+  leaveType: "annual",
+  customLeaveType: null,
+  startDate: "2024-02-01",
+  endDate: "2024-02-05",
+  reason: "Family vacation",
+  attachments: "/store/docs/hrm/leaves/file.pdf",
+  fbAttachmentFbPath: "https://storage.googleapis.com/...",
+  status: "pending",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Employee Name",
+  addedByUid: "employee-user-id"
+}
+
+Leave Types:
+- annual: Annual leave
+- sick: Sick leave
+- maternity: Maternity leave
+- paternity: Paternity leave
+- unpaid: Unpaid leave
+- compassionate: Compassionate leave
+- bereavement: Bereavement leave
+- study: Study leave
+- other: Other types
+- custom: Custom type (requires customLeaveType)
+
+Status Values:
+- pending: Awaiting approval (default)
+- approved: Approved by manager
+- rejected: Rejected by manager
+- cancelled: Cancelled by employee
+
+Constraints:
+- userId: REQUIRED
+- leaveType: REQUIRED, ENUM
+- startDate: REQUIRED, VALID DATE
+- endDate: VALID DATE
+- reason: REQUIRED, MAX 500 chars
+- status: ENUM
+
+Indexes:
+- userId
+- status
+- startDate
+
+
+--------------------------------------------------------------------------------
+4.7 PAYMENT COMPONENTS COLLECTION
+--------------------------------------------------------------------------------
+Collection Name: paymentComponents
+
+Schema:
+{
+  id: "componentCode (custom document ID)",
+  componentName: "Basic Salary",
+  componentCode: "BASIC_SAL",
+  componentType: "earning",
+  componentScope: "none",
+  componentCategory: "basic",
+  employeeRate: 50000,
+  rateType: "value",
+  componentDescription: "Monthly basic salary",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Component Types:
+- earning: Salary, allowances, bonuses
+- deduction: Taxes, insurance, loans
+
+Component Scopes:
+- none: Simple component without brackets/tiers
+- bracket: Uses tax brackets (ranges)
+- tier: Uses contribution tiers
+
+Component Categories:
+- basic: Basic salary
+- allowance: Housing, transport, etc.
+- bonus: Performance, annual bonus
+- tax: Income tax, VAT
+- benefit: Insurance, pension
+- other: Miscellaneous
+
+Rate Types:
+- value: Fixed amount (e.g., 5000)
+- percentage: Percentage of base (e.g., 10%)
+
+Constraints:
+- componentName: UNIQUE, REQUIRED
+- componentCode: UNIQUE, REQUIRED
+- componentType: REQUIRED, ENUM
+- componentScope: ENUM
+- employeeRate: NUMBER >= 0
+- componentDescription: MAX 1000 chars
+
+Indexes:
+- componentName (unique)
+- componentCode (unique)
+- componentType
+
+
+--------------------------------------------------------------------------------
+4.8 COMPONENT ESSENTIALS COLLECTION (BRACKETS & TIERS)
+--------------------------------------------------------------------------------
+Collection Name: componentEssentials
+
+This collection stores both BRACKETS and TIERS based on scope field.
+
+BRACKET SCHEMA (for tax brackets):
+{
+  id: "auto-generated-firestore-id",
+  componentId: "PAYE_TAX",
+  componentRef: DocumentReference(paymentComponents/PAYE_TAX),
+  bracketName: "Tax Band 1",
+  bracketCode: "TB1",
+  minRange: 0,
+  maxRange: 24000,
+  employeeRate: 10,
+  employeeRateType: "percentage",
+  bracketDescription: "10% tax on income 0-24000",
+  scope: "bracket",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+TIER SCHEMA (for contributions):
+{
+  id: "auto-generated-firestore-id",
+  componentId: "NSSF",
+  componentRef: DocumentReference(paymentComponents/NSSF),
+  tierName: "Tier 1",
+  tierCode: "T1",
+  contributionBase: 6000,
+  employeeRate: 6,
+  employeeRateType: "percentage",
+  employerRate: 6,
+  employerRateType: "percentage",
+  effectiveFrom: "2024-01-01",
+  effectiveTo: "2024-12-31",
+  tierDescription: "Lower tier contribution",
+  scope: "tier",
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  addedBy: "Admin Name",
+  addedByUid: "admin-user-id"
+}
+
+Constraints (Brackets):
+- bracketName: UNIQUE, REQUIRED
+- bracketCode: UNIQUE, MAX 50 chars
+- minRange: REQUIRED, NUMBER >= 0
+- maxRange: NUMBER >= minRange (nullable for open-ended)
+- employeeRate: NUMBER >= 0
+- bracketDescription: MAX 1000 chars
+
+Constraints (Tiers):
+- tierName: UNIQUE, REQUIRED
+- tierCode: UNIQUE, MAX 50 chars
+- contributionBase: NUMBER >= 0
+- employeeRate: NUMBER >= 0
+- employerRate: NUMBER >= 0
+- effectiveFrom: VALID DATE
+- tierDescription: MAX 1000 chars
+
+Indexes:
+- componentId
+- scope
+
+
+================================================================================
+5. API ENDPOINTS
+================================================================================
+
+Base URL: http://localhost:5000 (development)
+Authentication: Required on all endpoints (JWT + Session)
+
+--------------------------------------------------------------------------------
+5.1 DEPARTMENT ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET /institution/departments
+Description: List all departments (with DataTables support)
+Authentication: Required
+Permissions: hrm.departments.view
+Query Parameters:
+  - filters (optional): JSON filter object
+Response:
+{
+  "status": "success",
+  "message": "Departments retrieved successfully.",
+  "data": [
+    {
+      "id": "dept-id",
+      "Name": "Human Resources",
+      "Code": "HR001",
+      "Description": "Manages employees",
+      "Head": "Jane Smith",
+      "AddedBy": "Admin",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z",
+      "actions": "<dropdown-html>"
+    }
+  ]
+}
+
+POST /department/create
+Description: Create new department
+Authentication: Required
+Permissions: hrm.departments.create
+Request Body:
+{
+  "departmentName": "Engineering",
+  "departmentCode": "ENG001",
+  "departmentHead": "John Doe",
+  "departmentDescription": "Software development team"
+}
+Response:
+{
+  "status": "success",
+  "message": "Department created successfully",
+  "data": {
+    "id": "new-dept-id"
+  }
+}
+
+
+--------------------------------------------------------------------------------
+5.2 DESIGNATION ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET /institution/designations
+Description: List all designations
+Authentication: Required
+Permissions: hrm.designations.view
+Response: Similar to departments
+
+POST /designation/create
+Description: Create new designation
+Authentication: Required
+Permissions: hrm.designations.create
+Request Body:
+{
+  "designationName": "Senior Developer",
+  "designationCode": "SD001",
+  "basicSalary": 120000,
+  "designationDescription": "Leads development"
+}
+
+
+--------------------------------------------------------------------------------
+5.3 ATTENDANCE ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET /employee/attendance
+Description: List attendance records
+Authentication: Required
+Permissions: hrm.attendance.view
+Response:
+{
+  "status": "success",
+  "message": "Attendance records retrieved successfully.",
+  "data": [
+    {
+      "id": "attendance-id",
+      "Employee": "John Doe",
+      "attendanceDate": "2024-01-15",
+      "shift": "Early Morning",
+      "attendanceStatus": "<badge-html>",
+      "CheckIn": "08:30 AM",
+      "CheckOut": "05:00 PM",
+      "remarks": "On time",
+      "AddedBy": "Admin",
+      "createdAt": "2024-01-15T08:30:00Z"
+    }
+  ]
+}
+
+POST /attendance/create
+Description: Create attendance record
+Authentication: Required
+Permissions: hrm.attendance.create
+Request Body:
+{
+  "userId": "user-id",
+  "attendanceDate": "2024-01-15",
+  "clockInTime": "08:30",
+  "clockOutTime": "17:00",
+  "shiftType": "early_morning_1",
+  "attendanceStatus": "present",
+  "remarks": "On time"
+}
+
+
+--------------------------------------------------------------------------------
+5.4 HOLIDAY ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET /holidays/list
+Description: List all holidays
+Authentication: Required
+Permissions: hrm.holidays.view
+
+POST /holidays/create
+Description: Create holiday
+Authentication: Required
+Permissions: hrm.holidays.create
+Request Body:
+{
+  "holidayName": "Independence Day",
+  "startDate": "2024-12-12",
+  "endDate": "2024-12-12",
+  "holidayType": "public",
+  "holidayDescription": "National holiday"
+}
+
+
+--------------------------------------------------------------------------------
+5.5 LEAVE ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET /leaves/list
+Description: List leave requests
+Authentication: Required
+Permissions: hrm.leaves.view
+
+POST /leaves/create
+Description: Create leave request
+Authentication: Required
+Permissions: hrm.leaves.create
+Content-Type: multipart/form-data
+Request Body:
+{
+  "employeeId": "user-id",
+  "leaveType": "annual",
+  "startDate": "2024-02-01",
+  "endDate": "2024-02-05",
+  "reason": "Family vacation",
+  "leaveAttachment": File (optional),
+  "status": "pending"
+}
+
+
+--------------------------------------------------------------------------------
+5.6 PAYROLL ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET /payroll
+Description: Payroll dashboard view
+Authentication: Required
+Permissions: hrm.payroll.view
+
+GET /payroll/components
+Description: List payment components
+Authentication: Required
+Permissions: hrm.payments.components.view
+
+POST /payroll/component/create
+Description: Create payment component
+Authentication: Required
+Permissions: hrm.payments.components.create
+Request Body:
+{
+  "componentName": "Housing Allowance",
+  "componentCode": "HOUSE_ALL",
+  "componentType": "earning",
+  "componentScope": "none",
+  "componentCategory": "allowance",
+  "employeeRate": 15000,
+  "rateType": "value",
+  "componentDescription": "Monthly housing allowance"
+}
+
+GET /payroll/brackets
+Description: List tax brackets
+Authentication: Required
+Permissions: hrm.payments.brackets.view
+
+POST /payroll/brackets/create
+Description: Create tax bracket
+Authentication: Required
+Permissions: hrm.payments.brackets.create
+Request Body:
+{
+  "componentId": "PAYE_TAX",
+  "bracketName": "Tax Band 1",
+  "bracketCode": "TB1",
+  "minRange": 0,
+  "maxRange": 24000,
+  "employeeRate": 10,
+  "employeeRateType": "percentage",
+  "bracketDescription": "10% tax on 0-24000"
+}
+
+GET /payroll/tiers
+Description: List contribution tiers
+Authentication: Required
+Permissions: hrm.payments.tiers.view
+
+POST /payroll/tiers/create
+Description: Create contribution tier
+Authentication: Required
+Permissions: hrm.payments.tiers.create
+Request Body:
+{
+  "componentId": "NSSF",
+  "tierName": "Tier 1",
+  "tierCode": "T1",
+  "contributionBase": 6000,
+  "employeeRate": 6,
+  "employeeRateType": "percentage",
+  "employerRate": 6,
+  "employerRateType": "percentage",
+  "effectiveFrom": "2024-01-01",
+  "tierDescription": "Lower tier"
+}
+
+
+================================================================================
+6. BACKEND WORKFLOW
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1 REQUEST FLOW
+--------------------------------------------------------------------------------
+
+1. Client Request
+   ↓
+2. Express Router (routes/app.js)
+   ↓
+3. Authentication Middleware (authMiddleware)
+   - Validates JWT token
+   - Checks session
+   ↓
+4. Permission Middleware (hasPermission)
+   - Checks user role permissions
+   ↓
+5. Controller (HRMController)
+   - Validates input
+   - Processes business logic
+   ↓
+6. Utility Layer (HRMUtil/PayrollUtil)
+   - Database operations
+   - Cache management
+   ↓
+7. Model Layer (Firestore)
+   - Data persistence
+   ↓
+8. Response to Client
+
+
+--------------------------------------------------------------------------------
+6.2 DEPARTMENT CREATION WORKFLOW
+--------------------------------------------------------------------------------
+
+POST /department/create
+↓
+HRMController.createDepartment()
+  - Extract request body
+  - Get logged-in user info
+  - Validate departmentName (required, not empty)
+  - Validate departmentCode (max 10 chars)
+  - Validate departmentDescription (max 500 chars)
+  ↓
+HRMUtil.createDepartmentQuery()
+  - Check duplicate departmentName in Firestore
+  - Check duplicate departmentCode in Firestore
+  - Build payload with metadata (addedBy, timestamps)
+  - Insert into Firestore 'departments' collection
+  - Clear Redis cache for departments
+  ↓
+Return success response with new department ID
+
+
+--------------------------------------------------------------------------------
+6.3 ATTENDANCE RETRIEVAL WORKFLOW
+--------------------------------------------------------------------------------
+
+GET /employee/attendance
+↓
+HRMController.employeeAttendance()
+  - Check if AJAX request
+  ↓
+HRMUtil.getAllAttendanceRecords()
+  - Generate cache key: 'yp:attendances:filtered'
+  - Check Redis cache
+  - If cache miss:
+    ↓
+    - Query Firestore 'attendance' collection
+    - Order by attendanceDate DESC
+    - Fetch all records
+    - For each record:
+      - Resolve userRef to get employee details
+      - Attach user object to attendance record
+    - Store in Redis (TTL: 100 seconds)
+  - Return cached/fresh data
+  ↓
+mexDtParser (DataTables formatter)
+  - Format columns (Employee, Date, Status, etc.)
+  - Add action buttons based on permissions
+  - Return formatted data
+  ↓
+Return JSON response
+
+
+--------------------------------------------------------------------------------
+6.4 LEAVE REQUEST WITH FILE UPLOAD WORKFLOW
+--------------------------------------------------------------------------------
+
+POST /leaves/create (multipart/form-data)
+↓
+Multer Middleware
+  - Process file upload (leaveAttachment)
+  - Store temporarily
+  ↓
+HRMController.createLeaveRequest()
+  - Validate employeeId
+  - Validate dates (startDate, endDate)
+  - Validate leaveType
+  - Validate reason (required, max 500 chars)
+  ↓
+File Upload Processing
+  - handleFileUploads() → Save to local: public/store/docs/hrm/leaves/
+  - FirebaseUtility.uploadFile() → Upload to Firebase Storage
+  - Get public URL from Firebase
+  ↓
+HRMUtil.createLeaveRequestQuery()
+  - Build payload with:
+    - userId, userRef (Firestore reference)
+    - leaveType, dates, reason
+    - attachmentLocalPath (local path)
+    - fbAttachmentFbPath (Firebase URL)
+    - status: 'pending'
+  - Insert into Firestore 'leaves' collection
+  - Clear Redis cache
+  ↓
+Return success response
+
+
+--------------------------------------------------------------------------------
+6.5 PAYROLL BRACKET CREATION WORKFLOW
+--------------------------------------------------------------------------------
+
+POST /payroll/brackets/create
+↓
+HRMController.createBracketScope()
+  - Validate componentId (required)
+  - Validate bracketName (required)
+  - Validate bracketCode (max 50 chars)
+  - Validate minRange (number >= 0)
+  - Validate maxRange (>= minRange)
+  - Validate employeeRate (number >= 0)
+  - Validate employeeRateType (value/percentage)
+  ↓
+PayrollUtil.createPaymentBracketQuery()
+  - Check duplicate bracketName
+  - Check duplicate bracketCode
+  - Build payload with:
+    - componentId, componentRef (Firestore reference)
+    - bracket details
+    - scope: 'bracket'
+  - Insert into 'componentEssentials' collection
+  - Clear Redis cache: 'yp:componentBrackets:filtered'
+  ↓
+Return success response
+
+
+================================================================================
+7. SECURITY & VALIDATION
+================================================================================
+
+--------------------------------------------------------------------------------
+7.1 AUTHENTICATION
+--------------------------------------------------------------------------------
+
+JWT Token:
+- Generated on login
+- Stored in session
+- Expires in 3 days (configurable)
+- Secret: JWT_SECRET from .env
+
+Session:
+- Storage: Redis or Memory
+- Session name: yohpal_admin_sess
+- TTL: 360000 seconds
+- Secure cookies in production
+
+Middleware Chain:
+Request → authMiddleware → routeMiddleware → Controller
+
+
+--------------------------------------------------------------------------------
+7.2 AUTHORIZATION (RBAC)
+--------------------------------------------------------------------------------
+
+Permission Format: "module.resource.action"
+Examples:
+- hrm.departments.view
+- hrm.departments.create
+- hrm.departments.edit
+- hrm.departments.delete
+- hrm.attendance.create
+- hrm.payroll.view
+
+Permission Check:
+hasPermission(user.permissions, 'hrm.departments.create')
+
+Role Hierarchy:
+- Super Admin: All permissions
+- Admin: Most permissions
+- Manager: Department-specific permissions
+- Employee: Limited permissions
+
+
+--------------------------------------------------------------------------------
+7.3 INPUT VALIDATION
+--------------------------------------------------------------------------------
+
+String Validations:
+- Required fields: Check for null/undefined/empty
+- Max length: departmentCode (10), description (500)
+- Trim whitespace
+- Unique constraints checked in database
+
+Number Validations:
+- Type check: isNaN()
+- Range check: >= 0 for amounts
+- Comparison: maxRange >= minRange
+
+Date Validations:
+- Valid date: isNaN(new Date(date).getTime())
+- Date comparison: endDate >= startDate
+
+Enum Validations:
+- componentType: ['earning', 'deduction']
+- componentScope: ['none', 'tier', 'bracket']
+- status: ['pending', 'approved', 'rejected']
+- leaveType: predefined list
+
+
+--------------------------------------------------------------------------------
+7.4 FILE UPLOAD SECURITY
+--------------------------------------------------------------------------------
+
+Multer Configuration:
+- Max file size: 5MB
+- Allowed types: image/png, image/jpeg, application/pdf
+- Storage: Local + Firebase Storage
+- Filename: Auto-renamed with timestamp
+
+Upload Path:
+Local: public/store/docs/hrm/leaves/
+Firebase: company/yohpal/hrm/leaves/
+
+Validation:
+- File type check
+- Size limit enforcement
+- Virus scanning (recommended for production)
+
+
+--------------------------------------------------------------------------------
+7.5 ERROR HANDLING
+--------------------------------------------------------------------------------
+
+Custom Exception Class:
+new Exception(
+  statusCode,
+  errorCode,
+  message,
+  title
+)
+
+Error Response Format:
+{
+  "status": "error",
+  "code": "DEPARTMENT_NAME_DUPLICATE",
+  "message": "Department name already exists",
+  "title": "Duplicate Error"
+}
+
+Logging:
+- Winston logger
+- Error stack traces in development
+- Exception.mexLogger() for custom logging
+
+
+================================================================================
+8. CACHING STRATEGY
+================================================================================
+
+--------------------------------------------------------------------------------
+8.1 REDIS CACHE CONFIGURATION
+--------------------------------------------------------------------------------
+
+Connection:
+- Host: REDIS_URL from .env
+- Port: REDIS_PORT (default 14000)
+- Password: REDIS_PASSWORD
+- Timeout: 10000ms
+
+Cache Key Format:
+- yp:departments:filtered
+- yp:designations:filtered
+- yp:attendances:filtered
+- yp:holidays:filtered
+- yp:paymentComponents:filtered
+- yp:componentBrackets:filtered
+
+
+--------------------------------------------------------------------------------
+8.2 CACHE TTL (Time To Live)
+--------------------------------------------------------------------------------
+
+Long-lived (3600-7200 seconds):
+- Departments: 3600s (1 hour)
+- Designations: 3600s (1 hour)
+- Holidays: 3600s (1 hour)
+- Payment Components: 7200s (2 hours)
+
+Short-lived (100 seconds):
+- Attendance: 100s (frequently updated)
+- Leave Requests: 100s (frequently updated)
+
+
+--------------------------------------------------------------------------------
+8.3 CACHE INVALIDATION
+--------------------------------------------------------------------------------
+
+Manual Invalidation:
+- On create: redis.deleteFunc(cacheKey)
+- On update: redis.deleteFunc(cacheKey)
+- On delete: redis.deleteFunc(cacheKey)
+
+Filter-based Invalidation:
+- Store filters in: yp:departments:filters
+- Compare current vs cached filters
+- Invalidate if filters changed
+
+Cache Refresh:
+redis.cacheParser(key, fetchFunction, ttl)
+- Checks cache first
+- If miss, executes fetchFunction
+- Stores result with TTL
+
+
+================================================================================
+9. FILE UPLOAD HANDLING
+================================================================================
+
+--------------------------------------------------------------------------------
+9.1 LOCAL FILE STORAGE
+--------------------------------------------------------------------------------
+
+Function: handleFileUploads(req, subfolder)
+
+Process:
+1. Extract file from req.file
+2. Generate unique filename with timestamp
+3. Create directory if not exists
+4. Save file to: public/store/{subfolder}/
+5. Return relative path
+
+Example:
+handleFileUploads(req, 'docs/hrm/leaves')
+→ public/store/docs/hrm/leaves/1234567890-document.pdf
+
+
+--------------------------------------------------------------------------------
+9.2 FIREBASE STORAGE
+--------------------------------------------------------------------------------
+
+Class: FirebaseUtility
+
+Method: uploadFile(localPath, firebasePath, options)
+
+Process:
+1. Read file from local path
+2. Upload to Firebase Storage bucket
+3. Set metadata (contentType, cacheControl)
+4. Make file public (if makePublic: true)
+5. Return public URL
+
+Example:
+await FBUTIL.uploadFile(
+  'public/store/docs/hrm/leaves/file.pdf',
+  'company/yohpal/hrm/leaves',
+  { linkType: 'firebase', makePublic: true }
+)
+→ https://storage.googleapis.com/bucket/company/yohpal/hrm/leaves/file.pdf
+
+
+--------------------------------------------------------------------------------
+9.3 FILE CLEANUP
+--------------------------------------------------------------------------------
+
+Recommendation:
+- Implement cron job to delete old local files
+- Keep Firebase Storage as source of truth
+- Delete local files after successful Firebase upload
+
+
+================================================================================
+10. ERROR HANDLING
+================================================================================
+
+--------------------------------------------------------------------------------
+10.1 COMMON ERROR CODES
+--------------------------------------------------------------------------------
+
+DEPARTMENT_NAME_DUPLICATE (201)
+- Department name already exists
+
+DEPARTMENT_CODE_DUPLICATE (201)
+- Department code already exists
+
+DESIGNATION_NAME_DUPLICATE (201)
+- Designation name already exists
+
+EMPLOYEE_ID_INVALID (201)
+- Invalid or missing employee ID
+
+ATTENDANCE_DATE_INVALID (201)
+- Invalid attendance date format
+
+LEAVE_TYPE_INVALID (201)
+- Invalid leave type selected
+
+COMPONENT_NAME_REQUIRED (201)
+- Payment component name is required
+
+BRACKET_MIN_INVALID (201)
+- Invalid minimum range for bracket
+
+INTERNAL_SERVER_ERROR (500)
+- Unexpected server error
+
+
+--------------------------------------------------------------------------------
+10.2 ERROR RESPONSE STRUCTURE
+--------------------------------------------------------------------------------
+
+Success Response:
+{
+  "status": "success",
+  "message": "Operation completed successfully",
+  "data": { ... }
+}
+
+Error Response:
+{
+  "status": "error",
+  "code": "ERROR_CODE",
+  "message": "Human-readable error message",
+  "title": "Error Title"
+}
+
+
+--------------------------------------------------------------------------------
+10.3 DEBUGGING
+--------------------------------------------------------------------------------
+
+Development Mode:
+- APP_DEBUG: true
+- Full error stack traces
+- Console logging enabled
+- Exception.mexLogger() outputs
+
+Production Mode:
+- APP_DEBUG: false
+- Generic error messages
+- Detailed logs to file
+- No stack traces to client
+
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+
+For questions or support, contact:
+Author: Giceha Junior
+Email: gicehajunior76@daphascomp.com
+GitHub: https://github.com/Gicehajunior
+
+Last Updated: 2024
+Version: 1.0.0

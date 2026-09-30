@@ -131,11 +131,13 @@ class AuthController {
                 })
             }); 
             
-            if (!response.ok) { 
-                throw new Exception(201, 'AUTHENTICATION_ERROR', LANG_EN.error.generic_auth_error, 'Auth Error!');
-            }
-
-            const data = await response.json();   
+            const data = await response.json();
+            
+            if (!response.ok) {
+                const errorMessage = data?.error?.message || LANG_EN.error.generic_auth_error;
+                console.log('Firebase Auth Error:', errorMessage, data);
+                throw new Exception(201, 'AUTHENTICATION_ERROR', errorMessage, 'Auth Error!');
+            }   
             
             const firebase = new FirebaseUtility();
 
@@ -148,6 +150,10 @@ class AuthController {
             }
             
             let {user, role, permissions} = await UserUtil.getUserByDocid(v.uid);
+
+            if (!user || !user.uid) {
+                throw new Exception(201, 'USER_NOT_FOUND', 'User account not found in system. Please contact administrator.', 'Auth Error!');
+            }
 
             permissions = permissions?.permissions ?? []; 
 
